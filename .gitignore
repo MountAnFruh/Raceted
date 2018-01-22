@@ -1,0 +1,35 @@
+## JMonkeyEngine and Netbeans specific #
+**/nbproject/private/
+**/.classpath
+**/.settings
+**/.project
+**/out
+/.gradle/
+/.nb-gradle/
+/.idea/
+/dist/
+/nbdist/
+/build/
+/nbbuild/
+/bin/
+/netbeans/
+/.classpath
+/.project
+/.settings
+*.dll
+*.so
+*.jnilib
+*.dylib
+*.iml
+.gradletasknamecache
+.DS_Store
+nbactions.xml
+nb-configuration.xml
+
+# Class Files #
+*.class
+
+# Package Files #
+*.jar
+*.war
+*.ear
