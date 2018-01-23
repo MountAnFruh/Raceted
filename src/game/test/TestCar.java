@@ -68,10 +68,21 @@ public class TestCar extends SimpleApplication implements ActionListener {
     
     private void initCamera() {
         flyCam.setEnabled(false);
-        camNode = new CameraNode("CameraNode", cam);
-        camNode.setControlDir(CameraControl.ControlDirection.SpatialToCamera);
-        vehicleNode.attachChild(camNode);
-        camNode.setLocalTranslation(0, 5, -15);
+//        camNode = new CameraNode("CameraNode", cam);
+//        camNode.setControlDir(CameraControl.ControlDirection.SpatialToCamera);
+//        vehicleNode.attachChild(camNode);
+//        camNode.setLocalTranslation(0, 5, -15);
+
+        //Work in Progresser als af
+        ChaseCamera chaseCam = new ChaseCamera(cam, vehicleNode, inputManager);
+        chaseCam.setSmoothMotion(true);
+        chaseCam.setTrailingEnabled(true);
+        chaseCam.setMaxVerticalRotation(FastMath.PI / 16);
+        chaseCam.setDefaultVerticalRotation(FastMath.PI / 16);
+        chaseCam.setLookAtOffset(new Vector3f(0, 2, 0));
+        chaseCam.setDefaultDistance(7);
+        chaseCam.setTrailingSensitivity(10);
+        chaseCam.setZoomSensitivity(1000);
     }
     
     private void setupKeys() {
@@ -119,13 +130,20 @@ public class TestCar extends SimpleApplication implements ActionListener {
         compoundShape.addChildShape(box, new Vector3f(0, 1, 0));
         
         vehicleNode = new Node("vehicleNode");
-        player = new VehicleControl(compoundShape, 400);
+        player = new VehicleControl(compoundShape, 200);
+        
+        //Hier sollte man noch'n paar neue Zahlen draufschreiben, hmmm...
+        player.setSuspensionCompression(0.1f  * 2.0f * FastMath.sqrt(200.0f));
+        player.setSuspensionDamping(0.2f  * 2.0f * FastMath.sqrt(200.0f));
+        player.setSuspensionStiffness(200.0f);
+        player.setMaxSuspensionForce(5000);
+        
         vehicleNode.addControl(player);
         
         //Create four wheels and add them at their locations
         Vector3f wheelDirection = new Vector3f(0, -1, 0); // was 0, -1, 0
         Vector3f wheelAxle = new Vector3f(-1, 0, 0); // was -1, 0, 0
-        float radius = 0.5f;
+        float radius = 0.3f;
         float restLength = 0.3f;
         float yOff = 0.5f;
         float xOff = 1f;
@@ -177,7 +195,7 @@ public class TestCar extends SimpleApplication implements ActionListener {
 
     @Override
     public void simpleUpdate(float tpf) {
-        camNode.lookAt(vehicleNode.getLocalTranslation(), Vector3f.UNIT_Y);
+//        camNode.lookAt(vehicleNode.getLocalTranslation(), Vector3f.UNIT_Y);
     }
 
     @Override
