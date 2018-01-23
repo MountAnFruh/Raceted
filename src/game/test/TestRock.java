@@ -8,8 +8,10 @@ package game.test;
 import com.jme3.app.SimpleApplication;
 import com.jme3.bullet.BulletAppState;
 import com.jme3.bullet.collision.shapes.CapsuleCollisionShape;
+import com.jme3.bullet.collision.shapes.CollisionShape;
 import com.jme3.bullet.collision.shapes.CompoundCollisionShape;
 import com.jme3.bullet.control.RigidBodyControl;
+import com.jme3.bullet.util.CollisionShapeFactory;
 import com.jme3.input.ChaseCamera;
 import com.jme3.input.KeyInput;
 import com.jme3.input.controls.ActionListener;
@@ -21,9 +23,12 @@ import com.jme3.math.ColorRGBA;
 import com.jme3.math.Matrix3f;
 import com.jme3.math.Vector3f;
 import com.jme3.renderer.RenderManager;
+import com.jme3.scene.Geometry;
 import com.jme3.scene.Node;
 import com.jme3.scene.Spatial;
+import com.jme3.scene.shape.Sphere;
 import com.jme3.system.JmeContext;
+import com.jme3.texture.Texture;
 
 /**
  * 
@@ -45,7 +50,7 @@ public class TestRock extends SimpleApplication implements AnalogListener, Actio
     public void simpleInitApp() {
         bulletAppState = new BulletAppState();
         stateManager.attach(bulletAppState);
-        bulletAppState.setDebugEnabled(true);
+//        bulletAppState.setDebugEnabled(true);
         
         setupKeys();
         
@@ -61,6 +66,7 @@ public class TestRock extends SimpleApplication implements AnalogListener, Actio
     private void initCamera() {
         flyCam.setEnabled(false);
         chaseCam = new ChaseCamera(cam, rockNode, inputManager);
+        chaseCam.setLookAtOffset(new Vector3f(0,2,0));
     }
     
     private void setupKeys() {
@@ -100,16 +106,23 @@ public class TestRock extends SimpleApplication implements AnalogListener, Actio
     
     private void buildPlayer() {
         Material mat = new Material(getAssetManager(), "Common/MatDefs/Misc/Unshaded.j3md");
-        mat.getAdditionalRenderState().setWireframe(true);
-        mat.setColor("Color", ColorRGBA.Red);
+        Texture texture = assetManager.loadTexture("Textures/Boden.jpg");
+        mat.setTexture("ColorMap", texture);
         
-        CompoundCollisionShape compoundShape = new CompoundCollisionShape();
-        CapsuleCollisionShape capsule = new CapsuleCollisionShape(3f,0f);
-        compoundShape.addChildShape(capsule, new Vector3f(0, 1, 0));
+        Sphere sphere = new Sphere(20,20,3);
+        Geometry sphereGeo = new Geometry("Rocksphere",sphere);
+        sphereGeo.setMaterial(mat);
+        
+//        CompoundCollisionShape compoundShape = new CompoundCollisionShape();
+//        CapsuleCollisionShape capsule = new CapsuleCollisionShape(3f,0f);
+//        compoundShape.addChildShape(capsule, new Vector3f(0, 1, 0));
+
+        CollisionShape collShape = CollisionShapeFactory.createDynamicMeshShape(sphereGeo);
         
         rockNode = new Node("vehicleNode");
-        rockControl = new RigidBodyControl(capsule);
+        rockControl = new RigidBodyControl(collShape);
         rockNode.addControl(rockControl);
+        rockNode.attachChild(sphereGeo);
         rootNode.attachChild(rockNode);
         
         bulletAppState.getPhysicsSpace().add(rockControl);
