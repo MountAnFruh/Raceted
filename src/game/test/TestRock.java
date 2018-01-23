@@ -106,7 +106,7 @@ public class TestRock extends SimpleApplication implements AnalogListener, Actio
     
     private void buildPlayer() {
         Material mat = new Material(getAssetManager(), "Common/MatDefs/Misc/Unshaded.j3md");
-        Texture texture = assetManager.loadTexture("Textures/Boden.jpg");
+        Texture texture = assetManager.loadTexture("Textures/Tile/Stone.jpg");
         mat.setTexture("ColorMap", texture);
         
         Sphere sphere = new Sphere(20,20,3);
