@@ -29,16 +29,18 @@ import com.sun.prism.paint.Color;
 /**
  * This is the Main Class of your Game. You should only do initialization here.
  * Move your Logic into AppStates or Controls
+ *
  * @author normenhansen
  */
 public class Main extends SimpleApplication implements ActionListener {
-    
+
     private BulletAppState bulletAppState;
     private VehicleControl player;
     private float steeringValue = 0;
     private float accelerationValue = 0;
     private Node vehicleNode;
     private CameraNode camNode;
+    private Vector3f lastPos = new Vector3f(0, 0, 0);
 
     public static void main(String[] args) {
         Main app = new Main();
@@ -50,18 +52,18 @@ public class Main extends SimpleApplication implements ActionListener {
         bulletAppState = new BulletAppState();
         stateManager.attach(bulletAppState);
         bulletAppState.setDebugEnabled(true);
-        
+
         setupKeys();
-        
+
         initLight();
         initSky();
         initTerrain();
-        
+
         buildPlayer();
-        
+
         initCamera();
     }
-    
+
     private void initCamera() {
         flyCam.setEnabled(false);
         camNode = new CameraNode("CameraNode", cam);
@@ -69,7 +71,7 @@ public class Main extends SimpleApplication implements ActionListener {
         vehicleNode.attachChild(camNode);
         camNode.setLocalTranslation(0, 5, -15);
     }
-    
+
     private void setupKeys() {
         inputManager.addMapping("Left", new KeyTrigger(KeyInput.KEY_A));
         inputManager.addMapping("Right", new KeyTrigger(KeyInput.KEY_D));
@@ -84,18 +86,18 @@ public class Main extends SimpleApplication implements ActionListener {
         inputManager.addListener(this, "Space");
         inputManager.addListener(this, "Reset");
     }
-    
+
     private void initLight() {
         AmbientLight ambientLight = new AmbientLight();
         ambientLight.setColor(ColorRGBA.White);
         rootNode.addLight(ambientLight);
     }
-    
+
     private void initSky() {
         Spatial sky = assetManager.loadModel("Scenes/Sky.j3o");
         rootNode.attachChild(sky);
     }
-    
+
     private void initTerrain() {
         Spatial terrain = assetManager.loadModel("Scenes/Terrain.j3o");
         terrain.setLocalTranslation(0, -5, 0);
@@ -104,20 +106,20 @@ public class Main extends SimpleApplication implements ActionListener {
         rootNode.attachChild(terrain);
         bulletAppState.getPhysicsSpace().add(landscapeControl);
     }
-    
+
     private void buildPlayer() {
         Material mat = new Material(getAssetManager(), "Common/MatDefs/Misc/Unshaded.j3md");
         mat.getAdditionalRenderState().setWireframe(true);
         mat.setColor("Color", ColorRGBA.Red);
-        
+
         CompoundCollisionShape compoundShape = new CompoundCollisionShape();
         BoxCollisionShape box = new BoxCollisionShape(new Vector3f(1.2f, 0.5f, 2.4f));
         compoundShape.addChildShape(box, new Vector3f(0, 1, 0));
-        
+
         vehicleNode = new Node("vehicleNode");
         player = new VehicleControl(compoundShape, 400);
         vehicleNode.addControl(player);
-        
+
         //Create four wheels and add them at their locations
         Vector3f wheelDirection = new Vector3f(0, -1, 0); // was 0, -1, 0
         Vector3f wheelAxle = new Vector3f(-1, 0, 0); // was -1, 0, 0
@@ -126,7 +128,7 @@ public class Main extends SimpleApplication implements ActionListener {
         float yOff = 0.5f;
         float xOff = 1f;
         float zOff = 2f;
-        
+
         Cylinder wheelMesh = new Cylinder(16, 16, radius, radius * 0.6f, true);
 
         Node node1 = new Node("wheel 1 node");
@@ -165,9 +167,9 @@ public class Main extends SimpleApplication implements ActionListener {
         vehicleNode.attachChild(node2);
         vehicleNode.attachChild(node3);
         vehicleNode.attachChild(node4);
-        
+
         rootNode.attachChild(vehicleNode);
-        
+
         bulletAppState.getPhysicsSpace().add(player);
     }
 
@@ -180,18 +182,18 @@ public class Main extends SimpleApplication implements ActionListener {
     public void simpleRender(RenderManager rm) {
         //TODO: add render code
     }
-    
+
     @Override
     public void onAction(String name, boolean isPressed, float tpf) {
-        if(name.equals("Left")) {
-            if(isPressed) {
+        if (name.equals("Left")) {
+            if (isPressed) {
                 steeringValue += 0.5f;
             } else {
                 steeringValue -= 0.5f;
             }
             player.steer(steeringValue);
-        } else if(name.equals("Right")) {
-            if(isPressed) {
+        } else if (name.equals("Right")) {
+            if (isPressed) {
                 steeringValue -= 0.5f;
             } else {
                 steeringValue += 0.5f;
@@ -205,11 +207,25 @@ public class Main extends SimpleApplication implements ActionListener {
             }
             player.accelerate(accelerationValue);
         } else if (name.equals("Down")) {
+            
+            
             if (isPressed) {
                 player.brake(40f);
+                if (lastPos.distance(player.getPhysicsLocation()) <= 0.1) {
+                    accelerationValue = -400;
+                }
             } else {
                 player.brake(0f);
+                if (accelerationValue <= -400) {
+                    accelerationValue = 0;
+                }
             }
+            if (accelerationValue <= 0) {
+                player.accelerate(accelerationValue);
+            }
+            
+            
+            
         } else if (name.equals("Space")) {
             if (isPressed) {
                 player.applyImpulse(new Vector3f(0, 3000, 0), Vector3f.ZERO);
@@ -223,5 +239,7 @@ public class Main extends SimpleApplication implements ActionListener {
                 player.resetSuspension();
             }
         }
+        lastPos = player.getPhysicsLocation();
+        System.out.println(accelerationValue);
     }
 }
