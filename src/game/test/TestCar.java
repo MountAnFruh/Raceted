@@ -75,6 +75,7 @@ public class TestCar extends SimpleApplication implements ActionListener {
 
         //Work in Progresser als af
         ChaseCamera chaseCam = new ChaseCamera(cam, vehicleNode, inputManager);
+        chaseCam.setInvertVerticalAxis(true);
         chaseCam.setSmoothMotion(true);
         chaseCam.setTrailingEnabled(true);
         chaseCam.setMaxVerticalRotation(FastMath.PI / 16);

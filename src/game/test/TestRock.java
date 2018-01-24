@@ -66,6 +66,7 @@ public class TestRock extends SimpleApplication implements AnalogListener, Actio
     private void initCamera() {
         flyCam.setEnabled(false);
         chaseCam = new ChaseCamera(cam, rockNode, inputManager);
+        chaseCam.setInvertVerticalAxis(true);
         chaseCam.setLookAtOffset(new Vector3f(0,2,0));
     }
     
