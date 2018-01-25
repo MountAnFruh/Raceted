@@ -6,6 +6,7 @@
 package game.test;
 
 import com.jme3.app.SimpleApplication;
+import com.jme3.bounding.BoundingSphere;
 import com.jme3.bullet.BulletAppState;
 import com.jme3.bullet.collision.shapes.CapsuleCollisionShape;
 import com.jme3.bullet.collision.shapes.CollisionShape;
@@ -43,6 +44,8 @@ public class TestRock extends SimpleApplication implements AnalogListener, Actio
     private ChaseCamera chaseCam;
     private RigidBodyControl rockControl;
     private Spatial terrain;
+    
+    private float jumpCooldown = 0;
 
     public static void main(String[] args) {
         TestRock testRock = new TestRock();
@@ -53,7 +56,7 @@ public class TestRock extends SimpleApplication implements AnalogListener, Actio
     public void simpleInitApp() {
         bulletAppState = new BulletAppState();
         stateManager.attach(bulletAppState);
-//        bulletAppState.setDebugEnabled(true);
+        //bulletAppState.setDebugEnabled(true);
 
         setupKeys();
 
@@ -114,14 +117,13 @@ public class TestRock extends SimpleApplication implements AnalogListener, Actio
         mat.setTexture("ColorMap", texture);
 
         Sphere sphere = new Sphere(20, 20, 3);
+        sphere.setBound(new BoundingSphere());
+        sphere.updateBound();
         sphereGeo = new Geometry("Rocksphere", sphere);
         sphereGeo.setMaterial(mat);
 
-//        CompoundCollisionShape compoundShape = new CompoundCollisionShape();
-//        CapsuleCollisionShape capsule = new CapsuleCollisionShape(3f,0f);
-//        compoundShape.addChildShape(capsule, new Vector3f(0, 1, 0));
         CollisionShape collShape = CollisionShapeFactory.createDynamicMeshShape(sphereGeo);
-
+        
         sphereGeo.setLocalTranslation(0, 10, 0);
         rockControl = new RigidBodyControl(collShape);
         sphereGeo.addControl(rockControl);
@@ -132,7 +134,9 @@ public class TestRock extends SimpleApplication implements AnalogListener, Actio
 
     @Override
     public void simpleUpdate(float tpf) {
-
+        if(jumpCooldown > 0) {
+            jumpCooldown -= tpf;
+        }
     }
 
     @Override
@@ -142,12 +146,7 @@ public class TestRock extends SimpleApplication implements AnalogListener, Actio
 
     @Override
     public void onAction(String name, boolean isPressed, float tpf) {
-        boolean onGround = sphereGeo.getWorldBound().collideWith(terrain, new CollisionResults()) != 0;
-        if (name.equals("Space")) {
-            if (isPressed && onGround) {
-                rockControl.applyImpulse(new Vector3f(0f, 10f, 0f), Vector3f.ZERO);
-            }
-        } else if (name.equals("Reset")) {
+        if (name.equals("Reset")) {
             if (isPressed) {
                 rockControl.setPhysicsLocation(Vector3f.ZERO);
                 rockControl.setPhysicsRotation(new Matrix3f());
@@ -171,6 +170,13 @@ public class TestRock extends SimpleApplication implements AnalogListener, Actio
         } else if (name.equals("Down")) {
             Vector3f speedVector = cam.getDirection().negate().normalize();
             rockControl.applyImpulse(speedVector.divide(50).setY(0), new Vector3f(0, 2, 0));
+        }
+        boolean onGround = terrain.collideWith(sphereGeo.getWorldBound(), new CollisionResults()) != 0;
+        if (name.equals("Space")) {
+            if (onGround && jumpCooldown <= 0) {
+                rockControl.applyImpulse(new Vector3f(0f, 10f, 0f), Vector3f.ZERO);
+                jumpCooldown = 1.0f;
+            }
         }
     }
 }
