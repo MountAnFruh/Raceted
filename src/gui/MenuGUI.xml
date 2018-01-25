@@ -1,8 +1,0 @@
-<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<nifty xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://nifty-gui.lessvoid.com/nifty-gui" xsi:schemaLocation="https://raw.githubusercontent.com/void256/nifty-gui/1.4/nifty-core/src/main/resources/nifty.xsd https://raw.githubusercontent.com/void256/nifty-gui/1.4/nifty-core/src/main/resources/nifty.xsd">
-    <screen id="GScreen0" controller="mygame.Main">
-        <layer id="GLayer0" childLayout="centered&#xA;">
-            <image id="GImage0" filename="F:\Kevin\Pictures\icon.png" width="383px" x="388px" y="145px" align="" height="340px"/>
-        </layer>
-    </screen>
-</nifty>
