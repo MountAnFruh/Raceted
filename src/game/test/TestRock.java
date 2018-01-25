@@ -12,6 +12,7 @@ import com.jme3.bullet.collision.shapes.CollisionShape;
 import com.jme3.bullet.collision.shapes.CompoundCollisionShape;
 import com.jme3.bullet.control.RigidBodyControl;
 import com.jme3.bullet.util.CollisionShapeFactory;
+import com.jme3.collision.CollisionResults;
 import com.jme3.input.ChaseCamera;
 import com.jme3.input.KeyInput;
 import com.jme3.input.controls.ActionListener;
@@ -26,20 +27,22 @@ import com.jme3.renderer.RenderManager;
 import com.jme3.scene.Geometry;
 import com.jme3.scene.Node;
 import com.jme3.scene.Spatial;
+import com.jme3.scene.shape.Box;
 import com.jme3.scene.shape.Sphere;
 import com.jme3.system.JmeContext;
 import com.jme3.texture.Texture;
 
 /**
- * 
+ *
  * @author Robbo13
  */
 public class TestRock extends SimpleApplication implements AnalogListener, ActionListener {
-    
+
     private BulletAppState bulletAppState;
     private Node rockNode;
     private ChaseCamera chaseCam;
     private RigidBodyControl rockControl;
+    private Spatial terrain;
 
     public static void main(String[] args) {
         TestRock testRock = new TestRock();
@@ -51,25 +54,25 @@ public class TestRock extends SimpleApplication implements AnalogListener, Actio
         bulletAppState = new BulletAppState();
         stateManager.attach(bulletAppState);
 //        bulletAppState.setDebugEnabled(true);
-        
+
         setupKeys();
-        
+
         initLight();
         initSky();
         initTerrain();
-        
+
         buildPlayer();
-        
+
         initCamera();
     }
-    
+
     private void initCamera() {
         flyCam.setEnabled(false);
         chaseCam = new ChaseCamera(cam, rockNode, inputManager);
         chaseCam.setInvertVerticalAxis(true);
-        chaseCam.setLookAtOffset(new Vector3f(0,2,0));
+        chaseCam.setLookAtOffset(new Vector3f(0, 2, 0));
     }
-    
+
     private void setupKeys() {
         inputManager.addMapping("Left", new KeyTrigger(KeyInput.KEY_A));
         inputManager.addMapping("Right", new KeyTrigger(KeyInput.KEY_D));
@@ -84,65 +87,66 @@ public class TestRock extends SimpleApplication implements AnalogListener, Actio
         inputManager.addListener(this, "Space");
         inputManager.addListener(this, "Reset");
     }
-    
+
     private void initLight() {
         AmbientLight ambientLight = new AmbientLight();
         ambientLight.setColor(ColorRGBA.White);
         rootNode.addLight(ambientLight);
     }
-    
+
     private void initSky() {
         Spatial sky = assetManager.loadModel("Scenes/Sky.j3o");
         rootNode.attachChild(sky);
     }
-    
+
     private void initTerrain() {
-        Spatial terrain = assetManager.loadModel("Scenes/Terrain.j3o");
+        terrain = assetManager.loadModel("Scenes/Terrain.j3o");
         terrain.setLocalTranslation(0, -5, 0);
         RigidBodyControl landscapeControl = new RigidBodyControl(0.0f);
         terrain.addControl(landscapeControl);
         rootNode.attachChild(terrain);
         bulletAppState.getPhysicsSpace().add(landscapeControl);
     }
-    
+
     private void buildPlayer() {
         Material mat = new Material(getAssetManager(), "Common/MatDefs/Misc/Unshaded.j3md");
         Texture texture = assetManager.loadTexture("Textures/Tile/Stone.jpg");
         mat.setTexture("ColorMap", texture);
-        
-        Sphere sphere = new Sphere(20,20,3);
-        Geometry sphereGeo = new Geometry("Rocksphere",sphere);
+
+        Sphere sphere = new Sphere(20, 20, 3);
+        Geometry sphereGeo = new Geometry("Rocksphere", sphere);
         sphereGeo.setMaterial(mat);
-        
+
 //        CompoundCollisionShape compoundShape = new CompoundCollisionShape();
 //        CapsuleCollisionShape capsule = new CapsuleCollisionShape(3f,0f);
 //        compoundShape.addChildShape(capsule, new Vector3f(0, 1, 0));
-
         CollisionShape collShape = CollisionShapeFactory.createDynamicMeshShape(sphereGeo);
-        
+
         rockNode = new Node("vehicleNode");
         rockControl = new RigidBodyControl(collShape);
         rockNode.addControl(rockControl);
         rockNode.attachChild(sphereGeo);
         rootNode.attachChild(rockNode);
-        
+
         bulletAppState.getPhysicsSpace().add(rockControl);
     }
 
     @Override
     public void simpleUpdate(float tpf) {
-        
+
     }
 
     @Override
     public void simpleRender(RenderManager rm) {
-        
+
     }
-    
+
     @Override
     public void onAction(String name, boolean isPressed, float tpf) {
+//        System.out.println(rockNode.collideWith(terrain, new CollisionResults()));
         if (name.equals("Space")) {
-            if (isPressed) {
+            float y = rockNode.getLocalTranslation().y;
+            if (isPressed && rockNode.getLocalTranslation().y > -2.2 && rockNode.getLocalTranslation().y < -1.7) {
                 rockControl.applyImpulse(new Vector3f(0f, 10f, 0f), Vector3f.ZERO);
             }
         } else if (name.equals("Reset")) {
@@ -157,18 +161,18 @@ public class TestRock extends SimpleApplication implements AnalogListener, Actio
 
     @Override
     public void onAnalog(String name, float pressed, float tpf) {
-        if(name.equals("Left")) {
+        if (name.equals("Left")) {
             Vector3f speedVector = cam.getLeft().normalize();
-            rockControl.applyImpulse(speedVector.divide(50).setY(0), new Vector3f(0,2,0));
-        } else if(name.equals("Right")) {
+            rockControl.applyImpulse(speedVector.divide(50).setY(0), new Vector3f(0, 2, 0));
+        } else if (name.equals("Right")) {
             Vector3f speedVector = cam.getLeft().negate().normalize();
-            rockControl.applyImpulse(speedVector.divide(50).setY(0), new Vector3f(0,2,0));
+            rockControl.applyImpulse(speedVector.divide(50).setY(0), new Vector3f(0, 2, 0));
         } else if (name.equals("Up")) {
             Vector3f speedVector = cam.getDirection().normalize();
-            rockControl.applyImpulse(speedVector.divide(50).setY(0), new Vector3f(0,2,0));
+            rockControl.applyImpulse(speedVector.divide(50).setY(0), new Vector3f(0, 2, 0));
         } else if (name.equals("Down")) {
             Vector3f speedVector = cam.getDirection().negate().normalize();
-            rockControl.applyImpulse(speedVector.divide(50).setY(0), new Vector3f(0,2,0));
+            rockControl.applyImpulse(speedVector.divide(50).setY(0), new Vector3f(0, 2, 0));
         }
     }
 }
