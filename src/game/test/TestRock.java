@@ -39,7 +39,7 @@ import com.jme3.texture.Texture;
 public class TestRock extends SimpleApplication implements AnalogListener, ActionListener {
 
     private BulletAppState bulletAppState;
-    private Node rockNode;
+    private Geometry sphereGeo;
     private ChaseCamera chaseCam;
     private RigidBodyControl rockControl;
     private Spatial terrain;
@@ -68,7 +68,7 @@ public class TestRock extends SimpleApplication implements AnalogListener, Actio
 
     private void initCamera() {
         flyCam.setEnabled(false);
-        chaseCam = new ChaseCamera(cam, rockNode, inputManager);
+        chaseCam = new ChaseCamera(cam, sphereGeo, inputManager);
         chaseCam.setInvertVerticalAxis(true);
         chaseCam.setLookAtOffset(new Vector3f(0, 2, 0));
     }
@@ -114,7 +114,7 @@ public class TestRock extends SimpleApplication implements AnalogListener, Actio
         mat.setTexture("ColorMap", texture);
 
         Sphere sphere = new Sphere(20, 20, 3);
-        Geometry sphereGeo = new Geometry("Rocksphere", sphere);
+        sphereGeo = new Geometry("Rocksphere", sphere);
         sphereGeo.setMaterial(mat);
 
 //        CompoundCollisionShape compoundShape = new CompoundCollisionShape();
@@ -122,11 +122,10 @@ public class TestRock extends SimpleApplication implements AnalogListener, Actio
 //        compoundShape.addChildShape(capsule, new Vector3f(0, 1, 0));
         CollisionShape collShape = CollisionShapeFactory.createDynamicMeshShape(sphereGeo);
 
-        rockNode = new Node("vehicleNode");
+        sphereGeo.setLocalTranslation(0, 10, 0);
         rockControl = new RigidBodyControl(collShape);
-        rockNode.addControl(rockControl);
-        rockNode.attachChild(sphereGeo);
-        rootNode.attachChild(rockNode);
+        sphereGeo.addControl(rockControl);
+        rootNode.attachChild(sphereGeo);
 
         bulletAppState.getPhysicsSpace().add(rockControl);
     }
@@ -143,10 +142,9 @@ public class TestRock extends SimpleApplication implements AnalogListener, Actio
 
     @Override
     public void onAction(String name, boolean isPressed, float tpf) {
-//        System.out.println(rockNode.collideWith(terrain, new CollisionResults()));
+        boolean onGround = sphereGeo.getWorldBound().collideWith(terrain, new CollisionResults()) != 0;
         if (name.equals("Space")) {
-            float y = rockNode.getLocalTranslation().y;
-            if (isPressed && rockNode.getLocalTranslation().y > -2.2 && rockNode.getLocalTranslation().y < -1.7) {
+            if (isPressed && onGround) {
                 rockControl.applyImpulse(new Vector3f(0f, 10f, 0f), Vector3f.ZERO);
             }
         } else if (name.equals("Reset")) {
