@@ -71,6 +71,24 @@ public class ClientMain extends SimpleApplication {
                                 //.. add more GUI elements here
                             }
                         });
+                        
+                        panel(new PanelBuilder("Panel_ID2") {
+                            {
+                                childLayoutCenter(); // panel properties, add more...
+
+                                // GUI elements
+                                control(new ButtonBuilder("Button_ID2", "Hello Nifty") {
+                                    {
+                                        alignCenter();
+                                        valignCenter();
+                                        height("5%");
+                                        width("15%");
+                                    }
+                                });
+
+                                //.. add more GUI elements here
+                            }
+                        });
                         // </panel>
                     }
                 });
