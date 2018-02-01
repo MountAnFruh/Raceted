@@ -8,6 +8,7 @@ package main;
 import com.jme3.app.SimpleApplication;
 import com.jme3.niftygui.NiftyJmeDisplay;
 import com.jme3.renderer.RenderManager;
+import com.jme3.system.AppSettings;
 import com.jme3.system.JmeContext;
 import de.lessvoid.nifty.Nifty;
 import de.lessvoid.nifty.builder.LayerBuilder;
@@ -15,6 +16,8 @@ import de.lessvoid.nifty.builder.PanelBuilder;
 import de.lessvoid.nifty.builder.ScreenBuilder;
 import de.lessvoid.nifty.controls.button.builder.ButtonBuilder;
 import de.lessvoid.nifty.screen.DefaultScreenController;
+import java.awt.GraphicsDevice;
+import java.awt.GraphicsEnvironment;
 
 /**
  *
@@ -27,8 +30,19 @@ public class ClientMain extends SimpleApplication {
     public static void main(String[] args) {
 //        ClientMain clientMain = new ClientMain();
 //        clientMain.start(JmeContext.Type.Display);
-
+        AppSettings settings = new AppSettings(true);
+        settings.setSettingsDialogImage("Textures/Images/raceted_schwarz.png");
+        settings.setResolution(640, 480);
+        settings.setSamples(16);
+        GraphicsDevice device = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice();
+        settings.setFullscreen(device.isFullScreenSupported());
+        settings.setTitle("Raceted");
+        settings.setUseInput(true);
         ClientMain app = new ClientMain();
+        app.setShowSettings(false);
+        app.setSettings(settings);
+        app.setDisplayFps(false);
+        app.setDisplayStatView(false);
         app.start();
     }
 
@@ -71,7 +85,7 @@ public class ClientMain extends SimpleApplication {
                                 //.. add more GUI elements here
                             }
                         });
-                        
+
                         panel(new PanelBuilder("Panel_ID2") {
                             {
                                 childLayoutCenter(); // panel properties, add more...
