@@ -8,9 +8,7 @@ package game.test;
 import com.jme3.app.SimpleApplication;
 import com.jme3.bounding.BoundingSphere;
 import com.jme3.bullet.BulletAppState;
-import com.jme3.bullet.collision.shapes.CapsuleCollisionShape;
 import com.jme3.bullet.collision.shapes.CollisionShape;
-import com.jme3.bullet.collision.shapes.CompoundCollisionShape;
 import com.jme3.bullet.control.RigidBodyControl;
 import com.jme3.bullet.util.CollisionShapeFactory;
 import com.jme3.collision.CollisionResults;
@@ -26,9 +24,7 @@ import com.jme3.math.Matrix3f;
 import com.jme3.math.Vector3f;
 import com.jme3.renderer.RenderManager;
 import com.jme3.scene.Geometry;
-import com.jme3.scene.Node;
 import com.jme3.scene.Spatial;
-import com.jme3.scene.shape.Box;
 import com.jme3.scene.shape.Sphere;
 import com.jme3.system.JmeContext;
 import com.jme3.texture.Texture;
@@ -125,7 +121,7 @@ public class TestRock extends SimpleApplication implements AnalogListener, Actio
         CollisionShape collShape = CollisionShapeFactory.createDynamicMeshShape(sphereGeo);
 
         sphereGeo.setLocalTranslation(0, 10, 0);
-        rockControl = new RigidBodyControl(12f);
+        rockControl = new RigidBodyControl(collShape);
         sphereGeo.addControl(rockControl);
         rootNode.attachChild(sphereGeo);
 
@@ -159,23 +155,35 @@ public class TestRock extends SimpleApplication implements AnalogListener, Actio
 
     @Override
     public void onAnalog(String name, float pressed, float tpf) {
-        if (name.equals("Left")) {
-            Vector3f speedVector = cam.getLeft().normalize();
-            rockControl.applyImpulse(speedVector.divide(1.2f).setY(0), new Vector3f(0, 2, 0)); ///////////LEFT
-        } else if (name.equals("Right")) {
-            Vector3f speedVector = cam.getLeft().negate().normalize();
-            rockControl.applyImpulse(speedVector.divide(1.2f).setY(0), new Vector3f(0, 2, 0)); ///////////RIGHT
-        } else if (name.equals("Up")) {
-            Vector3f speedVector = cam.getDirection().normalize();
-            rockControl.applyImpulse(speedVector.divide(1.2f).setY(0), new Vector3f(0, 2, 0)); ///////////UP
-        } else if (name.equals("Down")) {
-            Vector3f speedVector = cam.getDirection().negate().normalize();
-            rockControl.applyImpulse(speedVector.divide(1.2f).setY(0), new Vector3f(0, 2, 0)); ///////////DOWN
+        float divisor = 50;
+        switch (name) {
+            case "Left": {
+                Vector3f speedVector = cam.getLeft().normalize();
+                rockControl.applyImpulse(speedVector.divide(divisor).setY(0), new Vector3f(0, 2, 0)); ///////////LEFT
+                break;
+            }
+            case "Right": {
+                Vector3f speedVector = cam.getLeft().negate().normalize();
+                rockControl.applyImpulse(speedVector.divide(divisor).setY(0), new Vector3f(0, 2, 0)); ///////////RIGHT
+                break;
+            }
+            case "Up": {
+                Vector3f speedVector = cam.getDirection().normalize();
+                rockControl.applyImpulse(speedVector.divide(divisor).setY(0), new Vector3f(0, 2, 0)); ///////////UP
+                break;
+            }
+            case "Down": {
+                Vector3f speedVector = cam.getDirection().negate().normalize();
+                rockControl.applyImpulse(speedVector.divide(divisor).setY(0), new Vector3f(0, 2, 0)); ///////////DOWN
+                break;
+            }
+            default:
+                break;
         }
         boolean onGround = terrain.collideWith(sphereGeo.getWorldBound(), new CollisionResults()) != 0;
         if (name.equals("Space")) {
             if (onGround && jumpCooldown <= 0) {
-                rockControl.applyImpulse(new Vector3f(0f, 100f, 0f), Vector3f.ZERO);
+                rockControl.applyImpulse(new Vector3f(0f, 10f, 0f), Vector3f.ZERO);
                 jumpCooldown = 1.0f;
             }
         }
