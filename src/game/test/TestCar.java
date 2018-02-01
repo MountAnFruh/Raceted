@@ -45,6 +45,7 @@ public class TestCar extends SimpleApplication implements ActionListener {
     private ChaseCamera chaseCam;
 
     public static void main(String[] args) {
+    
         TestCar testCar = new TestCar();
         testCar.start(JmeContext.Type.Display);
     }
