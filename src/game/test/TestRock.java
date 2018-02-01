@@ -17,6 +17,7 @@ import com.jme3.input.KeyInput;
 import com.jme3.input.controls.ActionListener;
 import com.jme3.input.controls.AnalogListener;
 import com.jme3.input.controls.KeyTrigger;
+import com.jme3.input.controls.Trigger;
 import com.jme3.light.AmbientLight;
 import com.jme3.material.Material;
 import com.jme3.math.ColorRGBA;
@@ -35,6 +36,22 @@ import com.jme3.texture.Texture;
  */
 public class TestRock extends SimpleApplication implements AnalogListener, ActionListener {
 
+    // define triggers
+    private static final Trigger TRIGGER_LEFT = new KeyTrigger(KeyInput.KEY_A);
+    private static final Trigger TRIGGER_UP = new KeyTrigger(KeyInput.KEY_W);
+    private static final Trigger TRIGGER_DOWN = new KeyTrigger(KeyInput.KEY_S);
+    private static final Trigger TRIGGER_RIGHT = new KeyTrigger(KeyInput.KEY_D);
+    private static final Trigger TRIGGER_SPACE = new KeyTrigger(KeyInput.KEY_SPACE);
+    private static final Trigger TRIGGER_RESET = new KeyTrigger(KeyInput.KEY_RETURN);
+    
+    // define mappings
+    private static final String MAPPING_LEFT = "Left";
+    private static final String MAPPING_UP = "Up";
+    private static final String MAPPING_DOWN = "Down";
+    private static final String MAPPING_RIGHT = "Right";
+    private static final String MAPPING_SPACE = "Space";
+    private static final String MAPPING_RESET = "Reset";
+    
     private BulletAppState bulletAppState;
     private Geometry sphereGeo;
     private ChaseCamera chaseCam;
@@ -73,18 +90,14 @@ public class TestRock extends SimpleApplication implements AnalogListener, Actio
     }
 
     private void setupKeys() {
-        inputManager.addMapping("Left", new KeyTrigger(KeyInput.KEY_A));
-        inputManager.addMapping("Right", new KeyTrigger(KeyInput.KEY_D));
-        inputManager.addMapping("Up", new KeyTrigger(KeyInput.KEY_W));
-        inputManager.addMapping("Down", new KeyTrigger(KeyInput.KEY_S));
-        inputManager.addMapping("Space", new KeyTrigger(KeyInput.KEY_SPACE));
-        inputManager.addMapping("Reset", new KeyTrigger(KeyInput.KEY_RETURN));
-        inputManager.addListener(this, "Left");
-        inputManager.addListener(this, "Right");
-        inputManager.addListener(this, "Up");
-        inputManager.addListener(this, "Down");
-        inputManager.addListener(this, "Space");
-        inputManager.addListener(this, "Reset");
+        inputManager.addMapping(MAPPING_LEFT, TRIGGER_LEFT);
+        inputManager.addMapping(MAPPING_RIGHT, TRIGGER_RIGHT);
+        inputManager.addMapping(MAPPING_UP, TRIGGER_UP);
+        inputManager.addMapping(MAPPING_DOWN, TRIGGER_DOWN);
+        inputManager.addMapping(MAPPING_SPACE, TRIGGER_SPACE);
+        inputManager.addMapping(MAPPING_RESET, TRIGGER_RESET);
+        inputManager.addListener(this, MAPPING_LEFT, MAPPING_RIGHT, MAPPING_UP
+                , MAPPING_DOWN, MAPPING_SPACE, MAPPING_RESET);
     }
 
     private void initLight() {
@@ -120,13 +133,13 @@ public class TestRock extends SimpleApplication implements AnalogListener, Actio
 
         CollisionShape collShape = CollisionShapeFactory.createDynamicMeshShape(sphereGeo);
 
-        sphereGeo.setLocalTranslation(0, 10, 0);
+        sphereGeo.setLocalTranslation(0, 50, 0);
         rockControl = new RigidBodyControl(collShape);
         sphereGeo.addControl(rockControl);
         rootNode.attachChild(sphereGeo);
 
         bulletAppState.getPhysicsSpace().add(rockControl);
-
+        rockControl.setGravity(new Vector3f(0,-30.0f,0));
     }
 
     @Override
@@ -143,7 +156,7 @@ public class TestRock extends SimpleApplication implements AnalogListener, Actio
 
     @Override
     public void onAction(String name, boolean isPressed, float tpf) {
-        if (name.equals("Reset")) {
+        if (name.equals(MAPPING_RESET)) {
             if (isPressed) {
                 rockControl.setPhysicsLocation(Vector3f.ZERO);
                 rockControl.setPhysicsRotation(new Matrix3f());
@@ -157,22 +170,22 @@ public class TestRock extends SimpleApplication implements AnalogListener, Actio
     public void onAnalog(String name, float pressed, float tpf) {
         float divisor = 50;
         switch (name) {
-            case "Left": {
+            case MAPPING_LEFT: {
                 Vector3f speedVector = cam.getLeft().normalize();
                 rockControl.applyImpulse(speedVector.divide(divisor).setY(0), new Vector3f(0, 2, 0)); ///////////LEFT
                 break;
             }
-            case "Right": {
+            case MAPPING_RIGHT: {
                 Vector3f speedVector = cam.getLeft().negate().normalize();
                 rockControl.applyImpulse(speedVector.divide(divisor).setY(0), new Vector3f(0, 2, 0)); ///////////RIGHT
                 break;
             }
-            case "Up": {
+            case MAPPING_UP: {
                 Vector3f speedVector = cam.getDirection().normalize();
                 rockControl.applyImpulse(speedVector.divide(divisor).setY(0), new Vector3f(0, 2, 0)); ///////////UP
                 break;
             }
-            case "Down": {
+            case MAPPING_DOWN: {
                 Vector3f speedVector = cam.getDirection().negate().normalize();
                 rockControl.applyImpulse(speedVector.divide(divisor).setY(0), new Vector3f(0, 2, 0)); ///////////DOWN
                 break;
@@ -181,9 +194,9 @@ public class TestRock extends SimpleApplication implements AnalogListener, Actio
                 break;
         }
         boolean onGround = terrain.collideWith(sphereGeo.getWorldBound(), new CollisionResults()) != 0;
-        if (name.equals("Space")) {
+        if (name.equals(MAPPING_SPACE)) {
             if (onGround && jumpCooldown <= 0) {
-                rockControl.applyImpulse(new Vector3f(0f, 10f, 0f), Vector3f.ZERO);
+                rockControl.applyImpulse(rockControl.getGravity().negate().divide(2), Vector3f.ZERO);
                 jumpCooldown = 1.0f;
             }
         }
