@@ -37,12 +37,12 @@ public class ClientMain extends SimpleApplication {
         GraphicsDevice device = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice();
         settings.setFullscreen(device.isFullScreenSupported());
         settings.setTitle("Raceted");
-        settings.setUseInput(true);
+      
         ClientMain app = new ClientMain();
-        app.setShowSettings(false);
+        app.setShowSettings(true);
         app.setSettings(settings);
-        app.setDisplayFps(false);
-        app.setDisplayStatView(false);
+        app.setDisplayFps(true);
+        app.setDisplayStatView(true);
         app.start();
     }
 
