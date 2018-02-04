@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package utils;
+package main.utils;
 
 /**
  *
@@ -13,5 +13,5 @@ public class NetworkUtils {
     
     public static final String IP_ADDRESS = "127.0.0.1";
     public static final int PORT = 4444;
-            
+    
 }

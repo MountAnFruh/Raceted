@@ -6,33 +6,34 @@
 package main;
 
 import com.jme3.app.SimpleApplication;
-import com.jme3.niftygui.NiftyJmeDisplay;
+import com.jme3.network.Client;
+import com.jme3.network.Network;
 import com.jme3.renderer.RenderManager;
 import com.jme3.system.AppSettings;
-import com.jme3.system.JmeContext;
-import de.lessvoid.nifty.Nifty;
-import de.lessvoid.nifty.builder.LayerBuilder;
-import de.lessvoid.nifty.builder.PanelBuilder;
-import de.lessvoid.nifty.builder.ScreenBuilder;
-import de.lessvoid.nifty.controls.button.builder.ButtonBuilder;
-import de.lessvoid.nifty.screen.DefaultScreenController;
 import java.awt.GraphicsDevice;
 import java.awt.GraphicsEnvironment;
+import java.io.IOException;
+import java.net.ConnectException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import main.gui.GUIAppState;
+import main.network.NetworkClient;
+import main.utils.ImageUtils;
+import main.utils.NetworkUtils;
 
 /**
  *
  * @author Robbo13
  */
 public class ClientMain extends SimpleApplication {
-
-    private Nifty nifty;
+    
+    private final NetworkClient client = new NetworkClient();
+    private GUIAppState guiAppState;
 
     public static void main(String[] args) {
-//        ClientMain clientMain = new ClientMain();
-//        clientMain.start(JmeContext.Type.Display);
         AppSettings settings = new AppSettings(true);
-        settings.setSettingsDialogImage("Textures/Images/raceted_schwarz.png");
-        settings.setResolution(640, 480);
+        settings.setSettingsDialogImage(ImageUtils.RACETED_TEXT);
+        settings.setResolution(1920, 1080);
         settings.setSamples(16);
         GraphicsDevice device = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice();
         settings.setFullscreen(device.isFullScreenSupported());
@@ -48,70 +49,20 @@ public class ClientMain extends SimpleApplication {
 
     @Override
     public void simpleInitApp() {
-        NiftyJmeDisplay niftyDisplay = NiftyJmeDisplay.newNiftyJmeDisplay(
-                assetManager, inputManager, audioRenderer, guiViewPort);
-        Nifty nifty = niftyDisplay.getNifty();
-        guiViewPort.addProcessor(niftyDisplay);
+        initAppStates();
         flyCam.setDragToRotate(true);
-
-        nifty.loadStyleFile("nifty-default-styles.xml");
-        nifty.loadControlFile("nifty-default-controls.xml");
-        nifty.registerMusic("mysound", "Sounds/Musics/Main.mp3");
-        // <screen>
-        nifty.addScreen("Screen_ID", new ScreenBuilder("Hello Nifty Screen") {
-            {
-                controller(new DefaultScreenController()); // Screen properties
-
-                // <layer>
-                layer(new LayerBuilder("Layer_ID") {
-                    {
-                        childLayoutVertical(); // layer properties, add more...
-
-                        // <panel>
-                        panel(new PanelBuilder("Panel_ID") {
-                            {
-                                childLayoutCenter(); // panel properties, add more...
-
-                                // GUI elements
-                                control(new ButtonBuilder("Button_ID", "Hello Nifty") {
-                                    {
-                                        alignCenter();
-                                        valignCenter();
-                                        height("5%");
-                                        width("15%");
-                                    }
-                                });
-
-                                //.. add more GUI elements here
-                            }
-                        });
-
-                        panel(new PanelBuilder("Panel_ID2") {
-                            {
-                                childLayoutCenter(); // panel properties, add more...
-
-                                // GUI elements
-                                control(new ButtonBuilder("Button_ID2", "Hello Nifty") {
-                                    {
-                                        alignCenter();
-                                        valignCenter();
-                                        height("5%");
-                                        width("15%");
-                                    }
-                                });
-
-                                //.. add more GUI elements here
-                            }
-                        });
-                        // </panel>
-                    }
-                });
-                // </layer>
-            }
-        }.build(nifty));
-        // </screen>
-
-        nifty.gotoScreen("Screen_ID"); // start the screen
+        try {
+            client.startConnection();
+        } catch (ConnectException ex) {
+            System.out.println("Server not running!");
+        } catch (IOException ex) {
+            ex.printStackTrace();
+        }
+    }
+    
+    private void initAppStates() {
+        guiAppState = new GUIAppState();
+        stateManager.attach(guiAppState);
     }
 
     @Override

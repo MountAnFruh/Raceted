@@ -11,7 +11,8 @@ import com.jme3.network.Server;
 import com.jme3.renderer.RenderManager;
 import com.jme3.system.JmeContext;
 import java.io.IOException;
-import utils.NetworkUtils;
+import main.network.NetworkServer;
+import main.utils.NetworkUtils;
 
 /**
  *
@@ -19,25 +20,16 @@ import utils.NetworkUtils;
  */
 public class ServerMain extends SimpleApplication {
     
-    private Server server;
+    private NetworkServer server = new NetworkServer();
     
     public static void main(String[] args) {
         ServerMain serverMain = new ServerMain();
         serverMain.start(JmeContext.Type.Headless);
     }
-    
-    private void initServer() {
-        try {
-            server = Network.createServer(NetworkUtils.PORT);
-            server.start();
-        } catch (IOException ex) {
-            ex.printStackTrace();
-        }
-    }
 
     @Override
     public void simpleInitApp() {
-        initServer();
+        server.start();
     }
 
     @Override
