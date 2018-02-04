@@ -6,13 +6,10 @@
 package main;
 
 import com.jme3.app.SimpleApplication;
-import com.jme3.network.Network;
-import com.jme3.network.Server;
 import com.jme3.renderer.RenderManager;
 import com.jme3.system.JmeContext;
 import java.io.IOException;
 import main.network.NetworkServer;
-import main.utils.NetworkUtils;
 
 /**
  *
@@ -29,7 +26,11 @@ public class ServerMain extends SimpleApplication {
 
     @Override
     public void simpleInitApp() {
-        server.start();
+        try {
+            server.start();
+        } catch (IOException ex) {
+            ex.printStackTrace();
+        }
     }
 
     @Override
