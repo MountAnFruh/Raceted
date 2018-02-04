@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package main;
+package game.main;
 
 import com.jme3.app.SimpleApplication;
 import com.jme3.network.Client;
@@ -16,10 +16,10 @@ import java.io.IOException;
 import java.net.ConnectException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import main.gui.GUIAppState;
-import main.network.NetworkClient;
-import main.utils.ImageUtils;
-import main.utils.NetworkUtils;
+import game.gui.GUIAppState;
+import game.network.NetworkClient;
+import game.utils.ImageUtils;
+import game.utils.NetworkUtils;
 
 /**
  *

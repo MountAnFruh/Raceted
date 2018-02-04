@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package main.entities;
+package game.entities;
 
 import com.jme3.app.Application;
 import com.jme3.app.state.AbstractAppState;
@@ -84,8 +84,6 @@ public class RockAppState extends AbstractAppState implements ActionListener {
         this.inputManager = app.getInputManager();
         this.assetManager = app.getAssetManager();
         this.cam = app.getCamera();
-        //TODO: initialize your AppState, e.g. attach spatials to rootNode
-        //this is called on the OpenGL thread after the AppState has been attached
 
         initInput();
 
@@ -103,6 +101,10 @@ public class RockAppState extends AbstractAppState implements ActionListener {
         inputManager.addMapping(MAPPING_RESET, TRIGGER_RESET);
         inputManager.addListener(this, MAPPING_LEFT, MAPPING_RIGHT, MAPPING_UP
                 , MAPPING_DOWN, MAPPING_SPACE, MAPPING_RESET);
+    }
+    
+    private void cleanupInput() {
+        inputManager.removeListener(this);
     }
 
     private void initPlayer() {
@@ -127,10 +129,19 @@ public class RockAppState extends AbstractAppState implements ActionListener {
         rockControl.setGravity(new Vector3f(0,-30.0f,0));
     }
     
+    private void cleanupPlayer() {
+        bulletAppState.getPhysicsSpace().remove(rockControl);
+        rootNode.detachChild(sphereGeo);
+    }
+    
     private void initCamera() {
         chaseCam = new ChaseCamera(cam, sphereGeo, inputManager);
         chaseCam.setInvertVerticalAxis(true);
         chaseCam.setLookAtOffset(new Vector3f(0, 2, 0));
+    }
+    
+    private void cleanupCamera() {
+        chaseCam.setEnabled(false);
     }
     
     @Override
@@ -170,6 +181,9 @@ public class RockAppState extends AbstractAppState implements ActionListener {
         //TODO: clean up what you initialized in the initialize method,
         //e.g. remove all spatials from rootNode
         //this is called on the OpenGL thread after the AppState has been detached
+        cleanupInput();
+        cleanupPlayer();
+        cleanupCamera();
     }
 
     @Override

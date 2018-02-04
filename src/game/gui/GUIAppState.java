@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package main.gui;
+package game.gui;
 
 import com.jme3.app.Application;
 import com.jme3.app.SimpleApplication;
@@ -53,7 +53,7 @@ public class GUIAppState extends AbstractAppState {
 
         NiftyJmeDisplay niftyDisplay = NiftyJmeDisplay.newNiftyJmeDisplay(
                 assetManager, inputManager, audioRenderer, guiViewPort);
-        Nifty nifty = niftyDisplay.getNifty();
+        nifty = niftyDisplay.getNifty();
         guiViewPort.addProcessor(niftyDisplay);
         // flyCam.setDragToRotate(true);
 
@@ -61,7 +61,7 @@ public class GUIAppState extends AbstractAppState {
         nifty.loadControlFile("nifty-default-controls.xml");
 
         // <screen>
-        nifty.addScreen("hud", new ScreenBuilder("hud") {
+        nifty.addScreen(MAINMENUID, new ScreenBuilder("Hello Nifty Screen") {
             {
                 controller(new DefaultScreenController());
 
@@ -239,12 +239,10 @@ public class GUIAppState extends AbstractAppState {
             }
         }.build(nifty));
         // </screen>
-
-        nifty.gotoScreen("start"); // start the screen
+        nifty.gotoScreen(MAINMENUID);
     }
 
     @Override
-
     public void update(float tpf) {
         //TODO: implement behavior during runtime
     }
@@ -259,7 +257,6 @@ public class GUIAppState extends AbstractAppState {
 
     /**
      * Changes the Screen to Screen with ID screenID
-     *
      * @param screenID the screenID
      */
     public void gotoScreen(String screenID) {
