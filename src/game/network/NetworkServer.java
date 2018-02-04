@@ -3,12 +3,12 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package main.network;
+package game.network;
 
 import com.jme3.network.Network;
 import com.jme3.network.Server;
 import java.io.IOException;
-import main.utils.NetworkUtils;
+import game.utils.NetworkUtils;
 
 /**
  *

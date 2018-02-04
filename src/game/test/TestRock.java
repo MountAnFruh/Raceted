@@ -13,7 +13,7 @@ import com.jme3.math.ColorRGBA;
 import com.jme3.renderer.RenderManager;
 import com.jme3.scene.Spatial;
 import com.jme3.system.JmeContext;
-import main.entities.RockAppState;
+import game.entities.RockAppState;
 
 /**
  *
