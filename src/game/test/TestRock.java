@@ -19,29 +19,47 @@ import game.entities.RockAppState;
  *
  * @author Robbo13
  */
-public class TestRock extends SimpleApplication{
+public class TestRock extends SimpleApplication {
     
+    public final static float MAX_DMG = 100f;
+    public final static float SPIKE_DMG_REDUCE = 3f;
+
     private RockAppState rockAppState;
     private BulletAppState bulletAppState;
     private Spatial terrain;
+    
+    private float dmg = 0;
 
     public static void main(String[] args) {
         TestRock testRock = new TestRock();
         testRock.start(JmeContext.Type.Display);
     }
 
+    public void causeDmg(float dmg, DMGArt art)
+    {
+        switch(art)
+        {
+            case SPIKE:
+                this.dmg += dmg / SPIKE_DMG_REDUCE;
+                break;
+            default:
+                this.dmg += dmg;
+                break;
+        }
+    }
+    
     @Override
     public void simpleInitApp() {
         bulletAppState = new BulletAppState();
         stateManager.attachAll(bulletAppState);
         //bulletAppState.setDebugEnabled(true);
-        
+
         flyCam.setEnabled(false);
 
         initLight();
         initSky();
         initTerrain();
-        
+
         rockAppState = new RockAppState(bulletAppState, rootNode, terrain);
         stateManager.attach(rockAppState);
     }
@@ -68,7 +86,7 @@ public class TestRock extends SimpleApplication{
 
     @Override
     public void simpleUpdate(float tpf) {
-        
+
     }
 
     @Override
