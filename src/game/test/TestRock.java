@@ -46,6 +46,13 @@ public class TestRock extends SimpleApplication {
                 this.dmg += dmg;
                 break;
         }
+        if(dmg > MAX_DMG)destroyStone();
+    }
+
+    private void destroyStone()
+    {
+        dmg = 0;
+        // noch zum hinzufügen
     }
     
     @Override
