@@ -37,11 +37,11 @@ import com.jme3.scene.shape.Sphere;
 import com.jme3.texture.Texture;
 
 /**
- * 
+ *
  * @author Robbo13
  */
 public class TestBuild extends SimpleApplication implements AnalogListener, ActionListener {
-    
+
     // define triggers
     private static final Trigger CAMERA_LEFT = new MouseAxisTrigger(MouseInput.AXIS_X, true);
     private static final Trigger CAMERA_RIGHT = new MouseAxisTrigger(MouseInput.AXIS_X, false);
@@ -51,7 +51,7 @@ public class TestBuild extends SimpleApplication implements AnalogListener, Acti
     private static final Trigger CAMERA_ZOOMOUT = new MouseAxisTrigger(MouseInput.AXIS_WHEEL, true);
     private static final Trigger PLACE_TRAP = new MouseButtonTrigger(MouseInput.BUTTON_LEFT);
     private static final Trigger CAMERA_DRAG = new MouseButtonTrigger(MouseInput.BUTTON_RIGHT);
-    
+
     // define mappings
     private static final String MAPPING_CAMERA_LEFT = "Camera_Left";
     private static final String MAPPING_CAMERA_RIGHT = "Camera_Right";
@@ -61,12 +61,15 @@ public class TestBuild extends SimpleApplication implements AnalogListener, Acti
     private static final String MAPPING_CAMERA_ZOOMIN = "Camera_Zoomin";
     private static final String MAPPING_CAMERA_ZOOMOUT = "Camera_Zoomout";
     private static final String MAPPING_PLACE_TRAP = "Place_Trap";
-    
+
+    private Material mat;
+    private Sphere rockShere;
+
     private BulletAppState bulletAppState;
-    
+
     private Node rockNode;
     private RigidBodyControl rockControl;
-    
+
     private CameraNode camNode;
     private boolean isDragging;
     private Spatial terrain;
@@ -76,23 +79,22 @@ public class TestBuild extends SimpleApplication implements AnalogListener, Acti
         testBuild.start();
     }
 
-
     @Override
     public void simpleInitApp() {
         bulletAppState = new BulletAppState();
         stateManager.attach(bulletAppState);
         //bulletAppState.setDebugEnabled(true);
-        
+
         setupKeys();
-        
+
         initLight();
         initSky();
         initTerrain();
-        
+
         buildPlayer();
         initCamera();
     }
-    
+
     private void initCamera() {
         flyCam.setEnabled(false);
         camNode = new CameraNode("MainCamera", cam);
@@ -100,32 +102,31 @@ public class TestBuild extends SimpleApplication implements AnalogListener, Acti
         camNode.lookAt(Vector3f.ZERO, Vector3f.UNIT_Y);
         rootNode.attachChild(camNode);
         inputManager.setCursorVisible(true);
-        cam.setLocation(new Vector3f(0,100,0));
+        cam.setLocation(new Vector3f(0, 100, 0));
     }
-    
+
     private void buildPlayer() {
-        Material mat = new Material(getAssetManager(), "Common/MatDefs/Misc/Unshaded.j3md");
+        mat = new Material(getAssetManager(), "Common/MatDefs/Misc/Unshaded.j3md");
         Texture texture = assetManager.loadTexture("Textures/Tile/Stone.jpg");
         mat.setTexture("ColorMap", texture);
-        
-        Sphere sphere = new Sphere(20,20,3);
-        Geometry sphereGeo = new Geometry("Rocksphere",sphere);
+
+        rockShere = new Sphere(20, 20, 3);
+        Geometry sphereGeo = new Geometry("Rocksphere", rockShere);
         sphereGeo.setCullHint(CullHint.Never);
         sphereGeo.setMaterial(mat);
-        
+
 //        CompoundCollisionShape compoundShape = new CompoundCollisionShape();
 //        CapsuleCollisionShape capsule = new CapsuleCollisionShape(3f,0f);
 //        compoundShape.addChildShape(capsule, new Vector3f(0, 1, 0));
-
         CollisionShape collShape = CollisionShapeFactory.createDynamicMeshShape(sphereGeo);
-        
+
         rockControl = new RigidBodyControl(collShape);
         sphereGeo.addControl(rockControl);
         rootNode.attachChild(sphereGeo);
-        
+
         bulletAppState.getPhysicsSpace().add(rockControl);
     }
-    
+
     private void setupKeys() {
         inputManager.addMapping(MAPPING_CAMERA_LEFT, CAMERA_LEFT);
         inputManager.addMapping(MAPPING_CAMERA_RIGHT, CAMERA_RIGHT);
@@ -135,23 +136,23 @@ public class TestBuild extends SimpleApplication implements AnalogListener, Acti
         inputManager.addMapping(MAPPING_CAMERA_ZOOMIN, CAMERA_ZOOMIN);
         inputManager.addMapping(MAPPING_CAMERA_ZOOMOUT, CAMERA_ZOOMOUT);
         inputManager.addMapping(MAPPING_PLACE_TRAP, PLACE_TRAP);
-        
-        inputManager.addListener(this, MAPPING_CAMERA_LEFT, MAPPING_CAMERA_RIGHT
-                , MAPPING_CAMERA_DOWN, MAPPING_CAMERA_UP, MAPPING_CAMERA_DRAG
-                , MAPPING_CAMERA_ZOOMIN, MAPPING_CAMERA_ZOOMOUT, MAPPING_PLACE_TRAP);
+
+        inputManager.addListener(this, MAPPING_CAMERA_LEFT, MAPPING_CAMERA_RIGHT,
+                MAPPING_CAMERA_DOWN, MAPPING_CAMERA_UP, MAPPING_CAMERA_DRAG,
+                MAPPING_CAMERA_ZOOMIN, MAPPING_CAMERA_ZOOMOUT, MAPPING_PLACE_TRAP);
     }
-    
+
     private void initLight() {
         AmbientLight ambientLight = new AmbientLight();
         ambientLight.setColor(ColorRGBA.White);
         rootNode.addLight(ambientLight);
     }
-    
+
     private void initSky() {
         Spatial sky = assetManager.loadModel("Scenes/Sky.j3o");
         rootNode.attachChild(sky);
     }
-    
+
     private void initTerrain() {
         terrain = assetManager.loadModel("Scenes/Terrain.j3o");
         terrain.setLocalTranslation(0, -5, 0);
@@ -161,52 +162,51 @@ public class TestBuild extends SimpleApplication implements AnalogListener, Acti
         rootNode.attachChild(terrain);
         bulletAppState.getPhysicsSpace().add(terrain);
     }
-    
-    private void moveCamera(float value, boolean sideways){
+
+    private void moveCamera(float value, boolean sideways) {
         float cameraMoveSpeed = 100.0f;
         Vector3f vel = new Vector3f();
         Vector3f pos = camNode.getLocalTranslation().clone();
 
-        if (sideways){
+        if (sideways) {
             cam.getLeft(vel).setY(0);
-        }else{
+        } else {
             cam.getUp(vel).setY(0);
         }
         vel.multLocal(value * cameraMoveSpeed);
 
         pos.addLocal(vel);
 
-        camNode.setLocalTranslation(pos.getX(),pos.getY(),pos.getZ());
+        camNode.setLocalTranslation(pos.getX(), pos.getY(), pos.getZ());
     }
-    
-    private void zoomCamera(float value){
+
+    private void zoomCamera(float value) {
         Vector3f camPosition = camNode.getLocalTranslation();
         camNode.setLocalTranslation(camPosition.add(cam.getDirection().mult(-value * 10.0f)));
     }
 
     @Override
     public void simpleUpdate(float tpf) {
-        
+
     }
 
     @Override
     public void simpleRender(RenderManager rm) {
-        
+
     }
-    
-    
+
     @Override
     public void onAction(String name, boolean isPressed, float tpf) {
-        if(name.equals(MAPPING_CAMERA_DRAG)) {
-            if(isPressed) {
+        if (name.equals(MAPPING_CAMERA_DRAG)) {
+            if (isPressed) {
                 isDragging = true;
                 inputManager.setCursorVisible(false);
             } else {
                 isDragging = false;
                 inputManager.setCursorVisible(true);
             }
-        } else if(name.equals(MAPPING_PLACE_TRAP)) {
-            if(isPressed) {
+        } else if (name.equals(MAPPING_PLACE_TRAP)) {
+            if (isPressed) {
                 Vector3f origin = cam.getWorldCoordinates(inputManager.getCursorPosition(), 0.0f);
                 Vector3f direction = cam.getWorldCoordinates(inputManager.getCursorPosition(), 0.3f);
                 direction.subtractLocal(origin).normalizeLocal();
@@ -218,23 +218,20 @@ public class TestBuild extends SimpleApplication implements AnalogListener, Acti
                 if (results.size() > 0) {
                     CollisionResult closest = results.getClosestCollision();
 
-                    Material mat = new Material(getAssetManager(), "Common/MatDefs/Misc/Unshaded.j3md");
-                    Texture texture = assetManager.loadTexture("Textures/Tile/Stone.jpg");
-                    mat.setTexture("ColorMap", texture);
-
-                    Sphere sphere = new Sphere(20,20,3);
-                    Geometry sphereGeo = new Geometry("Rocksphere",sphere);
+                    Geometry sphereGeo = new Geometry("Rocksphere", rockShere);
                     sphereGeo.setCullHint(CullHint.Never);
                     sphereGeo.setMaterial(mat);
                     sphereGeo.setLocalTranslation(closest.getContactPoint().add(0, 10, 0));
+
                     
                     CollisionShape collShape = CollisionShapeFactory.createDynamicMeshShape(sphereGeo);
-        
+
                     rockControl = new RigidBodyControl(collShape);
                     sphereGeo.addControl(rockControl);
                     rootNode.attachChild(sphereGeo);
 
                     bulletAppState.getPhysicsSpace().add(rockControl);
+
                 }
             }
         }
@@ -242,8 +239,8 @@ public class TestBuild extends SimpleApplication implements AnalogListener, Acti
 
     @Override
     public void onAnalog(String name, float pressed, float tpf) {
-        if(isDragging) {
-            switch(name) {
+        if (isDragging) {
+            switch (name) {
                 case MAPPING_CAMERA_LEFT:
                     moveCamera(pressed, true);
                     break;
