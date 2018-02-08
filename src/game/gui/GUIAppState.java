@@ -16,21 +16,30 @@ import com.jme3.niftygui.NiftyJmeDisplay;
 import com.jme3.renderer.ViewPort;
 import de.lessvoid.nifty.Nifty;
 import static de.lessvoid.nifty.NiftyStopwatch.start;
+import de.lessvoid.nifty.builder.ImageBuilder;
 import de.lessvoid.nifty.builder.LayerBuilder;
 import de.lessvoid.nifty.builder.PanelBuilder;
 import de.lessvoid.nifty.builder.ScreenBuilder;
 import de.lessvoid.nifty.builder.TextBuilder;
 import de.lessvoid.nifty.controls.button.builder.ButtonBuilder;
 import de.lessvoid.nifty.controls.textfield.builder.TextFieldBuilder;
+import de.lessvoid.nifty.effects.EffectProperties;
+import de.lessvoid.nifty.effects.Falloff;
+import de.lessvoid.nifty.elements.Element;
+import de.lessvoid.nifty.loaderv2.types.RegisterSoundType;
+import de.lessvoid.nifty.render.NiftyRenderEngine;
 import de.lessvoid.nifty.screen.DefaultScreenController;
+import de.lessvoid.nifty.screen.Screen;
+import de.lessvoid.nifty.screen.ScreenController;
+import de.lessvoid.nifty.spi.sound.SoundHandle;
 
 /**
  *
  * @author Robbo13
  */
-public class GUIAppState extends AbstractAppState {
+public class GUIAppState extends AbstractAppState implements ScreenController {
 
-    public static final String MAINMENUID = "Screen_ID";
+    public static final String MAINMENUID = "start";
 
     private AssetManager assetManager;
     private InputManager inputManager;
@@ -59,16 +68,17 @@ public class GUIAppState extends AbstractAppState {
 
         nifty.loadStyleFile("nifty-default-styles.xml");
         nifty.loadControlFile("nifty-default-controls.xml");
+        nifty.registerMusic("Main", "Sounds/Musics/Main.mp3");
 
         // <screen>
-        nifty.addScreen(MAINMENUID, new ScreenBuilder("Hello Nifty Screen") {
+        nifty.addScreen(MAINMENUID, new ScreenBuilder("hud") {
             {
                 controller(new DefaultScreenController());
 
                 layer(new LayerBuilder("background") {
                     {
                         childLayoutCenter();
-                        backgroundColor("#000f");
+                        //backgroundColor("#000f");
                         // <!-- ... -->
                     }
                 });
@@ -76,13 +86,13 @@ public class GUIAppState extends AbstractAppState {
                 layer(new LayerBuilder("foreground") {
                     {
                         childLayoutHorizontal();
-                        backgroundColor("#0000");
+                        //backgroundColor("#0000");
 
                         // panel added
                         panel(new PanelBuilder("panel_left") {
                             {
                                 childLayoutVertical();
-                                backgroundColor("#0f08");
+                                //backgroundColor("#0f08");
                                 height("100%");
                                 width("80%");
                                 // <!-- spacer -->
@@ -92,14 +102,14 @@ public class GUIAppState extends AbstractAppState {
                         panel(new PanelBuilder("panel_right") {
                             {
                                 childLayoutVertical();
-                                backgroundColor("#00f8");
+                                //backgroundColor("#00f8");
                                 height("100%");
                                 width("20%");
 
                                 panel(new PanelBuilder("panel_top_right1") {
                                     {
                                         childLayoutCenter();
-                                        backgroundColor("#00f8");
+                                        //backgroundColor("#00f8");
                                         height("15%");
                                         width("100%");
                                     }
@@ -108,7 +118,7 @@ public class GUIAppState extends AbstractAppState {
                                 panel(new PanelBuilder("panel_top_right2") {
                                     {
                                         childLayoutCenter();
-                                        backgroundColor("#44f8");
+                                        //backgroundColor("#44f8");
                                         height("15%");
                                         width("100%");
                                     }
@@ -118,7 +128,7 @@ public class GUIAppState extends AbstractAppState {
                                     {
                                         childLayoutCenter();
                                         valignCenter();
-                                        backgroundColor("#88f8");
+                                        //backgroundColor("#88f8");
                                         height("70%");
                                         width("100%");
                                     }
@@ -136,11 +146,17 @@ public class GUIAppState extends AbstractAppState {
                 layer(new LayerBuilder("background") {
                     {
                         childLayoutCenter();
-                        backgroundColor("#000f");
-                        // <!-- ... -->
+                        //backgroundColor("#000f");
+
+                        // add image
+                        image(new ImageBuilder() {
+                            {
+                                filename("Textures/Images/BritishMuseum.jpg");
+                            }
+                        });
+
                     }
                 });
-
                 layer(new LayerBuilder("foreground") {
                     {
                         childLayoutVertical();
@@ -151,17 +167,14 @@ public class GUIAppState extends AbstractAppState {
                             {
                                 childLayoutCenter();
                                 alignCenter();
-                                backgroundColor("#f008");
+                                //backgroundColor("#f008");
                                 height("25%");
                                 width("75%");
 
                                 // add text
-                                text(new TextBuilder() {
+                                image(new ImageBuilder() {
                                     {
-                                        text("My Cool Game");
-                                        font("Interface/Fonts/Default.fnt");
-                                        height("100%");
-                                        width("100%");
+                                        filename("Textures/Images/raceted_title.png");
                                     }
                                 });
 
@@ -172,7 +185,7 @@ public class GUIAppState extends AbstractAppState {
                             {
                                 childLayoutCenter();
                                 alignCenter();
-                                backgroundColor("#0f08");
+                                //backgroundColor("#0f08");
                                 height("50%");
                                 width("75%");
                                 // add text
@@ -194,43 +207,55 @@ public class GUIAppState extends AbstractAppState {
                             {
                                 childLayoutHorizontal();
                                 alignCenter();
-                                backgroundColor("#00f8");
+                                //backgroundColor("#00f8");
                                 height("25%");
                                 width("75%");
 
-                                       panel(new PanelBuilder("panel_bottom_left") {{
-                    childLayoutCenter();
-                    valignCenter();
-                    backgroundColor("#44f8");
-                    height("50%");
-                    width("50%");
+                                panel(new PanelBuilder("panel_bottom_left") {
+                                    {
+                                        childLayoutCenter();
+                                        valignCenter();
+                                        //backgroundColor("#44f8");
+                                        height("50%");
+                                        width("50%");
 
-                    // add control
-                    control(new ButtonBuilder("StartButton", "Start") {{
-                      alignCenter();
-                      valignCenter();
-                      height("50%");
-                      width("50%");
-                    }});
+                                        // add control
+                                        control(new ButtonBuilder("StartButton", "Start") {
+                                            {
+                                                alignCenter();
+                                                valignCenter();
+                                                height("50%");
+                                                width("50%");
+                                                visibleToMouse(true);
+                                                interactOnClick("startGame(hud)");
+                                            }
+                                        });
 
-                }});
+                                    }
+                                });
 
-                panel(new PanelBuilder("panel_bottom_right") {{
-                    childLayoutCenter();
-                    valignCenter();
-                    backgroundColor("#88f8");
-                    height("50%");
-                    width("50%");
+                                panel(new PanelBuilder("panel_bottom_right") {
+                                    {
+                                        childLayoutCenter();
+                                        valignCenter();
+                                        //backgroundColor("#88f8");
+                                        height("50%");
+                                        width("50%");
 
-                    // add control
-                    control(new ButtonBuilder("QuitButton", "Quit") {{
-                      alignCenter();
-                      valignCenter();
-                      height("50%");
-                      width("50%");
-                    }});
+                                        // add control
+                                        control(new ButtonBuilder("QuitButton", "Quit") {
+                                            {
+                                                alignCenter();
+                                                valignCenter();
+                                                height("50%");
+                                                width("50%");
+                                                visibleToMouse(true);
+                                                interactOnClick("quitGame()");
+                                            }
+                                        });
 
-                }});
+                                    }
+                                });
                             }
                         }); // panel added
                     }
@@ -243,8 +268,9 @@ public class GUIAppState extends AbstractAppState {
     }
 
     @Override
+
     public void update(float tpf) {
-        //TODO: implement behavior during runtime
+
     }
 
     @Override
@@ -257,9 +283,31 @@ public class GUIAppState extends AbstractAppState {
 
     /**
      * Changes the Screen to Screen with ID screenID
+     *
      * @param screenID the screenID
      */
     public void gotoScreen(String screenID) {
         nifty.gotoScreen(screenID);
     }
+
+    @Override
+    public void bind(Nifty nifty, Screen screen) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public void onStartScreen() {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    public void startGame(String nextScreen) {
+        nifty.gotoScreen(nextScreen);  // switch to another screen
+        // start the game and do some more stuff...
+    }
+
+    @Override
+    public void onEndScreen() {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
 }
