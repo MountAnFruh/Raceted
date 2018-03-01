@@ -21,39 +21,17 @@ import game.entities.RockAppState;
  */
 public class TestRock extends SimpleApplication {
     
-    public final static float MAX_DMG = 100f;
-    public final static float SPIKE_DMG_REDUCE = 3f;
 
     private RockAppState rockAppState;
     private BulletAppState bulletAppState;
     private Spatial terrain;
-    
-    private float dmg = 0;
 
     public static void main(String[] args) {
         TestRock testRock = new TestRock();
         testRock.start(JmeContext.Type.Display);
     }
 
-    public void causeDmg(float dmg, DMGArt art)
-    {
-        switch(art)
-        {
-            case SPIKE:
-                this.dmg += dmg / SPIKE_DMG_REDUCE;
-                break;
-            default:
-                this.dmg += dmg;
-                break;
-        }
-        if(dmg > MAX_DMG)destroyStone();
-    }
-
-    private void destroyStone()
-    {
-        dmg = 0;
-        // noch zum hinzufügen
-    }
+    
     
     @Override
     public void simpleInitApp() {
@@ -67,7 +45,7 @@ public class TestRock extends SimpleApplication {
         initSky();
         initTerrain();
 
-        rockAppState = new RockAppState(bulletAppState, rootNode, terrain);
+        rockAppState = new RockAppState(bulletAppState, rootNode, terrain, this);
         stateManager.attach(rockAppState);
     }
 
