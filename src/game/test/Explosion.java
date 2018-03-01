@@ -22,10 +22,11 @@ import com.jme3.scene.Node;
  */
 public class Explosion {
 
-    public Explosion(Vector3f localtion, AssetManager assetManager, RenderManager renderManager) {
+    public Explosion(Vector3f localtion, AssetManager assetManager, RenderManager renderManager, Node rootNode) {
         this.localtion = localtion;
         this.assetManager = assetManager;
         this.renderManager = renderManager;
+        this.rootNode = rootNode;
     }
 
     public void explode()
@@ -39,8 +40,44 @@ public class Explosion {
         createShockwave();
         explosionEffect.setLocalTranslation(localtion);
         renderManager.preloadScene(explosionEffect);
+        
+        rootNode.attachChild(explosionEffect);
     }
     
+    public void updateExplotion(float tpf)
+    {
+        float speed = 0.1f;
+        time += tpf / speed;
+        if (time > 1f && state == 0){
+            flash.emitAllParticles();
+            spark.emitAllParticles();
+            smoketrail.emitAllParticles();
+            debris.emitAllParticles();
+            shockwave.emitAllParticles();
+            state++;
+        }
+        if (time > 1f + .05f / speed && state == 1){
+            flame.emitAllParticles();
+            roundspark.emitAllParticles();
+            state++;
+        }
+        
+        // rewind the effect
+        if (time > 5 / speed && state == 2){
+            state = 0;
+            time = 0;
+
+            flash.killAllParticles();
+            spark.killAllParticles();
+            smoketrail.killAllParticles();
+            debris.killAllParticles();
+            flame.killAllParticles();
+            roundspark.killAllParticles();
+            shockwave.killAllParticles();
+        }
+    }
+    
+    private Node rootNode;
     private Vector3f localtion;
     private AssetManager assetManager;
     private RenderManager renderManager;
