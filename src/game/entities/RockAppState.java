@@ -84,6 +84,7 @@ public class RockAppState extends AbstractAppState implements ActionListener {
     private static final float MAX_DMG = 100f;
     private static final float SPIKE_DMG_REDUCE = 3f;
     private float dmg = 0;
+    private Explosion expl;
 
     public RockAppState(BulletAppState bulletAppState, Node rootNode, Spatial terrain, SimpleApplication app) {
         this.bulletAppState = bulletAppState;
@@ -168,6 +169,7 @@ public class RockAppState extends AbstractAppState implements ActionListener {
 
     @Override
     public void update(float tpf) {
+        if(expl!=null)expl.updateExplotion(tpf);
         onGround = terrain.collideWith(sphereGeo.getWorldBound(), new CollisionResults()) != 0;
         float divisor = 150;
         Vector3f speedVector = rockControl.getLinearVelocity();
@@ -212,7 +214,7 @@ public class RockAppState extends AbstractAppState implements ActionListener {
     public void onAction(String name, boolean isPressed, float tpf) {
         switch (name) {
             case MAPPING_DMG:
-                causeDmg(20, DMGArt.GRUBE);
+                if(isPressed)causeDmg(20, DMGArt.GRUBE);
                 break;
             case MAPPING_LEFT:
                 left = isPressed;
@@ -267,7 +269,8 @@ public class RockAppState extends AbstractAppState implements ActionListener {
             rootNode.detachChild(sphereGeo);
         } catch (Exception e) {
         }
-        new Explosion(sphereGeo.getWorldTranslation(), assetManager, app.getRenderManager()).explode();
+        expl = new Explosion(sphereGeo.getWorldTranslation(), assetManager, app.getRenderManager(), rootNode);
+        expl.explode();
         System.out.println("destroy");
         dmg = 0;
         // noch zum hinzufügen
