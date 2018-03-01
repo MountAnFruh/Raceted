@@ -27,6 +27,7 @@ import com.jme3.material.Material;
 import com.jme3.math.Matrix3f;
 import com.jme3.math.Vector3f;
 import com.jme3.renderer.Camera;
+import com.jme3.renderer.RenderManager;
 import com.jme3.scene.Geometry;
 import com.jme3.scene.Node;
 import com.jme3.scene.Spatial;
@@ -41,7 +42,7 @@ import game.test.Explosion;
  */
 public class RockAppState extends AbstractAppState implements ActionListener {
 
-    private SimpleApplication app;
+    private RenderManager renderManager;
     
     // define triggers
     private static final Trigger TRIGGER_LEFT = new KeyTrigger(KeyInput.KEY_A);
@@ -86,11 +87,11 @@ public class RockAppState extends AbstractAppState implements ActionListener {
     private float dmg = 0;
     private Explosion expl;
 
-    public RockAppState(BulletAppState bulletAppState, Node rootNode, Spatial terrain, SimpleApplication app) {
+    public RockAppState(BulletAppState bulletAppState, Node rootNode, Spatial terrain, RenderManager renderManager) {
         this.bulletAppState = bulletAppState;
         this.rootNode = rootNode;
         this.terrain = terrain;
-        this.app = app;
+        this.renderManager = renderManager;
     }
 
     @Override
@@ -269,7 +270,7 @@ public class RockAppState extends AbstractAppState implements ActionListener {
             rootNode.detachChild(sphereGeo);
         } catch (Exception e) {
         }
-        expl = new Explosion(sphereGeo.getWorldTranslation(), assetManager, app.getRenderManager(), rootNode);
+        expl = new Explosion(sphereGeo.getWorldTranslation(), assetManager, renderManager, rootNode);
         expl.explode();
         System.out.println("destroy");
         dmg = 0;
