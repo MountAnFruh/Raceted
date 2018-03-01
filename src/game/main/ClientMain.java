@@ -6,6 +6,7 @@
 package game.main;
 
 import com.jme3.app.SimpleApplication;
+import com.jme3.app.state.AppState;
 import com.jme3.network.Client;
 import com.jme3.network.Network;
 import com.jme3.renderer.RenderManager;
@@ -16,7 +17,7 @@ import java.io.IOException;
 import java.net.ConnectException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import game.gui.GUIAppState;
+import game.gui.StartScreen;
 import game.network.NetworkClient;
 import game.utils.ImageUtils;
 import game.utils.NetworkUtils;
@@ -28,7 +29,7 @@ import game.utils.NetworkUtils;
 public class ClientMain extends SimpleApplication {
     
     private final NetworkClient client = new NetworkClient();
-    private GUIAppState guiAppState;
+    private StartScreen startScreen;
 
     public static void main(String[] args) {
         AppSettings settings = new AppSettings(true);
@@ -61,8 +62,8 @@ public class ClientMain extends SimpleApplication {
     }
     
     private void initAppStates() {
-        guiAppState = new GUIAppState();
-        stateManager.attach(guiAppState);
+        startScreen = new StartScreen();
+        stateManager.attach((AppState) startScreen);
     }
 
     @Override
