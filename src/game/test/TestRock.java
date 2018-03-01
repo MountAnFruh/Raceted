@@ -45,7 +45,7 @@ public class TestRock extends SimpleApplication {
         initSky();
         initTerrain();
 
-        rockAppState = new RockAppState(bulletAppState, rootNode, terrain, this);
+        rockAppState = new RockAppState(bulletAppState, rootNode, terrain, this.getRenderManager());
         stateManager.attach(rockAppState);
     }
 
