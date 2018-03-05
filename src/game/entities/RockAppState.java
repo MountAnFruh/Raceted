@@ -210,6 +210,14 @@ public class RockAppState extends AbstractAppState implements ActionListener {
         cleanupPlayer();
         cleanupCamera();
     }
+    
+    public Geometry getGeometry() {
+        return sphereGeo;
+    }
+    
+    public RigidBodyControl getControl() {
+        return rockControl;
+    }
 
     @Override
     public void onAction(String name, boolean isPressed, float tpf) {
