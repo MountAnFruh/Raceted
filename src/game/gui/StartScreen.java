@@ -5,8 +5,10 @@
  */
 package game.gui;
 
+import com.jme3.app.Application;
 import com.jme3.app.SimpleApplication;
 import com.jme3.app.state.AbstractAppState;
+import com.jme3.app.state.AppStateManager;
 import com.jme3.niftygui.NiftyJmeDisplay;
 import de.lessvoid.nifty.Nifty;
 import de.lessvoid.nifty.builder.ImageBuilder;
@@ -23,20 +25,17 @@ import de.lessvoid.nifty.screen.ScreenController;
  *
  * @author Robbo13
  */
-public class StartScreen extends SimpleApplication implements ScreenController {
-
-    public static void main(String[] args) {
-        StartScreen app = new StartScreen();
-        app.start();
-    }
+public class StartScreen extends AbstractAppState implements ScreenController {
 
     @Override
-    public void simpleInitApp() {
+    public void initialize(AppStateManager stateManager, Application app) {
+        SimpleApplication simpleApp = (SimpleApplication) app;
+        
         NiftyJmeDisplay niftyDisplay = NiftyJmeDisplay.newNiftyJmeDisplay(
-                assetManager, inputManager, audioRenderer, guiViewPort);
+                app.getAssetManager(), app.getInputManager(), app.getAudioRenderer(), app.getGuiViewPort());
         Nifty nifty = niftyDisplay.getNifty();
-        guiViewPort.addProcessor(niftyDisplay);
-        flyCam.setDragToRotate(true);
+        app.getGuiViewPort().addProcessor(niftyDisplay);
+        simpleApp.getFlyByCamera().setDragToRotate(true);
 
         nifty.loadStyleFile("nifty-default-styles.xml");
         nifty.loadControlFile("nifty-default-controls.xml");
