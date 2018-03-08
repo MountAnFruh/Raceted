@@ -34,7 +34,7 @@ public class TestCar extends SimpleApplication {
     public void simpleInitApp() {
         bulletAppState = new BulletAppState();
         stateManager.attach(bulletAppState);
-        bulletAppState.setDebugEnabled(true);
+        //bulletAppState.setDebugEnabled(true);
         flyCam.setEnabled(false);
         
         initLight();
