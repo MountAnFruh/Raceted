@@ -17,6 +17,7 @@ import com.jme3.bullet.collision.shapes.CompoundCollisionShape;
 import com.jme3.bullet.control.VehicleControl;
 import com.jme3.bullet.util.CollisionShapeFactory;
 import com.jme3.input.ChaseCamera;
+import com.jme3.input.FlyByCamera;
 import com.jme3.input.InputManager;
 import com.jme3.input.KeyInput;
 import com.jme3.input.controls.ActionListener;
@@ -63,6 +64,7 @@ public class CarAppState extends AbstractAppState implements ActionListener {
     private final Node rootNode;
     private final Spatial terrain;
     
+    private FlyByCamera deathCam;
     private ChaseCamera chaseCam;
     private InputManager inputManager;
     private AssetManager assetManager;

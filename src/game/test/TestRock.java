@@ -19,8 +19,9 @@ import game.entities.RockAppState;
  *
  * @author Robbo13
  */
-public class TestRock extends SimpleApplication{
+public class TestRock extends SimpleApplication {
     
+
     private RockAppState rockAppState;
     private BulletAppState bulletAppState;
     private Spatial terrain;
@@ -30,19 +31,21 @@ public class TestRock extends SimpleApplication{
         testRock.start(JmeContext.Type.Display);
     }
 
+    
+    
     @Override
     public void simpleInitApp() {
         bulletAppState = new BulletAppState();
         stateManager.attachAll(bulletAppState);
         //bulletAppState.setDebugEnabled(true);
-        
+
         flyCam.setEnabled(false);
 
         initLight();
         initSky();
         initTerrain();
-        
-        rockAppState = new RockAppState(bulletAppState, rootNode, terrain);
+
+        rockAppState = new RockAppState(bulletAppState, rootNode, terrain, this.getRenderManager());
         stateManager.attach(rockAppState);
     }
 
@@ -68,7 +71,7 @@ public class TestRock extends SimpleApplication{
 
     @Override
     public void simpleUpdate(float tpf) {
-        
+
     }
 
     @Override
