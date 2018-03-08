@@ -49,8 +49,7 @@ public class ClientMain extends SimpleApplication {
     public void simpleInitApp() {
 
         initAppStates();
-        audioSource = new AudioNode(assetManager, "Sounds/Musics/Main.ogg", AudioData.DataType.Buffer);
-        audioSource.play();
+    
         flyCam.setDragToRotate(true);
         try {
             client.startConnection();

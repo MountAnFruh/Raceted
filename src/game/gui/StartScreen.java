@@ -9,6 +9,9 @@ import com.jme3.app.Application;
 import com.jme3.app.SimpleApplication;
 import com.jme3.app.state.AbstractAppState;
 import com.jme3.app.state.AppStateManager;
+import com.jme3.asset.AssetManager;
+import com.jme3.audio.AudioData;
+import com.jme3.audio.AudioNode;
 import com.jme3.niftygui.NiftyJmeDisplay;
 import de.lessvoid.nifty.Nifty;
 import de.lessvoid.nifty.builder.ImageBuilder;
@@ -27,22 +30,30 @@ import de.lessvoid.nifty.screen.ScreenController;
  */
 public class StartScreen extends AbstractAppState implements ScreenController {
 
+    private AudioNode audioSource;
+    private AssetManager asset;
+    private SimpleApplication appi;
+    private Nifty nifty;
+
     @Override
     public void initialize(AppStateManager stateManager, Application app) {
-        SimpleApplication simpleApp = (SimpleApplication) app;
-        
+
+        SimpleApplication appi = (SimpleApplication) app;
+        asset = appi.getAssetManager();
+        audioSource = new AudioNode(asset, "Sounds/Musics/Main.ogg", AudioData.DataType.Buffer);
+        audioSource.play();
         NiftyJmeDisplay niftyDisplay = NiftyJmeDisplay.newNiftyJmeDisplay(
                 app.getAssetManager(), app.getInputManager(), app.getAudioRenderer(), app.getGuiViewPort());
-        Nifty nifty = niftyDisplay.getNifty();
+        nifty = niftyDisplay.getNifty();
         app.getGuiViewPort().addProcessor(niftyDisplay);
-        simpleApp.getFlyByCamera().setDragToRotate(true);
+        appi.getFlyByCamera().setDragToRotate(true);
 
         nifty.loadStyleFile("nifty-default-styles.xml");
         nifty.loadControlFile("nifty-default-controls.xml");
 
         nifty.addScreen("start", new ScreenBuilder("start") {
             {
-                controller(new DefaultScreenController());
+                controller(new StartScreen());
                 layer(new LayerBuilder("background") {
                     {
                         childLayoutCenter();
@@ -147,6 +158,8 @@ public class StartScreen extends AbstractAppState implements ScreenController {
                                                 valignCenter();
                                                 height("50%");
                                                 width("50%");
+                                                visibleToMouse(true);
+                                                interactOnClick("quitGame()");
                                             }
                                         });
 
@@ -255,10 +268,20 @@ public class StartScreen extends AbstractAppState implements ScreenController {
 
     @Override
     public void onStartScreen() {
+
     }
 
     @Override
     public void onEndScreen() {
+
+    }
+
+    public void quitGame() {
+        audioSource = new AudioNode(asset, "Sounds/Musics/Rock.ogg", AudioData.DataType.Buffer);
+        audioSource.play();
+        System.out.println("asdfghjlllkjhgfds");
+        nifty.exit();
+        appi.stop();
     }
 
 }
