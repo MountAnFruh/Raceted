@@ -9,10 +9,13 @@ import com.jme3.app.Application;
 import com.jme3.app.state.AbstractAppState;
 import com.jme3.app.state.AppStateManager;
 import com.jme3.asset.AssetManager;
+import com.jme3.bounding.BoundingBox;
 import com.jme3.bullet.BulletAppState;
 import com.jme3.bullet.collision.shapes.BoxCollisionShape;
+import com.jme3.bullet.collision.shapes.CollisionShape;
 import com.jme3.bullet.collision.shapes.CompoundCollisionShape;
 import com.jme3.bullet.control.VehicleControl;
+import com.jme3.bullet.util.CollisionShapeFactory;
 import com.jme3.input.ChaseCamera;
 import com.jme3.input.InputManager;
 import com.jme3.input.KeyInput;
@@ -25,6 +28,7 @@ import com.jme3.math.FastMath;
 import com.jme3.math.Matrix3f;
 import com.jme3.math.Vector3f;
 import com.jme3.renderer.Camera;
+import com.jme3.renderer.queue.RenderQueue;
 import com.jme3.scene.Geometry;
 import com.jme3.scene.Node;
 import com.jme3.scene.Spatial;
@@ -131,23 +135,54 @@ public class CarAppState extends AbstractAppState implements ActionListener {
         inputManager.removeListener(this);
     }
     
+    private Geometry findGeom(Spatial spatial, String name) {
+        if (spatial instanceof Node) {
+            Node node = (Node) spatial;
+            for (int i = 0; i < node.getQuantity(); i++) {
+                Spatial child = node.getChild(i);
+                Geometry result = findGeom(child, name);
+                if (result != null) {
+                    return result;
+                }
+            }
+        } else if (spatial instanceof Geometry) {
+            if (spatial.getName().startsWith(name)) {
+                return (Geometry) spatial;
+            }
+        }
+        return null;
+    }
+    
     private void initPlayer() {
         Material mat = new Material(assetManager, "Common/MatDefs/Misc/Unshaded.j3md");
         mat.getAdditionalRenderState().setWireframe(true);
         mat.setColor("Color", ColorRGBA.Red);
         
-        CompoundCollisionShape compoundShape = new CompoundCollisionShape();
-        BoxCollisionShape collBox = new BoxCollisionShape(new Vector3f(1.2f, 0.5f, 2.4f));
-        compoundShape.addChildShape(collBox, new Vector3f(0, 1, 0));
-        
-        Box box = new Box(1.2f, 0.5f, 2.4f);
-        Geometry boxGeo = new Geometry("base", box);
-        boxGeo.setLocalTranslation(new Vector3f(0, 1, 0));
-        boxGeo.setMaterial(mat);
+//        CompoundCollisionShape compoundShape = new CompoundCollisionShape();
+//        BoxCollisionShape collBox = new BoxCollisionShape(new Vector3f(1.2f, 0.5f, 2.4f));
+//        compoundShape.addChildShape(collBox, new Vector3f(0, 1, 0));
+//        
+//        Box box = new Box(1.2f, 0.5f, 2.4f);
+//        Geometry boxGeo = new Geometry("base", box);
+//        boxGeo.setLocalTranslation(new Vector3f(0, 1, 0));
+//        boxGeo.setMaterial(mat);
+//        
+//        vehicleNode = new Node("vehicleNode");
+//        vehicleNode.attachChild(boxGeo);
         
         vehicleNode = new Node("vehicleNode");
-        vehicleNode.attachChild(boxGeo);
-        carControl = new VehicleControl(compoundShape, 200);
+        Geometry chassis = (Geometry) assetManager.loadModel("Models/Car.obj");
+        vehicleNode.attachChild(chassis);
+        vehicleNode.setShadowMode(RenderQueue.ShadowMode.Cast);
+        BoundingBox box = (BoundingBox) chassis.getModelBound();
+
+        //Create a hull collision shape for the chassis
+        CollisionShape vehicleHull = CollisionShapeFactory.createDynamicMeshShape(chassis);
+        
+
+        //Create a vehicle control
+        carControl = new VehicleControl(vehicleHull, 200);
+        
         
         //Hier sollte man noch'n paar neue Zahlen draufschreiben, hmmm...
         carControl.setSuspensionCompression(0.1f  * 2.0f * FastMath.sqrt(200.0f));
@@ -158,14 +193,15 @@ public class CarAppState extends AbstractAppState implements ActionListener {
         vehicleNode.addControl(carControl);
         
         //Create four wheels and add them at their locations
-        Vector3f wheelDirection = new Vector3f(0, -1, 0); // was 0, -1, 0
-        Vector3f wheelAxle = new Vector3f(-1, 0, 0); // was -1, 0, 0
-        float radius = 0.3f;
+        float radius = 0.35f;
         float restLength = 0.3f;
         float yOff = 0.5f;
         float xOff = 1f;
-        float zOff = 2f;
+        float zOff = 1.3f;
         
+        Vector3f wheelDirection = new Vector3f(0, -1, 0);
+        Vector3f wheelAxle = new Vector3f(-1, 0, 0);
+
         Cylinder wheelMesh = new Cylinder(16, 16, radius, radius * 0.6f, true);
 
         Node node1 = new Node("wheel 1 node");
@@ -204,7 +240,7 @@ public class CarAppState extends AbstractAppState implements ActionListener {
         vehicleNode.attachChild(node2);
         vehicleNode.attachChild(node3);
         vehicleNode.attachChild(node4);
-        
+
         rootNode.attachChild(vehicleNode);
         
         bulletAppState.getPhysicsSpace().add(carControl);
