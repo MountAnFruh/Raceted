@@ -20,40 +20,37 @@ import de.lessvoid.nifty.builder.PanelBuilder;
 import de.lessvoid.nifty.builder.ScreenBuilder;
 import de.lessvoid.nifty.builder.TextBuilder;
 import de.lessvoid.nifty.controls.button.builder.ButtonBuilder;
-import de.lessvoid.nifty.screen.DefaultScreenController;
-import de.lessvoid.nifty.screen.Screen;
-import de.lessvoid.nifty.screen.ScreenController;
 
 /**
  *
  * @author Robbo13
  */
-public class StartScreen extends AbstractAppState implements ScreenController {
+public class StartScreen extends AbstractAppState {
 
     private AudioNode audioSource;
     private AssetManager asset;
-    private SimpleApplication appi;
     private Nifty nifty;
+    private SimpleApplication app;
 
     @Override
-    public void initialize(AppStateManager stateManager, Application app) {
+    public void initialize(AppStateManager stateManager, Application appl) {
 
-        SimpleApplication appi = (SimpleApplication) app;
-        asset = appi.getAssetManager();
+        app = (SimpleApplication) appl;
+        asset = app.getAssetManager();
         audioSource = new AudioNode(asset, "Sounds/Musics/Main.ogg", AudioData.DataType.Buffer);
         audioSource.play();
         NiftyJmeDisplay niftyDisplay = NiftyJmeDisplay.newNiftyJmeDisplay(
                 app.getAssetManager(), app.getInputManager(), app.getAudioRenderer(), app.getGuiViewPort());
         nifty = niftyDisplay.getNifty();
         app.getGuiViewPort().addProcessor(niftyDisplay);
-        appi.getFlyByCamera().setDragToRotate(true);
+        app.getFlyByCamera().setDragToRotate(true);
 
         nifty.loadStyleFile("nifty-default-styles.xml");
         nifty.loadControlFile("nifty-default-controls.xml");
 
         nifty.addScreen("start", new ScreenBuilder("start") {
             {
-                controller(new StartScreen());
+                controller(new GUIScreenController(nifty, app));
                 layer(new LayerBuilder("background") {
                     {
                         childLayoutCenter();
@@ -152,7 +149,7 @@ public class StartScreen extends AbstractAppState implements ScreenController {
                                         height("50%");
                                         width("50%");
 
-                                        control(new ButtonBuilder("QuitButton", "Quit") {
+                                        control(new ButtonBuilder("QuitButton", "quit") {
                                             {
                                                 alignCenter();
                                                 valignCenter();
@@ -175,7 +172,7 @@ public class StartScreen extends AbstractAppState implements ScreenController {
 
         nifty.addScreen("hud", new ScreenBuilder("hud") {
             {
-                controller(new DefaultScreenController());
+                controller(new GUIScreenController(nifty));
 
                 layer(new LayerBuilder("background") {
                     {
@@ -262,26 +259,26 @@ public class StartScreen extends AbstractAppState implements ScreenController {
         nifty.gotoScreen("start");
     }
 
-    @Override
-    public void bind(Nifty nifty, Screen screen) {
-    }
-
-    @Override
-    public void onStartScreen() {
-
-    }
-
-    @Override
-    public void onEndScreen() {
-
-    }
-
-    public void quitGame() {
-        audioSource = new AudioNode(asset, "Sounds/Musics/Rock.ogg", AudioData.DataType.Buffer);
-        audioSource.play();
-        System.out.println("asdfghjlllkjhgfds");
-        nifty.exit();
-        appi.stop();
-    }
+//    @Override
+//    public void bind(Nifty nifty, Screen screen) {
+//    }
+//
+//    @Override
+//    public void onStartScreen() {
+//
+//    }
+//
+//    @Override
+//    public void onEndScreen() {
+//
+//    }
+//
+//    public void quitGame() {
+//        audioSource = new AudioNode(asset, "Sounds/Musics/Rock.ogg", AudioData.DataType.Buffer);
+//        audioSource.play();
+//        System.out.println("asdfghjlllkjhgfds");
+//        nifty.exit();
+//        app.stop();
+//    }
 
 }
