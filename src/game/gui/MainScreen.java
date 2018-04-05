@@ -25,7 +25,7 @@ import de.lessvoid.nifty.controls.button.builder.ButtonBuilder;
  *
  * @author Robbo13
  */
-public class StartScreen extends AbstractAppState {
+public class MainScreen extends AbstractAppState {
 
     private AudioNode audioSource;
     private AssetManager asset;
@@ -48,127 +48,7 @@ public class StartScreen extends AbstractAppState {
         nifty.loadStyleFile("nifty-default-styles.xml");
         nifty.loadControlFile("nifty-default-controls.xml");
 
-        nifty.addScreen("start", new ScreenBuilder("start") {
-            {
-                controller(new GUIScreenController(nifty, app));
-                layer(new LayerBuilder("background") {
-                    {
-                        childLayoutCenter();
-                        //backgroundColor("#000f");
-                        // <!-- ... -->
-                        image(new ImageBuilder() {
-                            {
-                                filename("Textures/Images/BritishMuseum.jpg");
-                            }
-                        });
-
-                    }
-                });
-
-                layer(new LayerBuilder("foreground") {
-                    {
-                        childLayoutVertical();
-                        //backgroundColor("#0000");
-
-                        // panel added
-                        // panel added
-                        panel(new PanelBuilder("panel_top") {
-                            {
-                                childLayoutCenter();
-                                alignCenter();
-                                //backgroundColor("#f008");
-                                height("25%");
-                                width("75%");
-
-                                // add text
-                                image(new ImageBuilder() {
-                                    {
-                                        filename("Textures/Images/raceted_title.png");
-                                    }
-                                });
-
-                            }
-                        });
-
-                        panel(new PanelBuilder("panel_mid") {
-                            {
-                                childLayoutCenter();
-                                alignCenter();
-                                //backgroundColor("#0f08");
-                                height("50%");
-                                width("75%");
-                                // add text
-                                text(new TextBuilder() {
-                                    {
-                                        text("Here goes some text describing the game and the rules and stuff. "
-                                                + "Incidentally, the text is quite long and needs to wrap at the end of lines. ");
-                                        font("Interface/Fonts/Default.fnt");
-                                        wrap(true);
-                                        height("100%");
-                                        width("100%");
-                                    }
-                                });
-
-                            }
-                        });
-
-                        panel(new PanelBuilder("panel_bottom") {
-                            {
-                                childLayoutHorizontal();
-                                alignCenter();
-                                //backgroundColor("#00f8");
-                                height("25%");
-                                width("75%");
-
-                                panel(new PanelBuilder("panel_bottom_left") {
-                                    {
-                                        childLayoutCenter();
-                                        valignCenter();
-                                        //backgroundColor("#44f8");
-                                        height("50%");
-                                        width("50%");
-
-                                        control(new ButtonBuilder("StartButton", "Start") {
-                                            {
-                                                alignCenter();
-                                                valignCenter();
-                                                height("50%");
-                                                width("50%");
-                                                interactOnClick("System.out.println(\"Hallo\")");
-                                            }
-                                        });
-
-                                    }
-                                });
-
-                                panel(new PanelBuilder("panel_bottom_right") {
-                                    {
-                                        childLayoutCenter();
-                                        valignCenter();
-                                        //backgroundColor("#88f8");
-                                        height("50%");
-                                        width("50%");
-
-                                        control(new ButtonBuilder("QuitButton", "quit") {
-                                            {
-                                                alignCenter();
-                                                valignCenter();
-                                                height("50%");
-                                                width("50%");
-                                                visibleToMouse(true);
-                                                interactOnClick("quitGame()");
-                                            }
-                                        });
-
-                                    }
-                                });
-                            }
-                        }); // panel added
-                    }
-                });
-
-            }
-        }.build(nifty));
+        nifty.addScreen("start", new StartBuilder("start", nifty, app).build(nifty));
 
         nifty.addScreen("hud", new ScreenBuilder("hud") {
             {
@@ -256,6 +136,8 @@ public class StartScreen extends AbstractAppState {
             }
         }.build(nifty));
 
+        nifty.addScreen("chooser", new ChooseBuilder("chooser", nifty, app).build(nifty));
+        
         nifty.gotoScreen("start");
     }
 
@@ -280,5 +162,4 @@ public class StartScreen extends AbstractAppState {
 //        nifty.exit();
 //        app.stop();
 //    }
-
 }

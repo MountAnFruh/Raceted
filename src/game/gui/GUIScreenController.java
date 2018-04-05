@@ -14,7 +14,7 @@ import de.lessvoid.nifty.screen.ScreenController;
  *
  * @author rober
  */
-public class GUIScreenController implements ScreenController{
+public class GUIScreenController implements ScreenController {
 
     private Nifty nifty;
     private SimpleApplication app;
@@ -27,27 +27,44 @@ public class GUIScreenController implements ScreenController{
     public GUIScreenController(Nifty nifty) {
         this.nifty = nifty;
     }
-    
-    
-    
+
     @Override
     public void bind(Nifty nifty, Screen screen) {
-        
+
     }
 
     @Override
     public void onStartScreen() {
-        
+
     }
 
     @Override
     public void onEndScreen() {
-        
+
     }
-    
-    public void quitGame()
-    {
+
+    public void quitGame() {
         app.stop();
     }
-    
+
+    public void startGame() {
+
+        nifty.gotoScreen("chooser");
+
+    }
+
+    public void backtomain() {
+
+        nifty.gotoScreen("start");
+
+    }
+
+    public void playrock() {
+
+    }
+
+    public void playcart() {
+
+    }
+
 }

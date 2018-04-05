@@ -14,7 +14,7 @@ import java.awt.GraphicsDevice;
 import java.awt.GraphicsEnvironment;
 import java.io.IOException;
 import java.net.ConnectException;
-import game.gui.StartScreen;
+import game.gui.MainScreen;
 import game.network.NetworkClient;
 import game.utils.ImageUtils;
 
@@ -25,7 +25,7 @@ import game.utils.ImageUtils;
 public class ClientMain extends SimpleApplication {
 
     private final NetworkClient client = new NetworkClient();
-    private StartScreen startScreen;
+    private MainScreen startScreen;
     private AudioNode audioSource;
 
     public static void main(String[] args) {
@@ -61,7 +61,7 @@ public class ClientMain extends SimpleApplication {
     }
 
     private void initAppStates() {
-        startScreen = new StartScreen();
+        startScreen = new MainScreen();
         stateManager.attach(startScreen);
     }
 
