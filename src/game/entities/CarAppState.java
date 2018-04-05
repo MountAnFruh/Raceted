@@ -33,6 +33,7 @@ import com.jme3.renderer.queue.RenderQueue;
 import com.jme3.scene.Geometry;
 import com.jme3.scene.Node;
 import com.jme3.scene.Spatial;
+import com.jme3.scene.control.AbstractControl;
 import com.jme3.scene.shape.Box;
 import com.jme3.scene.shape.Cylinder;
 
@@ -69,6 +70,7 @@ public class CarAppState extends AbstractAppState implements ActionListener {
     private InputManager inputManager;
     private AssetManager assetManager;
     private Camera cam;
+    private Geometry chassis;
     
     private boolean jump;
     private boolean onGround;
@@ -173,7 +175,7 @@ public class CarAppState extends AbstractAppState implements ActionListener {
 //        vehicleNode.attachChild(boxGeo);
         
         vehicleNode = new Node("vehicleNode");
-        Geometry chassis = (Geometry) assetManager.loadModel("Models/Car.obj");
+        chassis = (Geometry) assetManager.loadModel("Models/Car.obj");
         vehicleNode.attachChild(chassis);
         vehicleNode.setShadowMode(RenderQueue.ShadowMode.Cast);
         BoundingBox box = (BoundingBox) chassis.getModelBound();
@@ -251,6 +253,14 @@ public class CarAppState extends AbstractAppState implements ActionListener {
     private void cleanupPlayer() {
         bulletAppState.getPhysicsSpace().remove(carControl);
         rootNode.detachChild(vehicleNode);
+    }
+    
+    public VehicleControl getControl() {
+        return carControl;
+    }
+    
+    public Geometry getGeometry() {
+        return chassis;
     }
     
     @Override

@@ -45,6 +45,7 @@ import com.jme3.terrain.heightmap.AbstractHeightMap;
 import com.jme3.terrain.heightmap.ImageBasedHeightMap;
 import com.jme3.texture.Image;
 import com.jme3.texture.Texture;
+import game.entities.CarAppState;
 import game.entities.RockAppState;
 import game.utils.ImageUtils;
 import java.nio.ByteBuffer;
@@ -64,7 +65,7 @@ public class TestTerrain extends SimpleApplication implements ActionListener {
     private static final String MAPPING_CREATE_MOUNTAIN = "Mountain_Create";
 
     private BulletAppState bulletAppState;
-    private RockAppState rockAppState;
+    private CarAppState carAppState;
 
     private TerrainQuad terrain;
     private RigidBodyControl landscapeControl;
@@ -92,10 +93,10 @@ public class TestTerrain extends SimpleApplication implements ActionListener {
         initSky();
         initTerrain();
         
-        rockAppState = new RockAppState(bulletAppState, rootNode, terrain, this.getRenderManager());
-        stateManager.attach(rockAppState);
+        carAppState = new CarAppState(bulletAppState, rootNode, terrain);
+        stateManager.attach(carAppState);
         
-        flyCam.setMoveSpeed(1000.0f);
+        flyCam.setEnabled(false);
     }
 
     private void initLight() {
@@ -188,14 +189,14 @@ public class TestTerrain extends SimpleApplication implements ActionListener {
 
     @Override
     public void simpleUpdate(float tpf) {
-        Material mat = terrain.getMaterial(rockAppState.getControl().getPhysicsLocation());
+        Material mat = terrain.getMaterial(carAppState.getControl().getPhysicsLocation());
         Texture texture = (Texture) mat.getTextureParam("Alpha").getTextureValue();
         Image image = texture.getImage();
         
-        BoundingSphere boundSphere = (BoundingSphere)rockAppState.getGeometry().getModelBound();
+        BoundingBox boundBox = (BoundingBox) carAppState.getGeometry().getModelBound();
         
-        int x = (int)(rockAppState.getControl().getPhysicsLocation().x - boundSphere.getRadius())/2 + 256;
-        int z = 256 - (int)(rockAppState.getControl().getPhysicsLocation().z)/2;
+        int x = (int)(carAppState.getControl().getPhysicsLocation().x - boundBox.getXExtent())/2 + 256;
+        int z = 256 - (int)(carAppState.getControl().getPhysicsLocation().z)/2;
         
         System.out.println("Manipulated Pixel at " + x + " " + z);
         
@@ -212,14 +213,14 @@ public class TestTerrain extends SimpleApplication implements ActionListener {
         switch(name) {
             case MAPPING_CREATE_MOUNTAIN:
                 if(isPressed) {
-                    Geometry geom = rockAppState.getGeometry();
+                    Geometry geom = carAppState.getGeometry();
                     List<Vector2f> locations = new ArrayList<>();
                     List<Float> heights = new ArrayList<>();
-                    BoundingSphere boundSphere = (BoundingSphere)geom.getModelBound();
+                    BoundingBox boundBox = (BoundingBox) geom.getModelBound();
                     Vector3f location = geom.getLocalTranslation();
                     float defaultHeightDelta = 20f;
-                    for(int x = (int)Math.floor(-boundSphere.getRadius());x < (int)Math.ceil(boundSphere.getRadius());x++) {
-                        for(int z = (int)Math.floor(-boundSphere.getRadius());z < (int)Math.ceil(boundSphere.getRadius());z++) {
+                    for(int x = (int)Math.floor(-boundBox.getXExtent());x < (int)Math.ceil(boundBox.getXExtent());x++) {
+                        for(int z = (int)Math.floor(-boundBox.getZExtent());z < (int)Math.ceil(boundBox.getZExtent());z++) {
                             Vector2f locXZ = new Vector2f(location.getX() + x,location.getZ() + z);
                             locations.add(locXZ);
                             heights.add(defaultHeightDelta);
@@ -227,7 +228,7 @@ public class TestTerrain extends SimpleApplication implements ActionListener {
                     }
                     System.out.println("Terrain raised!");
                     terrain.adjustHeight(locations, heights);
-                    rockAppState.getControl().setPhysicsLocation(rockAppState.getControl().getPhysicsLocation()
+                    carAppState.getControl().setPhysicsLocation(carAppState.getControl().getPhysicsLocation()
                             .add(new Vector3f(0,defaultHeightDelta/2,0)));
                     
                     
