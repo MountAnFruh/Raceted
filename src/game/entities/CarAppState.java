@@ -6,14 +6,13 @@
 package game.entities;
 
 import com.jme3.app.Application;
+import com.jme3.app.SimpleApplication;
 import com.jme3.app.state.AbstractAppState;
 import com.jme3.app.state.AppStateManager;
 import com.jme3.asset.AssetManager;
 import com.jme3.bounding.BoundingBox;
 import com.jme3.bullet.BulletAppState;
-import com.jme3.bullet.collision.shapes.BoxCollisionShape;
 import com.jme3.bullet.collision.shapes.CollisionShape;
-import com.jme3.bullet.collision.shapes.CompoundCollisionShape;
 import com.jme3.bullet.control.VehicleControl;
 import com.jme3.bullet.util.CollisionShapeFactory;
 import com.jme3.input.ChaseCamera;
@@ -33,8 +32,6 @@ import com.jme3.renderer.queue.RenderQueue;
 import com.jme3.scene.Geometry;
 import com.jme3.scene.Node;
 import com.jme3.scene.Spatial;
-import com.jme3.scene.control.AbstractControl;
-import com.jme3.scene.shape.Box;
 import com.jme3.scene.shape.Cylinder;
 
 /**
@@ -62,8 +59,7 @@ public class CarAppState extends AbstractAppState implements ActionListener {
     private static final float DEFAULT_JUMP_COOLDOWN = 1.0f;
     
     private final BulletAppState bulletAppState;
-    private final Node rootNode;
-    private final Spatial terrain;
+    private Node rootNode;
     
     private FlyByCamera deathCam;
     private ChaseCamera chaseCam;
@@ -81,18 +77,19 @@ public class CarAppState extends AbstractAppState implements ActionListener {
     
     private float jumpCooldown = 0;
 
-    public CarAppState(BulletAppState bulletAppState, Node rootNode, Spatial terrain) {
+    public CarAppState(BulletAppState bulletAppState) {
         this.bulletAppState = bulletAppState;
-        this.rootNode = rootNode;
-        this.terrain = terrain;
     }
     
     @Override
     public void initialize(AppStateManager stateManager, Application app) {
         super.initialize(stateManager, app);
-        this.inputManager = app.getInputManager();
-        this.assetManager = app.getAssetManager();
-        this.cam = app.getCamera();
+        SimpleApplication simpleApp = (SimpleApplication) app;
+        
+        this.inputManager = simpleApp.getInputManager();
+        this.assetManager = simpleApp.getAssetManager();
+        this.cam = simpleApp.getCamera();
+        this.rootNode = simpleApp.getRootNode();
         
         initInput();
         
@@ -125,12 +122,12 @@ public class CarAppState extends AbstractAppState implements ActionListener {
     }
     
     private void initInput() {
-        inputManager.addMapping(MAPPING_LEFT, new KeyTrigger(KeyInput.KEY_A));
-        inputManager.addMapping(MAPPING_RIGHT, new KeyTrigger(KeyInput.KEY_D));
-        inputManager.addMapping(MAPPING_UP, new KeyTrigger(KeyInput.KEY_W));
-        inputManager.addMapping(MAPPING_DOWN, new KeyTrigger(KeyInput.KEY_S));
-        inputManager.addMapping(MAPPING_SPACE, new KeyTrigger(KeyInput.KEY_SPACE));
-        inputManager.addMapping(MAPPING_RESET, new KeyTrigger(KeyInput.KEY_RETURN));
+        inputManager.addMapping(MAPPING_LEFT, TRIGGER_LEFT);
+        inputManager.addMapping(MAPPING_RIGHT, TRIGGER_RIGHT);
+        inputManager.addMapping(MAPPING_UP, TRIGGER_UP);
+        inputManager.addMapping(MAPPING_DOWN, TRIGGER_DOWN);
+        inputManager.addMapping(MAPPING_SPACE, TRIGGER_SPACE);
+        inputManager.addMapping(MAPPING_RESET, TRIGGER_RESET);
         inputManager.addListener(this, MAPPING_LEFT, MAPPING_RIGHT,
                 MAPPING_UP, MAPPING_DOWN, MAPPING_SPACE, MAPPING_RESET);
     }

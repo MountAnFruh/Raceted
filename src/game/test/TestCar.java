@@ -41,7 +41,7 @@ public class TestCar extends SimpleApplication {
         initSky();
         initTerrain();
         
-        carAppState = new CarAppState(bulletAppState, rootNode, terrain);
+        carAppState = new CarAppState(bulletAppState);
         stateManager.attach(carAppState);
     }
     
