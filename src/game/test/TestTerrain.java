@@ -7,48 +7,24 @@ package game.test;
 
 import com.jme3.app.SimpleApplication;
 import com.jme3.bounding.BoundingBox;
-import com.jme3.bounding.BoundingSphere;
 import com.jme3.bullet.BulletAppState;
-import com.jme3.bullet.collision.shapes.CollisionShape;
-import com.jme3.bullet.control.RigidBodyControl;
-import com.jme3.bullet.util.CollisionShapeFactory;
-import com.jme3.collision.CollisionResult;
-import com.jme3.collision.CollisionResults;
-import com.jme3.input.CameraInput;
+import com.jme3.font.BitmapText;
 import com.jme3.input.KeyInput;
-import com.jme3.input.MouseInput;
 import com.jme3.input.controls.ActionListener;
-import com.jme3.input.controls.AnalogListener;
 import com.jme3.input.controls.KeyTrigger;
-import com.jme3.input.controls.MouseAxisTrigger;
-import com.jme3.input.controls.MouseButtonTrigger;
 import com.jme3.input.controls.Trigger;
 import com.jme3.light.AmbientLight;
-import com.jme3.light.DirectionalLight;
 import com.jme3.material.Material;
 import com.jme3.math.ColorRGBA;
-import com.jme3.math.FastMath;
-import com.jme3.math.Ray;
 import com.jme3.math.Vector2f;
 import com.jme3.math.Vector3f;
 import com.jme3.renderer.RenderManager;
-import com.jme3.scene.CameraNode;
 import com.jme3.scene.Geometry;
-import com.jme3.scene.Node;
 import com.jme3.scene.Spatial;
-import com.jme3.scene.Spatial.CullHint;
-import com.jme3.scene.shape.Sphere;
-import com.jme3.terrain.geomipmap.TerrainLodControl;
-import com.jme3.terrain.geomipmap.TerrainQuad;
-import com.jme3.terrain.geomipmap.lodcalc.DistanceLodCalculator;
-import com.jme3.terrain.heightmap.AbstractHeightMap;
-import com.jme3.terrain.heightmap.ImageBasedHeightMap;
 import com.jme3.texture.Image;
 import com.jme3.texture.Texture;
 import game.entities.CarAppState;
-import game.entities.RockAppState;
-import game.utils.ImageUtils;
-import java.nio.ByteBuffer;
+import game.map.WorldAppState;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -60,22 +36,28 @@ public class TestTerrain extends SimpleApplication implements ActionListener {
     
     // define triggers
     private static final Trigger CREATE_MOUNTAIN = new KeyTrigger(KeyInput.KEY_SPACE);
+    private static final Trigger SWITCH_MAP_0 = new KeyTrigger(KeyInput.KEY_0);
+    private static final Trigger SWITCH_MAP_1 = new KeyTrigger(KeyInput.KEY_1);
+    private static final Trigger SWITCH_MAP_2 = new KeyTrigger(KeyInput.KEY_2);
+    private static final Trigger SWITCH_MAP_3 = new KeyTrigger(KeyInput.KEY_3);
     
     // define mappings
     private static final String MAPPING_CREATE_MOUNTAIN = "Mountain_Create";
+    private static final String MAPPING_SWITCH_MAP_0 = "Switch_Map_0";
+    private static final String MAPPING_SWITCH_MAP_1 = "Switch_Map_1";
+    private static final String MAPPING_SWITCH_MAP_2 = "Switch_Map_2";
+    private static final String MAPPING_SWITCH_MAP_3 = "Switch_Map_3";
+    
+    private final float grassScale = 64;
+    private final float dirtScale = 16;
+    private final float roadScale = 128;
 
     private BulletAppState bulletAppState;
     private CarAppState carAppState;
 
-    private TerrainQuad terrain;
-    private RigidBodyControl landscapeControl;
+    private WorldAppState worldAppState;
     
-    private Material matRock;
-    private Material matWire;
-    
-    private float grassScale = 64;
-    private float dirtScale = 16;
-    private float rockScale = 128;
+    private BitmapText informationText;
 
     public static void main(String[] args) {
         TestTerrain testTerrain = new TestTerrain();
@@ -85,122 +67,81 @@ public class TestTerrain extends SimpleApplication implements ActionListener {
     @Override
     public void simpleInitApp() {
         bulletAppState = new BulletAppState();
+        worldAppState = new WorldAppState(bulletAppState);
         stateManager.attach(bulletAppState);
+        stateManager.attach(worldAppState);
         //bulletAppState.setDebugEnabled(true);
         
+        initHUD();
         initInput();
-        initLight();
-        initSky();
-        initTerrain();
         
-        carAppState = new CarAppState(bulletAppState, rootNode, terrain);
+        carAppState = new CarAppState(bulletAppState);
         stateManager.attach(carAppState);
         
         flyCam.setEnabled(false);
     }
-
-    private void initLight() {
-        AmbientLight ambientLight = new AmbientLight();
-        ambientLight.setColor(ColorRGBA.White);
-        rootNode.addLight(ambientLight);
-    }
-
-    private void initSky() {
-        Spatial sky = assetManager.loadModel("Scenes/Sky.j3o");
-        rootNode.attachChild(sky);
+    
+    private void initHUD() {
+        /** Write text on the screen (HUD) */
+        guiNode.detachAllChildren();
+        guiFont = assetManager.loadFont("Interface/Fonts/Default.fnt");
+        informationText = new BitmapText(guiFont, false);
+        informationText.setSize(guiFont.getCharSet().getRenderedSize());
+        informationText.setText("Press [1]: Load Map 1\nPress [2]: Load Map 2\n"
+                + "Press [3]: Load Map 3\nPress [0]: Unload Map\n"
+                + "Press [SPACE]: Create Mountain");
+        informationText.setLocalTranslation(0, settings.getHeight() - informationText.getLineHeight(), 0);
+        guiNode.attachChild(informationText);
     }
     
     private void initInput() {
         inputManager.addMapping(MAPPING_CREATE_MOUNTAIN, CREATE_MOUNTAIN);
-        inputManager.addListener(this, MAPPING_CREATE_MOUNTAIN);
+        inputManager.addMapping(MAPPING_SWITCH_MAP_0, SWITCH_MAP_0);
+        inputManager.addMapping(MAPPING_SWITCH_MAP_1, SWITCH_MAP_1);
+        inputManager.addMapping(MAPPING_SWITCH_MAP_2, SWITCH_MAP_2);
+        inputManager.addMapping(MAPPING_SWITCH_MAP_3, SWITCH_MAP_3);
+        inputManager.addListener(this, MAPPING_CREATE_MOUNTAIN,
+                MAPPING_SWITCH_MAP_1, MAPPING_SWITCH_MAP_2, MAPPING_SWITCH_MAP_0,
+                MAPPING_SWITCH_MAP_3);
     }
-
+    
     private void initTerrain() {
-        // First, we load up our textures and the heightmap texture for the terrain
-
-        // TERRAIN TEXTURE material
-        matRock = new Material(assetManager, "Common/MatDefs/Terrain/Terrain.j3md");
-        matRock.setBoolean("useTriPlanarMapping", false);
-
-        // ALPHA map (for splat textures)
-        matRock.setTexture("Alpha", assetManager.loadTexture("Textures/test/testalphamap.png"));
-
-        // HEIGHTMAP image (for the terrain heightmap)
-        Texture heightMapImage = assetManager.loadTexture("Textures/test/testheightmap.png");
-
-        // GRASS texture
+        AmbientLight ambientLight = new AmbientLight();
+        ambientLight.setColor(ColorRGBA.White);
+        worldAppState.addLight(ambientLight);
+        
+        Spatial sky = assetManager.loadModel("Scenes/Sky.j3o");
+        worldAppState.setSky(sky);
+        
+        Texture alphaMap = assetManager.loadTexture("Textures/Maps/test-maps/testalphamap2.png");
+        Texture heightMap = assetManager.loadTexture("Textures/Maps/test-maps/testheightmap2.png");
+        worldAppState.loadTerrain(alphaMap, heightMap, Vector3f.ZERO, new Vector3f(2f,0.5f,2f));
+        
+        carAppState.getControl().setPhysicsLocation(new Vector3f(0,100,0));
+        
         Texture grass = assetManager.loadTexture("Textures/Tile/Gras.jpg");
-        grass.setWrap(Texture.WrapMode.Repeat);
-        matRock.setTexture("Tex1", grass);
-        matRock.setFloat("Tex1Scale", grassScale);
-
-        // DIRT texture
+        worldAppState.setTexture(1,grass,grassScale);
+        
         Texture dirt = assetManager.loadTexture("Textures/Tile/Dirt.jpg");
-        dirt.setWrap(Texture.WrapMode.Repeat);
-        matRock.setTexture("Tex2", dirt);
-        matRock.setFloat("Tex2Scale", dirtScale);
-
-        // ROCK texture
+        worldAppState.setTexture(2,dirt,dirtScale);
+        
         Texture rock = assetManager.loadTexture("Textures/Tile/Road.jpg");
-        rock.setWrap(Texture.WrapMode.Repeat);
-        matRock.setTexture("Tex3", rock);
-        matRock.setFloat("Tex3Scale", rockScale);
-
-        // WIREFRAME material
-        matWire = new Material(assetManager, "Common/MatDefs/Misc/Unshaded.j3md");
-        matWire.getAdditionalRenderState().setWireframe(true);
-        matWire.setColor("Color", ColorRGBA.Green);
-
-        // CREATE HEIGHTMAP
-        AbstractHeightMap heightmap = null;
-        try {
-            //heightmap = new HillHeightMap(1025, 1000, 50, 100, (byte) 3);
-
-            heightmap = new ImageBasedHeightMap(heightMapImage.getImage(), 1f);
-            heightmap.load();
-
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        /*
-         * Here we create the actual terrain. The tiles will be 65x65, and the total size of the
-         * terrain will be 513x513. It uses the heightmap we created to generate the height values.
-         */
-        /**
-         * Optimal terrain patch size is 65 (64x64).
-         * The total size is up to you. At 1025 it ran fine for me (200+FPS), however at
-         * size=2049, it got really slow. But that is a jump from 2 million to 8 million triangles...
-         */
-        terrain = new TerrainQuad("terrain", 65, 513, heightmap.getHeightMap());
-        terrain.setCullHint(CullHint.Never);
-        terrain.setLocalTranslation(0, -100f, 0);
-        TerrainLodControl control = new TerrainLodControl(terrain, getCamera());
-        control.setLodCalculator( new DistanceLodCalculator(65, 2.7f) ); // patch size, and a multiplier
-        terrain.addControl(control);
-        terrain.setMaterial(matRock);
-        terrain.setLocalTranslation(0, -100, 0);
-        terrain.setLocalScale(2f, 0.5f, 2f);
-        rootNode.attachChild(terrain);
-        landscapeControl = new RigidBodyControl(0.0f);
-        terrain.addControl(landscapeControl);
-        bulletAppState.getPhysicsSpace().add(terrain);
+        worldAppState.setTexture(3,rock,roadScale);
     }
 
     @Override
     public void simpleUpdate(float tpf) {
-        Material mat = terrain.getMaterial(carAppState.getControl().getPhysicsLocation());
-        Texture texture = (Texture) mat.getTextureParam("Alpha").getTextureValue();
-        Image image = texture.getImage();
+        if(worldAppState.isInitialized() && !worldAppState.isTerrainLoaded()) initTerrain();
         
-        BoundingBox boundBox = (BoundingBox) carAppState.getGeometry().getModelBound();
-        
-        int x = (int)(carAppState.getControl().getPhysicsLocation().x - boundBox.getXExtent())/2 + 256;
-        int z = 256 - (int)(carAppState.getControl().getPhysicsLocation().z)/2;
-        
-        System.out.println("Manipulated Pixel at " + x + " " + z);
-        
-        ImageUtils.manipulatePixel(image, x, z, ColorRGBA.Red, true);
+        if(carAppState != null) {
+            BoundingBox boundBox = (BoundingBox) carAppState.getGeometry().getModelBound();
+
+            int x = (int)(carAppState.getControl().getPhysicsLocation().x - boundBox.getXExtent())/2 + 256;
+            int z = 256 - (int)(carAppState.getControl().getPhysicsLocation().z)/2;
+
+            int textNumber = 1;
+            worldAppState.changeTexture(new Vector3f(x,0,z), textNumber);
+        }
     }
 
     @Override
@@ -210,6 +151,7 @@ public class TestTerrain extends SimpleApplication implements ActionListener {
 
     @Override
     public void onAction(String name, boolean isPressed, float tpf) {
+        Texture alphaMap, heightMap;
         switch(name) {
             case MAPPING_CREATE_MOUNTAIN:
                 if(isPressed) {
@@ -217,27 +159,38 @@ public class TestTerrain extends SimpleApplication implements ActionListener {
                     List<Vector2f> locations = new ArrayList<>();
                     List<Float> heights = new ArrayList<>();
                     BoundingBox boundBox = (BoundingBox) geom.getModelBound();
-                    Vector3f location = geom.getLocalTranslation();
+                    Vector3f location = carAppState.getControl().getPhysicsLocation();
                     float defaultHeightDelta = 20f;
-                    for(int x = (int)Math.floor(-boundBox.getXExtent());x < (int)Math.ceil(boundBox.getXExtent());x++) {
-                        for(int z = (int)Math.floor(-boundBox.getZExtent());z < (int)Math.ceil(boundBox.getZExtent());z++) {
+                    for(int x = 0;x < (int)Math.ceil(boundBox.getXExtent());x++) {
+                        for(int z = 0;z < (int)Math.ceil(boundBox.getZExtent());z++) {
                             Vector2f locXZ = new Vector2f(location.getX() + x,location.getZ() + z);
                             locations.add(locXZ);
                             heights.add(defaultHeightDelta);
                         }
                     }
-                    System.out.println("Terrain raised!");
-                    terrain.adjustHeight(locations, heights);
+                    worldAppState.adjustHeights(locations, heights);
+                    
                     carAppState.getControl().setPhysicsLocation(carAppState.getControl().getPhysicsLocation()
                             .add(new Vector3f(0,defaultHeightDelta/2,0)));
-                    
-                    
-                    bulletAppState.getPhysicsSpace().remove(terrain);
-                    terrain.removeControl(landscapeControl);
-                    landscapeControl = new RigidBodyControl(0.0f);
-                    terrain.addControl(landscapeControl);
-                    bulletAppState.getPhysicsSpace().add(terrain);
                 }
+                break;
+            case MAPPING_SWITCH_MAP_0:
+                worldAppState.unloadTerrain();
+                break;
+            case MAPPING_SWITCH_MAP_1:
+                alphaMap = assetManager.loadTexture("Textures/Maps/test-maps/testalphamap1.png");
+                heightMap = assetManager.loadTexture("Textures/Maps/test-maps/testheightmap1.png");
+                worldAppState.loadTerrain(alphaMap, heightMap, Vector3f.ZERO, new Vector3f(2f,0.2f,2f));
+                break;
+            case MAPPING_SWITCH_MAP_2:
+                alphaMap = assetManager.loadTexture("Textures/Maps/test-maps/testalphamap2.png");
+                heightMap = assetManager.loadTexture("Textures/Maps/test-maps/testheightmap2.png");
+                worldAppState.loadTerrain(alphaMap, heightMap, Vector3f.ZERO, new Vector3f(2f,0.5f,2f));
+                break;
+            case MAPPING_SWITCH_MAP_3:
+                alphaMap = assetManager.loadTexture("Textures/Maps/test-maps/testalphamap3.png");
+                heightMap = assetManager.loadTexture("Textures/Maps/test-maps/testheightmap3.png");
+                worldAppState.loadTerrain(alphaMap, heightMap, Vector3f.ZERO, new Vector3f(2f,0.5f,2f));
                 break;
         }
     }

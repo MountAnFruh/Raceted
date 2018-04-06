@@ -16,6 +16,8 @@ import com.jme3.light.AmbientLight;
 import com.jme3.light.Light;
 import com.jme3.material.Material;
 import com.jme3.math.ColorRGBA;
+import com.jme3.math.Vector2f;
+import com.jme3.math.Vector3f;
 import com.jme3.renderer.Camera;
 import com.jme3.scene.Node;
 import com.jme3.scene.Spatial;
@@ -24,7 +26,12 @@ import com.jme3.terrain.geomipmap.TerrainQuad;
 import com.jme3.terrain.geomipmap.lodcalc.DistanceLodCalculator;
 import com.jme3.terrain.heightmap.AbstractHeightMap;
 import com.jme3.terrain.heightmap.ImageBasedHeightMap;
+import com.jme3.texture.Image;
 import com.jme3.texture.Texture;
+import game.utils.ImageUtils;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 
 /**
  *
@@ -32,10 +39,15 @@ import com.jme3.texture.Texture;
  */
 public class WorldAppState extends AbstractAppState {
     
+    public static final String SKYBOXNAME = "skybox";
+    public static final String TERRAINNAME = "terrain";
+    
+    private final BulletAppState bulletAppState;
+    private final List<Light> lights = new ArrayList<>();
+    
     private Node rootNode;
     private AssetManager assetManager;
     private Camera cam;
-    private BulletAppState bulletAppState;
     
     private TerrainQuad terrain;
     private Material matTerrain;
@@ -43,7 +55,6 @@ public class WorldAppState extends AbstractAppState {
     
     private Texture heightmapText = null;
     private Texture alphamapText = null;
-    private Texture[] alphaTextures = new Texture[3];
     
     private AbstractHeightMap heightmap = null;
 
@@ -68,56 +79,40 @@ public class WorldAppState extends AbstractAppState {
         // TERRAIN TEXTURE material
         matTerrain = new Material(assetManager, "Common/MatDefs/Terrain/Terrain.j3md");
         matTerrain.setBoolean("useTriPlanarMapping", false);
-    }
-    
-    public void initTest() {
-        AmbientLight ambientLight = new AmbientLight();
-        ambientLight.setColor(ColorRGBA.White);
-        addLight(ambientLight);
         
-        Spatial sky = assetManager.loadModel("Scenes/Sky.j3o");
-        setSky(sky);
-        
-        Texture alphaMap = assetManager.loadTexture("Textures/test/testalphamap.png");
-        Texture heightMap = assetManager.loadTexture("Textures/test/testheightmap.png");
-        loadTerrain(alphaMap, heightMap, -100.0f);
-        
-        Texture grass = assetManager.loadTexture("Textures/Tile/Gras.jpg");
-        setTexture(0,grass,1.0f);
-        
-        Texture dirt = assetManager.loadTexture("Textures/Tile/Dirt.jpg");
-        setTexture(1,dirt,1.0f);
-        
-        Texture rock = assetManager.loadTexture("Textures/Tile/Road.jpg");
-        setTexture(2,rock,1.0f);
     }
     
     public void addLight(Light light) {
+        lights.add(light);
         rootNode.addLight(light);
     }
     
+    public void removeLight(Light light) {
+        lights.remove(light);
+        rootNode.removeLight(light);
+    }
+    
     public void setSky(Spatial sky) {
-        sky.setName("skybox");
-        int index = rootNode.getChildIndex(rootNode.getChild("skybox"));
-        if(index != -1) {
-            rootNode.attachChildAt(sky, index);
-        } else {
+        Spatial oldSky = rootNode.getChild(SKYBOXNAME);
+        if(oldSky != null) {
+            rootNode.detachChild(oldSky);
+        }
+        
+        if(sky != null) {
+            sky.setName(SKYBOXNAME);
             rootNode.attachChild(sky);
         }
     }
     
-    public void setTexture(int index, Texture texture, float scale) {
-        if(index < 0 || index >= 3) {
-            throw new RuntimeException("Index darf nur zwischen 0 oder 2 sein!");
-        }
-        String txtName = "Tex" + (index+1);
+    public void setTexture(int textNumber, Texture texture, float scale) {
+        checkTextureNumber(textNumber);
+        String txtName = "Tex" + textNumber;
         texture.setWrap(Texture.WrapMode.Repeat);
-        alphaTextures[index] = texture;
-        matTerrain.setTexture("Tex" + (index+1), texture);
+        matTerrain.setTexture("Tex" + textNumber, texture);
         matTerrain.setFloat(txtName + "Scale", scale);
     }
     
-    public void loadTerrain(Texture alphamapText, Texture heightmapText, float yMoved) {
+    public void loadTerrain(Texture alphamapText, Texture heightmapText, Vector3f moved, Vector3f scale) {
         // First, we load up our textures and the heightmap texture for the terrain
 
         // ALPHA map (for splat textures)
@@ -150,24 +145,100 @@ public class WorldAppState extends AbstractAppState {
          * The total size is up to you. At 1025 it ran fine for me (200+FPS), however at
          * size=2049, it got really slow. But that is a jump from 2 million to 8 million triangles...
          */
-        terrain = new TerrainQuad("terrain", 65, 513, heightmap.getHeightMap());
+        terrain = new TerrainQuad(TERRAINNAME, 65, 513, heightmap.getHeightMap());
         terrain.setCullHint(Spatial.CullHint.Never);
-        terrain.setLocalTranslation(0, yMoved, 0);
+        terrain.setLocalTranslation(moved);
         
         TerrainLodControl control = new TerrainLodControl(terrain, cam);
         control.setLodCalculator( new DistanceLodCalculator(65, 2.7f) ); // patch size, and a multiplier
         terrain.addControl(control);
         
         terrain.setMaterial(matTerrain);
-        terrain.setLocalTranslation(0, -100, 0);
-        terrain.setLocalScale(2f, 0.5f, 2f);
+        terrain.setLocalScale(scale);
+        
+        Spatial oldTerrain = rootNode.getChild(TERRAINNAME);
+        if(oldTerrain != null) {
+            rootNode.detachChild(oldTerrain);
+        }
         rootNode.attachChild(terrain);
         
         if(bulletAppState != null) {
+            if(oldTerrain != null) {
+                bulletAppState.getPhysicsSpace().remove(oldTerrain);
+            }
             landscapeControl = new RigidBodyControl(0.0f);
             terrain.addControl(landscapeControl);
             bulletAppState.getPhysicsSpace().add(terrain);
         }
+    }
+    
+    private void checkTextureNumber(int textNumber) throws RuntimeException {
+        if(textNumber < 1 || textNumber > 3) {
+            throw new RuntimeException("Texture-Number darf nur zwischen 1 und 3 sein (max. 3 Texturen)!");
+        }
+    }
+    
+    public void changeTexture(Vector3f location, int textNumber) {
+        checkTextureNumber(textNumber);
+        
+        ColorRGBA color = ColorRGBA.White;
+        switch(textNumber) {
+            case 1: color = ColorRGBA.Red; break;
+            case 2: color = ColorRGBA.Green; break;
+            case 3: color = ColorRGBA.Blue; break;
+        }
+        
+        changeTexture(location, color);
+    }
+    
+    public void changeTexture(Vector3f location, ColorRGBA color) {
+        Material mat = terrain.getMaterial(location);
+        Texture texture = (Texture) mat.getTextureParam("Alpha").getTextureValue();
+        Image image = texture.getImage();
+        
+        ImageUtils.manipulatePixel(image, Math.round(location.getX()), Math.round(location.getZ()), color, true);
+    }
+    
+    private void refreshPhysicsControl() {
+        bulletAppState.getPhysicsSpace().remove(terrain);
+        terrain.removeControl(landscapeControl);
+        landscapeControl = new RigidBodyControl(0.0f);
+        terrain.addControl(landscapeControl);
+        bulletAppState.getPhysicsSpace().add(terrain);
+    }
+    
+    public void adjustHeights(List<Vector2f> xz, List<Float> delta) {
+        terrain.adjustHeight(xz, delta);
+        refreshPhysicsControl();
+    }
+    
+    public void adjustHeight(Vector2f xz, float delta) {
+        terrain.adjustHeight(xz, delta);
+        refreshPhysicsControl();
+    }
+    
+    public void setHeights(List<Vector2f> xz, List<Float> delta) {
+        terrain.setHeight(xz, delta);
+        refreshPhysicsControl();
+    }
+    
+    public void setHeight(Vector2f xz, float delta) {
+        terrain.setHeight(xz, delta);
+        refreshPhysicsControl();
+    }
+    
+    public void unloadTerrain() {
+        Spatial oldTerrain = rootNode.getChild(TERRAINNAME);
+        if(oldTerrain != null) {
+            rootNode.detachChild(oldTerrain);
+            if(bulletAppState != null) {
+                bulletAppState.getPhysicsSpace().remove(oldTerrain);
+            }
+        }
+    }
+    
+    public boolean isTerrainLoaded() {
+        return terrain != null;
     }
 
     public Texture getAlphamapTexture() {
@@ -182,6 +253,10 @@ public class WorldAppState extends AbstractAppState {
         return bulletAppState;
     }
     
+    public TerrainQuad getTerrain() {
+        return terrain;
+    }
+    
     @Override
     public void update(float tpf) {
         //TODO: implement behavior during runtime
@@ -193,6 +268,13 @@ public class WorldAppState extends AbstractAppState {
         //TODO: clean up what you initialized in the initialize method,
         //e.g. remove all spatials from rootNode
         //this is called on the OpenGL thread after the AppState has been detached
+        unloadTerrain();
+        
+        setSky(null);
+        
+        for(Light light : new ArrayList<>(lights)) {
+            removeLight(light);
+        }
     }
     
 }
