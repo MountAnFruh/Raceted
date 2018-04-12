@@ -193,7 +193,7 @@ public class TestTerrain extends SimpleApplication implements ActionListener {
 
                     if(!worldAppState.isTerrainLoaded("test_terrain_2")) {
                         worldAppState.loadTerrain("test_terrain_2",alphaMap, heightMap,
-                            new Vector3f(0,0,512), new Vector3f(2f,0.5f,2f));
+                            new Vector3f(0,0,1024), new Vector3f(2f,0.5f,2f));
 
                         Texture dirt = assetManager.loadTexture("Textures/Tile/Sand.jpg");
                         worldAppState.setTexture("test_terrain_2",2,dirt,dirtScale);

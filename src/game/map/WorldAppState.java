@@ -40,6 +40,7 @@ public class WorldAppState extends AbstractAppState {
     
     public static final String SKYBOXNAME = "skybox";
     public static final String TERRAINNODENAME = "terrain";
+    public static final int TERRAINSIZE = 512;
     
     private final BulletAppState bulletAppState;
     private final List<Light> lights = new ArrayList<>();
@@ -138,7 +139,7 @@ public class WorldAppState extends AbstractAppState {
          * The total size is up to you. At 1025 it ran fine for me (200+FPS), however at
          * size=2049, it got really slow. But that is a jump from 2 million to 8 million triangles...
          */
-        TerrainQuad terrain = new TerrainQuad(name, 65, 513, heightmap.getHeightMap());
+        TerrainQuad terrain = new TerrainQuad(name, 65, TERRAINSIZE + 1, heightmap.getHeightMap());
         terrain.setCullHint(Spatial.CullHint.Never);
         terrain.setLocalTranslation(moved);
         
@@ -183,13 +184,11 @@ public class WorldAppState extends AbstractAppState {
     public void changeTexture(String terrainName, Vector3f location, ColorRGBA color) {
         TerrainQuad terrain = (TerrainQuad) terrainNode.getChild(terrainName);
         if(terrain != null) {
-            if(terrain.getMaterial(location) != null) {
-                Material mat = terrain.getMaterial(location);
-                Texture texture = (Texture) mat.getTextureParam("Alpha").getTextureValue();
-                Image image = texture.getImage();
+            Material mat = terrain.getMaterial(location);
+            Texture texture = (Texture) mat.getTextureParam("Alpha").getTextureValue();
+            Image image = texture.getImage();
 
-                ImageUtils.manipulatePixel(image, Math.round(location.getX()), Math.round(location.getZ()), color, true);
-            }
+            ImageUtils.manipulatePixel(image, Math.round(location.getX()), Math.round(location.getZ()), color, true);
         }
     }
     
@@ -209,14 +208,25 @@ public class WorldAppState extends AbstractAppState {
     public void changeTexture(Vector3f location, ColorRGBA color) {
         for(Spatial spatial : terrainNode.getChildren()) {
             TerrainQuad terrain = (TerrainQuad) spatial;
-            if(terrain.getMaterial(location) != null) {
-                Material mat = terrain.getMaterial(location);
-                Texture texture = (Texture) mat.getTextureParam("Alpha").getTextureValue();
-                Image image = texture.getImage();
+            
+            Vector3f diff = getCoordsRelativeToTerrain(location, terrain);
+            
+            if(diff.getX() >= 0 && diff.getX() <= TERRAINSIZE) {
+                if(diff.getZ() >= 0 && diff.getZ() <= TERRAINSIZE) {
+                    Material mat = terrain.getMaterial(location);
+                    Texture texture = (Texture) mat.getTextureParam("Alpha").getTextureValue();
+                    Image image = texture.getImage();
 
-                ImageUtils.manipulatePixel(image, Math.round(location.getX()), Math.round(location.getZ()), color, true);
+                    ImageUtils.manipulatePixel(image, Math.round(diff.getX()), Math.round(diff.getZ()), color, true);
+                }
             }
         }
+    }
+    
+    private Vector3f getCoordsRelativeToTerrain(Vector3f location, TerrainQuad terrain) {
+        Vector3f terrainTranslation2D = terrain.getLocalTranslation().divide(terrain.getLocalScale());
+        Vector3f diff = terrainTranslation2D.add(location);
+        return diff;
     }
     
     private void refreshPhysicsControl(String name) {
@@ -228,11 +238,20 @@ public class WorldAppState extends AbstractAppState {
         bulletAppState.getPhysicsSpace().add(spatial);
     }
     
-    public void adjustHeights(List<Vector2f> xz, List<Float> delta) {
+    public void adjustHeights(List<Vector2f> xzs, List<Float> delta) {
         for(Spatial spatial : new ArrayList<>(terrainNode.getChildren())) {
-            TerrainQuad terrain = (TerrainQuad) spatial;
-            refreshPhysicsControl(terrain.getName());
-            terrain.adjustHeight(xz, delta);
+            for(int i = 0;i < xzs.size();i++) {
+                Vector2f xz = (Vector2f) xzs.get(i);
+                TerrainQuad terrain = (TerrainQuad) spatial;
+                Vector3f diff = getCoordsRelativeToTerrain(new Vector3f(xz.getX(), 0, xz.getY()), terrain);
+                System.out.println(diff.getX() + " " + diff.getZ());
+                if(diff.getX() >= 0 && diff.getX() <= TERRAINSIZE) {
+                    if(diff.getZ() >= 0 && diff.getZ() <= TERRAINSIZE) {
+                        refreshPhysicsControl(terrain.getName());
+                        terrain.adjustHeight(xz, delta.get(i));
+                    }
+                }
+            }
         }
     }
     
@@ -241,22 +260,6 @@ public class WorldAppState extends AbstractAppState {
             TerrainQuad terrain = (TerrainQuad) spatial;
             refreshPhysicsControl(terrain.getName());
             terrain.adjustHeight(xz, delta);
-        }
-    }
-    
-    public void setHeights(List<Vector2f> xz, List<Float> delta) {
-        for(Spatial spatial : new ArrayList<>(terrainNode.getChildren())) {
-            TerrainQuad terrain = (TerrainQuad) spatial;
-            refreshPhysicsControl(terrain.getName());
-            terrain.setHeight(xz, delta);
-        }
-    }
-    
-    public void setHeight(Vector2f xz, float delta) {
-        for(Spatial spatial : new ArrayList<>(terrainNode.getChildren())) {
-            TerrainQuad terrain = (TerrainQuad) spatial;
-            refreshPhysicsControl(terrain.getName());
-            terrain.setHeight(xz, delta);
         }
     }
     
