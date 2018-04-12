@@ -83,7 +83,7 @@ public class WorldAppState extends AbstractAppState {
      * @param light Licht-Objekt zum Hinzufügen
      */
     public void addLight(Light light) {
-        if(lights.contains(light)) {
+        if(!lights.contains(light)) {
             lights.add(light);
             rootNode.addLight(light);
         }
