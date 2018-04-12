@@ -137,7 +137,7 @@ public class MainScreen extends AbstractAppState {
         }.build(nifty));
 
         nifty.addScreen("chooser", new ChooseBuilder("chooser", nifty, app).build(nifty));
-        
+
         nifty.gotoScreen("start");
     }
 

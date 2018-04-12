@@ -6,6 +6,9 @@
 package game.gui;
 
 import com.jme3.app.SimpleApplication;
+import com.jme3.asset.AssetManager;
+import com.jme3.audio.AudioData;
+import com.jme3.audio.AudioNode;
 import de.lessvoid.nifty.Nifty;
 import de.lessvoid.nifty.builder.ImageBuilder;
 import de.lessvoid.nifty.builder.LayerBuilder;
@@ -20,6 +23,8 @@ import de.lessvoid.nifty.controls.button.builder.ButtonBuilder;
  */
 public class ChooseBuilder extends ScreenBuilder {
 
+   
+  
     private Nifty nifty;
     private SimpleApplication app;
 
@@ -27,6 +32,7 @@ public class ChooseBuilder extends ScreenBuilder {
         super(string);
         this.nifty = nifty;
         this.app = app;
+      
         init();
     }
 
@@ -95,7 +101,8 @@ public class ChooseBuilder extends ScreenBuilder {
                                         height("50%");
                                         width("50%");
                                         visibleToMouse(true);
-                                        interactOnClick("quitGame()");
+                                        interactOnClick("playwithCart()");
+
                                     }
                                 });
 
@@ -117,7 +124,7 @@ public class ChooseBuilder extends ScreenBuilder {
                                         height("50%");
                                         width("50%");
                                         visibleToMouse(true);
-                                        interactOnClick("startGame()");
+                                        interactOnClick("playwithRock()");
                                     }
                                 });
 
@@ -134,8 +141,8 @@ public class ChooseBuilder extends ScreenBuilder {
                         //backgroundColor("#0f08");
                         height("25%");
                         width("75%");
-                        // add text
 
+                        // add text
                         control(new ButtonBuilder("BackButton", "back") {
                             {
                                 alignCenter();
