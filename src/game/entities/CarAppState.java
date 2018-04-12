@@ -182,7 +182,7 @@ public class CarAppState extends AbstractAppState implements ActionListener {
         
 
         //Create a vehicle control
-        carControl = new VehicleControl(vehicleHull, 200);
+        carControl = new VehicleControl(vehicleHull, 1000);
         
         
         //Hier sollte man noch'n paar neue Zahlen draufschreiben, hmmm...
@@ -284,6 +284,7 @@ public class CarAppState extends AbstractAppState implements ActionListener {
 
     @Override
     public void onAction(String name, boolean isPressed, float tpf) {
+        int maxSpeed = 200;
         switch(name) {
             case MAPPING_SPACE: jump = isPressed; break;
             case MAPPING_LEFT:
@@ -302,16 +303,15 @@ public class CarAppState extends AbstractAppState implements ActionListener {
                 break;
             case MAPPING_UP:
                 if (isPressed) {
-                    accelerationValue += 800;
-                } else {
-                    accelerationValue -= 800;
+                    accelerationValue += 3000;
+                }
+                else {
+                    accelerationValue -= 3000;
                 }
                 break;
             case MAPPING_DOWN:
-                if (isPressed) {
-                    accelerationValue -= 800;
-                } else {
-                    accelerationValue += 800;
+                if (isPressed && carControl.getCurrentVehicleSpeedKmHour() >= 0) {
+                    carControl.brake(40f);
                 }
                 break;
             case MAPPING_RESET:
@@ -326,7 +326,8 @@ public class CarAppState extends AbstractAppState implements ActionListener {
             default: break;
         }
         carControl.steer(steeringValue);
-        carControl.accelerate(accelerationValue);
+        carControl.accelerate(accelerationValue * ((maxSpeed - carControl.getCurrentVehicleSpeedKmHour()) / maxSpeed));
+        System.out.println(carControl.getCurrentVehicleSpeedKmHour() + ", " + accelerationValue);
     }
     
 }
