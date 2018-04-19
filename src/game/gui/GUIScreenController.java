@@ -9,10 +9,13 @@ import com.jme3.app.SimpleApplication;
 import com.jme3.asset.AssetManager;
 import com.jme3.audio.AudioData;
 import com.jme3.audio.AudioNode;
+import com.jme3.scene.Node;
 import com.jme3.system.JmeContext;
 import de.lessvoid.nifty.Nifty;
 import de.lessvoid.nifty.screen.Screen;
 import de.lessvoid.nifty.screen.ScreenController;
+import game.test.InitTestCar;
+import game.test.InitTestRock;
 import game.test.TestCar;
 import game.test.TestRock;
 
@@ -76,18 +79,31 @@ public class GUIScreenController implements ScreenController {
         playwith("Cart");
     }
 
+    public void playwithRock() {
+        audioSource.stop();
+        playwith("Rock");
+    }
+
     public void playwith(String character) {
         audioSource.stop();
         switch (character) {
             case "Cart":
-                System.out.println("hi");
+                System.out.println("testCar");
+                
+                InitTestCar testCar = new InitTestCar(app);
+                nifty.gotoScreen("hud");
 //                TestCar testCar = new TestCar();
 //                testCar.start(JmeContext.Type.Display);
 
                 break;
 
             case "Rock":
-                System.out.println("hi");
+                System.out.println("testRock");
+                
+                
+                InitTestRock testRock = new InitTestRock(app);
+                nifty.gotoScreen("hud");
+                
 //                TestRock testrock = new TestRock();
 //                testrock.start(JmeContext.Type.Display);
 

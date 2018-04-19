@@ -16,6 +16,8 @@ import com.jme3.bullet.collision.shapes.CollisionShape;
 import com.jme3.bullet.control.RigidBodyControl;
 import com.jme3.bullet.util.CollisionShapeFactory;
 import com.jme3.collision.CollisionResults;
+import com.jme3.effect.ParticleEmitter;
+import com.jme3.effect.ParticleMesh;
 import com.jme3.input.ChaseCamera;
 import com.jme3.input.FlyByCamera;
 import com.jme3.input.InputManager;
@@ -24,6 +26,7 @@ import com.jme3.input.controls.ActionListener;
 import com.jme3.input.controls.KeyTrigger;
 import com.jme3.input.controls.Trigger;
 import com.jme3.material.Material;
+import com.jme3.math.ColorRGBA;
 import com.jme3.math.Matrix3f;
 import com.jme3.math.Vector3f;
 import com.jme3.renderer.Camera;
@@ -43,7 +46,7 @@ import game.test.Explosion;
 public class RockAppState extends AbstractAppState implements ActionListener {
 
     private RenderManager renderManager;
-    
+
     // define triggers
     private static final Trigger TRIGGER_LEFT = new KeyTrigger(KeyInput.KEY_A);
     private static final Trigger TRIGGER_UP = new KeyTrigger(KeyInput.KEY_W);
@@ -117,7 +120,7 @@ public class RockAppState extends AbstractAppState implements ActionListener {
         inputManager.addMapping(MAPPING_SPACE, TRIGGER_SPACE);
         inputManager.addMapping(MAPPING_RESET, TRIGGER_RESET);
         inputManager.addListener(this, MAPPING_DMG, MAPPING_LEFT, MAPPING_RIGHT, MAPPING_UP,
-                 MAPPING_DOWN, MAPPING_SPACE, MAPPING_RESET);
+                MAPPING_DOWN, MAPPING_SPACE, MAPPING_RESET);
     }
 
     private void cleanupInput() {
@@ -170,7 +173,9 @@ public class RockAppState extends AbstractAppState implements ActionListener {
 
     @Override
     public void update(float tpf) {
-        if(expl!=null)expl.updateExplotion(tpf);
+        if (expl != null) {
+            expl.updateExplotion(tpf);
+        }
         onGround = terrain.collideWith(sphereGeo.getWorldBound(), new CollisionResults()) != 0;
         float divisor = 150;
         Vector3f speedVector = rockControl.getLinearVelocity();
@@ -210,11 +215,11 @@ public class RockAppState extends AbstractAppState implements ActionListener {
         cleanupPlayer();
         cleanupCamera();
     }
-    
+
     public Geometry getGeometry() {
         return sphereGeo;
     }
-    
+
     public RigidBodyControl getControl() {
         return rockControl;
     }
@@ -223,7 +228,9 @@ public class RockAppState extends AbstractAppState implements ActionListener {
     public void onAction(String name, boolean isPressed, float tpf) {
         switch (name) {
             case MAPPING_DMG:
-                if(isPressed)causeDmg(20, DMGArt.GRUBE);
+                if (isPressed) {
+                    causeDmg(20, DMGArt.GRUBE);
+                }
                 break;
             case MAPPING_LEFT:
                 left = isPressed;
@@ -270,19 +277,38 @@ public class RockAppState extends AbstractAppState implements ActionListener {
     }
 
     private void destroyStone() {
-        sphereGeo.getLocalTranslation();
-        
-        chaseCam.setEnabled(false);
-        deathCam.setEnabled(true);
-        try {
-            rootNode.detachChild(sphereGeo);
-        } catch (Exception e) {
-        }
-        expl = new Explosion(sphereGeo.getWorldTranslation(), assetManager, renderManager, rootNode);
-        expl.explode();
-        System.out.println("destroy");
-        dmg = 0;
-        // noch zum hinzufügen
+
+        /**
+         * Explosion effect. Uses Texture from jme3-test-data library!
+         */
+        ParticleEmitter debrisEffect = new ParticleEmitter("Debris", ParticleMesh.Type.Triangle, 10);
+        Material debrisMat = new Material(assetManager, "Common/MatDefs/Misc/Particle.j3md");
+        debrisMat.setTexture("Texture", assetManager.loadTexture("Effects/Explosion/Debris.png"));
+        debrisEffect.setMaterial(debrisMat);
+        debrisEffect.setImagesX(3);
+        debrisEffect.setImagesY(3); // 3x3 texture animation
+        debrisEffect.setRotateSpeed(4);
+        debrisEffect.setSelectRandomImage(true);
+        debrisEffect.getParticleInfluencer().setInitialVelocity(new Vector3f(0, 4, 0));
+        debrisEffect.setStartColor(new ColorRGBA(1f, 1f, 1f, 1f));
+        debrisEffect.setGravity(0f, 6f, 0f);
+        debrisEffect.getParticleInfluencer().setVelocityVariation(.60f);
+        rootNode.attachChild(debrisEffect);
+        debrisEffect.emitAllParticles();
+
+//        sphereGeo.getLocalTranslation();
+//        
+//        chaseCam.setEnabled(false);
+//        deathCam.setEnabled(true);
+//        try {
+//            rootNode.detachChild(sphereGeo);
+//        } catch (Exception e) {
+//        }
+//        expl = new Explosion(sphereGeo.getWorldTranslation(), assetManager, renderManager, rootNode);
+//        expl.explode();
+//        System.out.println("destroy");
+//        dmg = 0;
+//        // noch zum hinzufügen
     }
 
 }

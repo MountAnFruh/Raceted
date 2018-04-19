@@ -59,11 +59,11 @@ public class MainScreen extends AbstractAppState {
                         childLayoutCenter();
                         //backgroundColor("#000f");
                         // <!-- ... -->
-                        image(new ImageBuilder() {
-                            {
-                                filename("Textures/Images/BritishMuseum.jpg");
-                            }
-                        });
+//                        image(new ImageBuilder() {
+//                            {
+//                                filename("Textures/Images/BritishMuseum.jpg");
+//                            }
+//                        });
                     }
                 });
 
