@@ -150,7 +150,6 @@ public class TestGame extends SimpleApplication implements ActionListener {
                     time = time + (1 * mult);
                     displaytime = time / 60 + ":" + time % 60;
                     if (time == -1) {
-                   
                         System.out.println("Round Over");
                         return;
                     }
