@@ -155,7 +155,7 @@ public class TestTerrain extends SimpleApplication implements ActionListener {
         switch(name) {
             case MAPPING_CREATE_MOUNTAIN:
                 if(isPressed) {
-                    Geometry geom = carAppState.getGeometry();
+                    Geometry geom = (Geometry) carAppState.getGeometry();
                     List<Vector2f> locations = new ArrayList<>();
                     List<Float> heights = new ArrayList<>();
                     BoundingBox boundBox = (BoundingBox) geom.getModelBound();
