@@ -27,24 +27,26 @@ import game.entities.CarAppState;
 import game.map.WorldAppState;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  *
  * @author Robbo13
  */
 public class TestGame extends SimpleApplication implements ActionListener {
-    
+
     // define triggers
-    private static final Trigger TEST_KEY = new KeyTrigger(KeyInput.KEY_0);
-    
+    private static final Trigger TEST_KEY = new KeyTrigger(KeyInput.KEY_O);
+
     // define mappings
-    private static final String MAPPING_TEST_KEY = "Test_Map_0";
+    private static final String MAPPING_TEST_KEY = "Test_Map_1";
 
     private BulletAppState bulletAppState;
     private CarAppState carAppState;
 
     private WorldAppState worldAppState;
-    
+
     private BitmapText informationText;
 
     public static void main(String[] args) {
@@ -59,18 +61,20 @@ public class TestGame extends SimpleApplication implements ActionListener {
         stateManager.attach(bulletAppState);
         stateManager.attach(worldAppState);
         //bulletAppState.setDebugEnabled(true);
-        
+
         initHUD();
         initInput();
-        
+
         carAppState = new CarAppState(bulletAppState);
         stateManager.attach(carAppState);
-        
+
         flyCam.setEnabled(false);
     }
-    
+
     private void initHUD() {
-        /** Write text on the screen (HUD) */
+        /**
+         * Write text on the screen (HUD)
+         */
         guiNode.detachAllChildren();
         guiFont = assetManager.loadFont("Interface/Fonts/Default.fnt");
         informationText = new BitmapText(guiFont, false);
@@ -81,49 +85,93 @@ public class TestGame extends SimpleApplication implements ActionListener {
         informationText.setLocalTranslation(0, settings.getHeight() - informationText.getLineHeight(), 0);
         guiNode.attachChild(informationText);
     }
-    
+
     private void initInput() {
         inputManager.addMapping(MAPPING_TEST_KEY, TEST_KEY);
         inputManager.addListener(this, MAPPING_TEST_KEY);
     }
-    
+
     private void initTerrain() {
         AmbientLight ambientLight = new AmbientLight();
         ambientLight.setColor(ColorRGBA.White);
         worldAppState.addLight(ambientLight);
-        
+
         Spatial sky = assetManager.loadModel("Scenes/Sky.j3o");
         worldAppState.setSky(sky);
-        
+
         Texture alphaMap = assetManager.loadTexture("Textures/Maps/test-maps/testalphamap2.png");
         Texture heightMap = assetManager.loadTexture("Textures/Maps/test-maps/testheightmap2.png");
-        worldAppState.loadTerrain(alphaMap, heightMap, Vector3f.ZERO, new Vector3f(2f,0.5f,2f));
-        
-        carAppState.getControl().setPhysicsLocation(new Vector3f(0,100,0));
-        
+        worldAppState.loadTerrain(alphaMap, heightMap, Vector3f.ZERO, new Vector3f(2f, 0.5f, 2f));
+
+        carAppState.getControl().setPhysicsLocation(new Vector3f(0, 100, 0));
+
         Texture grass = assetManager.loadTexture("Textures/Tile/Gras.jpg");
-        worldAppState.setTexture(1,grass,5.0f);
-        
+        worldAppState.setTexture(1, grass, 5.0f);
+
         Texture dirt = assetManager.loadTexture("Textures/Tile/Dirt.jpg");
-        worldAppState.setTexture(2,dirt,5.0f);
-        
+        worldAppState.setTexture(2, dirt, 5.0f);
+
         Texture rock = assetManager.loadTexture("Textures/Tile/Road.jpg");
-        worldAppState.setTexture(3,rock,5.0f);
+        worldAppState.setTexture(3, rock, 5.0f);
     }
 
     @Override
     public void simpleUpdate(float tpf) {
-       if(worldAppState.isInitialized() && !worldAppState.isTerrainLoaded()) initTerrain();
+        if (worldAppState.isInitialized() && !worldAppState.isTerrainLoaded()) {
+            initTerrain();
+        }
     }
 
     @Override
     public void simpleRender(RenderManager rm) {
-        
+
     }
 
     @Override
     public void onAction(String name, boolean isPressed, float tpf) {
-        
+        if (name.equals(MAPPING_TEST_KEY) && isPressed) {
+            System.out.println("game start");
+            RoundThread roundthread = new RoundThread();
+            Thread thread = new Thread(roundthread);
+            thread.start();
+        }
     }
-    
+
+    class RoundThread implements Runnable {
+
+        @Override
+        public void run() {
+            boolean goalreached = true;
+            int time = 0;
+            int mult = 1;
+            String displaytime = "00:00";
+            while (!Thread.interrupted()) {
+                if (!goalreached) {
+                    time = time + (1 * mult);
+                    displaytime = time / 60 + ":" + time % 60;
+                    if (time == -1) {
+                   
+                        System.out.println("Round Over");
+                        return;
+                    }
+                } else if (goalreached) {
+                    time = 60;
+                    mult = -1;
+                    goalreached = false;
+                }
+
+                displaytime = time / 60 + ":" + time % 60;
+                System.out.println(displaytime);
+
+                try {
+                    Thread.sleep(1000);
+                } catch (InterruptedException ex) {
+                    return;
+                }
+
+            }
+        }
+
+    }
+
 }
