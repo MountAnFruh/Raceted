@@ -23,8 +23,6 @@ import de.lessvoid.nifty.controls.button.builder.ButtonBuilder;
  */
 public class HUDBuilder extends ScreenBuilder {
 
-   
-  
     private Nifty nifty;
     private SimpleApplication app;
 
@@ -32,134 +30,56 @@ public class HUDBuilder extends ScreenBuilder {
         super(string);
         this.nifty = nifty;
         this.app = app;
-      
+
         init();
     }
 
     public void init() {
-        controller(new GUIScreenController(nifty, app));
-        layer(new LayerBuilder("background") {
-            {
-                childLayoutCenter();
-                //backgroundColor("#000f");
-                // <!-- ... -->
-                image(new ImageBuilder() {
-                    {
-                        filename("Textures/Images/BritishMuseum.jpg");
-                    }
-                });
-
-            }
-        });
+        controller(new GUIScreenController(nifty));
 
         layer(new LayerBuilder("foreground") {
             {
-                childLayoutVertical();
-                //backgroundColor("#0000");
+                childLayoutHorizontal();
 
-                // panel added
-                // panel added
-                panel(new PanelBuilder("panel_top") {
+                panel(new PanelBuilder("panel_left") {
                     {
                         childLayoutCenter();
-                        alignCenter();
-                        //backgroundColor("#f008");
-                        height("25%");
-                        width("75%");
-
-                        // add text
-                        image(new ImageBuilder() {
-                            {
-                                filename("Textures/Images/raceted_title.png");
-                            }
-                        });
-
+                        //backgroundColor("#00f8");
+                        height("15%");
+                        width("90%");
                     }
                 });
-
-                panel(new PanelBuilder("panel_mid") {
+                panel(new PanelBuilder("panel_right") {
                     {
                         childLayoutVertical();
-                        alignCenter();
-                        //backgroundColor("#0f08");
-                        height("50%");
-                        width("75%");
-                        // add text
-
-                        panel(new PanelBuilder("panel_center_left") {
+                        //backgroundColor("#00f8");
+                        height("75%");
+                        width("10%");
+                        
+                        panel(new PanelBuilder("panel_top_right") {
                             {
                                 childLayoutCenter();
-                                valignCenter();
-                                //backgroundColor("#88f8");
-                                height("50%");
-                                width("50%");
+                                //backgroundColor("#44f8");
+                                height("15%");
+                                width("100%");
 
-                                control(new ButtonBuilder("Cart", "cart") {
+                                // add image
+                                image(new ImageBuilder() {
                                     {
-                                        alignCenter();
+                                        filename("Textures/Images/raceted_icon.png");
                                         valignCenter();
+                                        alignCenter();
                                         height("50%");
-                                        width("50%");
-                                        visibleToMouse(true);
-                                        interactOnClick("playwithCart()");
-
+                                        width("30%");
                                     }
                                 });
 
                             }
                         });
-
-                        panel(new PanelBuilder("panel_center_right") {
-                            {
-                                childLayoutCenter();
-                                valignCenter();
-                                //backgroundColor("#88f8");
-                                height("50%");
-                                width("50%");
-
-                                control(new ButtonBuilder("Rock", "rock") {
-                                    {
-                                        alignCenter();
-                                        valignCenter();
-                                        height("50%");
-                                        width("50%");
-                                        visibleToMouse(true);
-                                        interactOnClick("playwithRock()");
-                                    }
-                                });
-
-                            }
-                        });
-
                     }
-                });
-
-                panel(new PanelBuilder("panel_bottom") {
-                    {
-                        childLayoutVertical();
-                        alignCenter();
-                        //backgroundColor("#0f08");
-                        height("25%");
-                        width("75%");
-
-                        // add text
-                        control(new ButtonBuilder("BackButton", "back") {
-                            {
-                                alignCenter();
-                                valignCenter();
-                                height("25%");
-                                width("50%");
-                                visibleToMouse(true);
-                                interactOnClick("backtomain()");
-                            }
-                        });
-
-                    }
-                });
-
+                }); // panel added
             }
         });
-
     }
 
 }
