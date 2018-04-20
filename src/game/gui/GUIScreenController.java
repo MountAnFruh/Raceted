@@ -34,7 +34,7 @@ public class GUIScreenController implements ScreenController {
         this.nifty = nifty;
         this.app = app;
         asset = app.getAssetManager();
-        audioSource = new AudioNode(asset, "Sounds/Musics/Main.ogg", AudioData.DataType.Buffer);
+        audioSource = new AudioNode(asset, "Sounds/Effects/Select.ogg", AudioData.DataType.Buffer);
 
     }
 
@@ -63,7 +63,6 @@ public class GUIScreenController implements ScreenController {
     }
 
     public void startGame() {
-        audioSource.play();
         nifty.gotoScreen("chooser");
 
     }

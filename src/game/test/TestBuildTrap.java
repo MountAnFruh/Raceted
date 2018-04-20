@@ -42,6 +42,8 @@ import com.jme3.texture.Texture;
  */
 public class TestBuildTrap extends SimpleApplication implements AnalogListener, ActionListener {
     
+    private int trap=1;
+    
     // define triggers
     private static final Trigger CAMERA_LEFT = new MouseAxisTrigger(MouseInput.AXIS_X, true);
     private static final Trigger CAMERA_RIGHT = new MouseAxisTrigger(MouseInput.AXIS_X, false);
@@ -51,6 +53,9 @@ public class TestBuildTrap extends SimpleApplication implements AnalogListener, 
     private static final Trigger CAMERA_ZOOMOUT = new MouseAxisTrigger(MouseInput.AXIS_WHEEL, true);
     private static final Trigger PLACE_TRAP = new MouseButtonTrigger(MouseInput.BUTTON_LEFT);
     private static final Trigger CAMERA_DRAG = new MouseButtonTrigger(MouseInput.BUTTON_RIGHT);
+    
+    private static final Trigger CHOOSE_TRAP1 = new KeyTrigger(KeyInput.KEY_1);
+    private static final Trigger CHOOSE_TRAP2 = new KeyTrigger(KeyInput.KEY_2);
     
     // define mappings
     private static final String MAPPING_CAMERA_LEFT = "Camera_Left";
@@ -62,14 +67,19 @@ public class TestBuildTrap extends SimpleApplication implements AnalogListener, 
     private static final String MAPPING_CAMERA_ZOOMOUT = "Camera_Zoomout";
     private static final String MAPPING_PLACE_TRAP = "Place_Trap";
     
+    private static final String MAPPING_CHOOSE_TRAP1 = "Place_Trap1";
+    private static final String MAPPING_CHOOSE_TRAP2 = "Place_Trap2";
+    
     private BulletAppState bulletAppState;
     
-    private Node rockNode;
-    private RigidBodyControl rockControl;
     
     private CameraNode camNode;
     private boolean isDragging;
     private Spatial terrain;
+    
+    private  Spatial  Trap1 = null;
+    private  Spatial  Trap2 = null;
+    private Spatial  teaGeom = null;
 
     public static void main(String[] args) {
         TestBuildTrap testBuild = new TestBuildTrap();
@@ -91,6 +101,16 @@ public class TestBuildTrap extends SimpleApplication implements AnalogListener, 
         
         buildPlayer();
         initCamera();
+        
+                    
+                    
+                    Material mat = new Material(assetManager, "Common/MatDefs/Misc/ShowNormals.j3md"); 
+                    Trap1 = (Spatial) assetManager.loadModel("Models/pylon.obj");    
+                    Trap1.setMaterial(mat);  
+                    Trap2 = (Spatial) assetManager.loadModel("Models/Stachel.obj");
+                    Trap2.setMaterial(mat);
+                    teaGeom = Trap1;
+                      
     }
     
     private void initCamera() {
@@ -104,26 +124,12 @@ public class TestBuildTrap extends SimpleApplication implements AnalogListener, 
     }
     
     private void buildPlayer() {
-        Material mat = new Material(getAssetManager(), "Common/MatDefs/Misc/Unshaded.j3md");
-        Texture texture = assetManager.loadTexture("Textures/Tile/Stone.jpg");
-        mat.setTexture("ColorMap", texture);
-        
-        Sphere sphere = new Sphere(20,20,3);
-        Geometry sphereGeo = new Geometry("Rocksphere",sphere);
-        sphereGeo.setCullHint(CullHint.Never);
-        sphereGeo.setMaterial(mat);
+       
         
 //        CompoundCollisionShape compoundShape = new CompoundCollisionShape();
 //        CapsuleCollisionShape capsule = new CapsuleCollisionShape(3f,0f);
 //        compoundShape.addChildShape(capsule, new Vector3f(0, 1, 0));
 
-        CollisionShape collShape = CollisionShapeFactory.createDynamicMeshShape(sphereGeo);
-        
-        rockControl = new RigidBodyControl(collShape);
-        sphereGeo.addControl(rockControl);
-        rootNode.attachChild(sphereGeo);
-        
-        bulletAppState.getPhysicsSpace().add(rockControl);
     }
     
     private void setupKeys() {
@@ -136,9 +142,12 @@ public class TestBuildTrap extends SimpleApplication implements AnalogListener, 
         inputManager.addMapping(MAPPING_CAMERA_ZOOMOUT, CAMERA_ZOOMOUT);
         inputManager.addMapping(MAPPING_PLACE_TRAP, PLACE_TRAP);
         
+        inputManager.addMapping(MAPPING_CHOOSE_TRAP1, CHOOSE_TRAP1);
+        inputManager.addMapping(MAPPING_CHOOSE_TRAP2, CHOOSE_TRAP2);
+        
         inputManager.addListener(this, MAPPING_CAMERA_LEFT, MAPPING_CAMERA_RIGHT
                 , MAPPING_CAMERA_DOWN, MAPPING_CAMERA_UP, MAPPING_CAMERA_DRAG
-                , MAPPING_CAMERA_ZOOMIN, MAPPING_CAMERA_ZOOMOUT, MAPPING_PLACE_TRAP);
+                , MAPPING_CAMERA_ZOOMIN, MAPPING_CAMERA_ZOOMOUT, MAPPING_PLACE_TRAP,MAPPING_CHOOSE_TRAP1,MAPPING_CHOOSE_TRAP2);
     }
     
     private void initLight() {
@@ -216,15 +225,7 @@ public class TestBuildTrap extends SimpleApplication implements AnalogListener, 
                 terrain.collideWith(ray, results);
 
                 if (results.size() > 0) {
-                    CollisionResult closest = results.getClosestCollision();
-
-                    Geometry teaGeom = (Geometry) assetManager.loadModel("Models/test/testmodel.j3o");
-
-                    Material mat = new Material(assetManager, "Common/MatDefs/Misc/ShowNormals.j3md");
-
-                    teaGeom.setMaterial(mat);
-
-                    
+                    CollisionResult closest = results.getClosestCollision();                
                     
                     teaGeom.setLocalTranslation(closest.getContactPoint().add(0, 0, 0));
                     
@@ -259,7 +260,46 @@ public class TestBuildTrap extends SimpleApplication implements AnalogListener, 
                 case MAPPING_CAMERA_ZOOMOUT:
                     zoomCamera(pressed);
                     break;
+                
             }
-        }
+           
+                    
+                    }
+       
+        
+                switch(name)
+                    {
+                    case MAPPING_CHOOSE_TRAP1:
+                    teaGeom = Trap1;    
+                    break;
+                    case MAPPING_CHOOSE_TRAP2:
+                    teaGeom = Trap2;
+                    break;
+                    }
+        
+                
+//                 Vector3f origin = cam.getWorldCoordinates(inputManager.getCursorPosition(), 0.0f);
+//                Vector3f direction = cam.getWorldCoordinates(inputManager.getCursorPosition(), 0.3f);
+//                direction.subtractLocal(origin).normalizeLocal();
+//
+//                Ray ray = new Ray(origin, direction);
+//                CollisionResults results = new CollisionResults();
+//                terrain.collideWith(ray, results);
+//
+//                if (results.size() > 0) {
+//                    CollisionResult closest = results.getClosestCollision();
+//
+//                    
+//                  
+//                    
+//                    teaGeom.setLocalTranslation(closest.getContactPoint().add(0, 0, 0));
+//                    
+//                    CollisionShape collShape = CollisionShapeFactory.createDynamicMeshShape(teaGeom);
+//    
+//                    rootNode.attachChild(teaGeom);
+//
+//                }
+        
+        
     }
 }

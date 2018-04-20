@@ -37,8 +37,8 @@ public class MainScreen extends AbstractAppState {
 
         app = (SimpleApplication) appl;
         asset = app.getAssetManager();
-        audioSource = new AudioNode(asset, "Sounds/Musics/Main.ogg", AudioData.DataType.Buffer);
-        audioSource.play();
+//        audioSource = new AudioNode(asset, "Sounds/Musics/Main.ogg", AudioData.DataType.Buffer);
+//        audioSource.play();
         NiftyJmeDisplay niftyDisplay = NiftyJmeDisplay.newNiftyJmeDisplay(
                 app.getAssetManager(), app.getInputManager(), app.getAudioRenderer(), app.getGuiViewPort());
         nifty = niftyDisplay.getNifty();

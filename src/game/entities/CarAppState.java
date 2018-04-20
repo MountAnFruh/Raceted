@@ -22,6 +22,7 @@ import com.jme3.input.KeyInput;
 import com.jme3.input.controls.ActionListener;
 import com.jme3.input.controls.KeyTrigger;
 import com.jme3.input.controls.Trigger;
+import com.jme3.light.Light;
 import com.jme3.material.Material;
 import com.jme3.math.ColorRGBA;
 import com.jme3.math.FastMath;
@@ -32,6 +33,7 @@ import com.jme3.renderer.queue.RenderQueue;
 import com.jme3.scene.Geometry;
 import com.jme3.scene.Node;
 import com.jme3.scene.Spatial;
+import com.jme3.scene.debug.WireBox;
 import com.jme3.scene.shape.Cylinder;
 
 /**
@@ -57,6 +59,10 @@ public class CarAppState extends AbstractAppState implements ActionListener {
     private static final String MAPPING_RESET = "Reset";
     
     private static final float DEFAULT_JUMP_COOLDOWN = 1.0f;
+
+    private static Material getBoundingBoxMaterialForPickup() {
+        return new Material();
+    }
     
     private final BulletAppState bulletAppState;
     private Node rootNode;
@@ -79,6 +85,7 @@ public class CarAppState extends AbstractAppState implements ActionListener {
 
     public CarAppState(BulletAppState bulletAppState) {
         this.bulletAppState = bulletAppState;
+        //this.bulletAppState.setDebugEnabled(true);
     }
     
     @Override
@@ -172,9 +179,11 @@ public class CarAppState extends AbstractAppState implements ActionListener {
 //        vehicleNode.attachChild(boxGeo);
         
         vehicleNode = new Node("vehicleNode");
+        
         chassis = (Geometry) assetManager.loadModel("Models/Car.obj");
         vehicleNode.attachChild(chassis);
         vehicleNode.setShadowMode(RenderQueue.ShadowMode.Cast);
+        
         BoundingBox box = (BoundingBox) chassis.getModelBound();
 
         //Create a hull collision shape for the chassis
@@ -182,7 +191,7 @@ public class CarAppState extends AbstractAppState implements ActionListener {
         
 
         //Create a vehicle control
-        carControl = new VehicleControl(vehicleHull, 1000);
+        carControl = new VehicleControl(vehicleHull, 500);
         
         
         //Hier sollte man noch'n paar neue Zahlen draufschreiben, hmmm...
@@ -198,7 +207,7 @@ public class CarAppState extends AbstractAppState implements ActionListener {
         float restLength = 0.3f;
         float yOff = 0.5f;
         float xOff = 1f;
-        float zOff = 1.3f;
+        float zOff = 1.7f;
         
         Vector3f wheelDirection = new Vector3f(0, -1, 0);
         Vector3f wheelAxle = new Vector3f(-1, 0, 0);
@@ -284,29 +293,29 @@ public class CarAppState extends AbstractAppState implements ActionListener {
 
     @Override
     public void onAction(String name, boolean isPressed, float tpf) {
-        int maxSpeed = 200;
+        float maxSpeed = 300f;
         switch(name) {
             case MAPPING_SPACE: jump = isPressed; break;
             case MAPPING_LEFT:
                 if(isPressed) {
-                    steeringValue += 0.5f;
+                    steeringValue += 0.5f * FastMath.pow(((maxSpeed - carControl.getCurrentVehicleSpeedKmHour()) / maxSpeed) , 2);
                 } else {
-                    steeringValue -= 0.5f;
+                    steeringValue = 0;
                 }
                 break;
             case MAPPING_RIGHT:
                 if(isPressed) {
-                    steeringValue -= 0.5f;
+                    steeringValue -= 0.5f * FastMath.pow(((maxSpeed - carControl.getCurrentVehicleSpeedKmHour()) / maxSpeed) , 2);
                 } else {
-                    steeringValue += 0.5f;
+                    steeringValue = 0;
                 }
                 break;
             case MAPPING_UP:
                 if (isPressed) {
-                    accelerationValue += 3000;
+                    accelerationValue += 2000;
                 }
                 else {
-                    accelerationValue -= 3000;
+                    accelerationValue -= 2000;
                 }
                 break;
             case MAPPING_DOWN:
@@ -327,7 +336,7 @@ public class CarAppState extends AbstractAppState implements ActionListener {
         }
         carControl.steer(steeringValue);
         carControl.accelerate(accelerationValue * ((maxSpeed - carControl.getCurrentVehicleSpeedKmHour()) / maxSpeed));
-        System.out.println(carControl.getCurrentVehicleSpeedKmHour() + ", " + accelerationValue);
+        System.out.println(carControl.getCurrentVehicleSpeedKmHour() + ", " + accelerationValue + ", " + (maxSpeed - carControl.getCurrentVehicleSpeedKmHour()));
     }
     
 }
