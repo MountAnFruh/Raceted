@@ -30,7 +30,6 @@ import com.jme3.texture.Image;
 import com.jme3.texture.Texture;
 import game.utils.ImageUtils;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -39,24 +38,20 @@ import java.util.List;
  */
 public class WorldAppState extends AbstractAppState {
     
-    public static final String SKYBOXNAME = "skybox";
-    public static final String TERRAINNAME = "terrain";
+    public static final String TERRAINNODENAME = "terrain";
+    public static final String SKYBOXNAME = TERRAINNODENAME + "_skybox";
+    public static final int TERRAINSIZE = 512;
     
     private final BulletAppState bulletAppState;
     private final List<Light> lights = new ArrayList<>();
+    private final Node terrainNode = new Node(TERRAINNODENAME);
     
     private Node rootNode;
     private AssetManager assetManager;
     private Camera cam;
     
-    private TerrainQuad terrain;
     private Material matTerrain;
     private RigidBodyControl landscapeControl;
-    
-    private Texture heightmapText = null;
-    private Texture alphamapText = null;
-    
-    private AbstractHeightMap heightmap = null;
 
     public WorldAppState() {
         bulletAppState = null;
@@ -80,18 +75,35 @@ public class WorldAppState extends AbstractAppState {
         matTerrain = new Material(assetManager, "Common/MatDefs/Terrain/Terrain.j3md");
         matTerrain.setBoolean("useTriPlanarMapping", false);
         
+        rootNode.attachChild(terrainNode);
     }
     
+    /**
+     * Fügt Licht zum Terrain hinzu.
+     * @param light Licht-Objekt zum Hinzufügen
+     */
     public void addLight(Light light) {
-        lights.add(light);
-        rootNode.addLight(light);
+        if(!lights.contains(light)) {
+            lights.add(light);
+            rootNode.addLight(light);
+        }
     }
     
+    /**
+     * Entfernt das Licht vom Terrain
+     * @param light Licht-Objekt zum Entfernen
+     */
     public void removeLight(Light light) {
-        lights.remove(light);
-        rootNode.removeLight(light);
+        if(lights.contains(light)) {
+            lights.remove(light);
+            rootNode.removeLight(light);
+        }
     }
     
+    /**
+     * Setzt die Skybox vom Terrain
+     * @param sky Skybox-Modell oder <code>null</code> um die jetzige Skybox zu entfernen
+     */
     public void setSky(Spatial sky) {
         Spatial oldSky = rootNode.getChild(SKYBOXNAME);
         if(oldSky != null) {
@@ -104,30 +116,43 @@ public class WorldAppState extends AbstractAppState {
         }
     }
     
-    public void setTexture(int textNumber, Texture texture, float scale) {
+    /**
+     * Setzt die Textur für ein bestimmtes Terrain (Terrain muss vorher geladen worden sein!)
+     * @param terrainName Name vom Terrain
+     * @param textNumber Nummer von der Textur (1-3 für RGB)
+     * @param texture Textur-Objekt
+     * @param scale Ein Skalierwert (Größer = Rausgezoomt)
+     */
+    public void setTexture(String terrainName, int textNumber, Texture texture, float scale) {
         checkTextureNumber(textNumber);
-        String txtName = "Tex" + textNumber;
-        texture.setWrap(Texture.WrapMode.Repeat);
-        matTerrain.setTexture("Tex" + textNumber, texture);
-        matTerrain.setFloat(txtName + "Scale", scale);
+        TerrainQuad terrain = (TerrainQuad) terrainNode.getChild(terrainName);
+        if(terrain != null) {
+            String txtName = "Tex" + textNumber;
+            texture.setWrap(Texture.WrapMode.Repeat);
+            Material material = terrain.getMaterial();
+            material.setTexture("Tex" + textNumber, texture);
+            material.setFloat(txtName + "Scale", scale);
+        }
     }
     
-    public void loadTerrain(Texture alphamapText, Texture heightmapText, Vector3f moved, Vector3f scale) {
+    /**
+     * Lädt das Terrain mit bestimmten Daten
+     * @param name Name vom Terrain
+     * @param alphamapText Textur von der Alphamap
+     * @param heightmapText Textur von der Höhenmap
+     * @param moved Verschiebt das Terrain um den Vektor
+     * @param scale Vergrößert das Terrain um den Vektor
+     */
+    public void loadTerrain(String name, Texture alphamapText, Texture heightmapText, Vector3f moved, Vector3f scale) {
         // First, we load up our textures and the heightmap texture for the terrain
 
+        Material mat = matTerrain.clone();
+        
         // ALPHA map (for splat textures)
-        this.alphamapText = alphamapText;
-        matTerrain.setTexture("Alpha", alphamapText);
-
-        // HEIGHTMAP image (for the terrain heightmap)
-        this.heightmapText = heightmapText;
-
-//        // WIREFRAME material
-//        matWire = new Material(assetManager, "Common/MatDefs/Misc/Unshaded.j3md");
-//        matWire.getAdditionalRenderState().setWireframe(true);
-//        matWire.setColor("Color", ColorRGBA.Green);
-
+        mat.setTexture("Alpha", alphamapText);
+        
         // CREATE HEIGHTMAP
+        AbstractHeightMap heightmap = null;
         try {
             //heightmap = new HillHeightMap(1025, 1000, 50, 100, (byte) 3);
             heightmap = new ImageBasedHeightMap(heightmapText.getImage(), 1f);
@@ -145,7 +170,7 @@ public class WorldAppState extends AbstractAppState {
          * The total size is up to you. At 1025 it ran fine for me (200+FPS), however at
          * size=2049, it got really slow. But that is a jump from 2 million to 8 million triangles...
          */
-        terrain = new TerrainQuad(TERRAINNAME, 65, 513, heightmap.getHeightMap());
+        TerrainQuad terrain = new TerrainQuad(name, 65, TERRAINSIZE + 1, heightmap.getHeightMap());
         terrain.setCullHint(Spatial.CullHint.Never);
         terrain.setLocalTranslation(moved);
         
@@ -153,19 +178,15 @@ public class WorldAppState extends AbstractAppState {
         control.setLodCalculator( new DistanceLodCalculator(65, 2.7f) ); // patch size, and a multiplier
         terrain.addControl(control);
         
-        terrain.setMaterial(matTerrain);
+        terrain.setMaterial(mat);
+        
         terrain.setLocalScale(scale);
         
-        Spatial oldTerrain = rootNode.getChild(TERRAINNAME);
-        if(oldTerrain != null) {
-            rootNode.detachChild(oldTerrain);
-        }
-        rootNode.attachChild(terrain);
+        unloadTerrain(name);
+        
+        terrainNode.attachChild(terrain);
         
         if(bulletAppState != null) {
-            if(oldTerrain != null) {
-                bulletAppState.getPhysicsSpace().remove(oldTerrain);
-            }
             landscapeControl = new RigidBodyControl(0.0f);
             terrain.addControl(landscapeControl);
             bulletAppState.getPhysicsSpace().add(terrain);
@@ -174,10 +195,52 @@ public class WorldAppState extends AbstractAppState {
     
     private void checkTextureNumber(int textNumber) throws RuntimeException {
         if(textNumber < 1 || textNumber > 3) {
-            throw new RuntimeException("Texture-Number darf nur zwischen 1 und 3 sein (max. 3 Texturen)!");
+            throw new RuntimeException("Texture-Number darf nur zwischen 1 und 3"
+                    + " sein. maximal 3 Texturen für RGB (siehe alphamap)!");
         }
     }
     
+    /**
+     * Ändert die Textur von einer bestimmten Position auf dem Terrain
+     * @param terrainName Name vom Terrain
+     * @param location Position relativ zu (0,0,0)
+     * @param textNumber Nummer von der Textur (1-3 für RGB)
+     */
+    public void changeTexture(String terrainName, Vector3f location, int textNumber) {
+        checkTextureNumber(textNumber);
+        
+        ColorRGBA color = ColorRGBA.White;
+        switch(textNumber) {
+            case 1: color = ColorRGBA.Red; break;
+            case 2: color = ColorRGBA.Green; break;
+            case 3: color = ColorRGBA.Blue; break;
+        }
+        
+        changeTexture(terrainName, location, color);
+    }
+    
+    /**
+     * Ändert die Textur von einer bestimmten Position auf dem Terrain
+     * @param terrainName Name vom Terrain
+     * @param location Position relativ zu (0,0,0)
+     * @param color Farbe (RGB)
+     */
+    public void changeTexture(String terrainName, Vector3f location, ColorRGBA color) {
+        TerrainQuad terrain = (TerrainQuad) terrainNode.getChild(terrainName);
+        if(terrain != null) {
+            Material mat = terrain.getMaterial(location);
+            Texture texture = (Texture) mat.getTextureParam("Alpha").getTextureValue();
+            Image image = texture.getImage();
+
+            ImageUtils.manipulatePixel(image, Math.round(location.getX()), Math.round(location.getZ()), color, true);
+        }
+    }
+    
+    /**
+     * Ändert die Textur von einer bestimmten Position
+     * @param location Position relativ zu (0,0,0)
+     * @param textNumber Nummer von der Textur (1-3 für RGB)
+     */
     public void changeTexture(Vector3f location, int textNumber) {
         checkTextureNumber(textNumber);
         
@@ -191,70 +254,127 @@ public class WorldAppState extends AbstractAppState {
         changeTexture(location, color);
     }
     
+    /**
+     * Ändert die Textur von einer bestimmten Position
+     * @param location Position relativ zu (0,0,0)
+     * @param color Farbe (RGB)
+     */
     public void changeTexture(Vector3f location, ColorRGBA color) {
-        Material mat = terrain.getMaterial(location);
-        Texture texture = (Texture) mat.getTextureParam("Alpha").getTextureValue();
-        Image image = texture.getImage();
-        
-        ImageUtils.manipulatePixel(image, Math.round(location.getX()), Math.round(location.getZ()), color, true);
-    }
-    
-    private void refreshPhysicsControl() {
-        bulletAppState.getPhysicsSpace().remove(terrain);
-        terrain.removeControl(landscapeControl);
-        landscapeControl = new RigidBodyControl(0.0f);
-        terrain.addControl(landscapeControl);
-        bulletAppState.getPhysicsSpace().add(terrain);
-    }
-    
-    public void adjustHeights(List<Vector2f> xz, List<Float> delta) {
-        terrain.adjustHeight(xz, delta);
-        refreshPhysicsControl();
-    }
-    
-    public void adjustHeight(Vector2f xz, float delta) {
-        terrain.adjustHeight(xz, delta);
-        refreshPhysicsControl();
-    }
-    
-    public void setHeights(List<Vector2f> xz, List<Float> delta) {
-        terrain.setHeight(xz, delta);
-        refreshPhysicsControl();
-    }
-    
-    public void setHeight(Vector2f xz, float delta) {
-        terrain.setHeight(xz, delta);
-        refreshPhysicsControl();
-    }
-    
-    public void unloadTerrain() {
-        Spatial oldTerrain = rootNode.getChild(TERRAINNAME);
-        if(oldTerrain != null) {
-            rootNode.detachChild(oldTerrain);
-            if(bulletAppState != null) {
-                bulletAppState.getPhysicsSpace().remove(oldTerrain);
+        for(Spatial spatial : terrainNode.getChildren()) {
+            TerrainQuad terrain = (TerrainQuad) spatial;
+            
+            Vector3f diff = getCoordsRelativeToTerrain(location, terrain);
+            
+            if(diff.getX() >= 0 && diff.getX() <= TERRAINSIZE) {
+                if(diff.getZ() >= 0 && diff.getZ() <= TERRAINSIZE) {
+                    Material mat = terrain.getMaterial(location);
+                    Texture texture = (Texture) mat.getTextureParam("Alpha").getTextureValue();
+                    Image image = texture.getImage();
+
+                    ImageUtils.manipulatePixel(image, Math.round(diff.getX()), Math.round(diff.getZ()), color, true);
+                }
             }
         }
     }
     
-    public boolean isTerrainLoaded() {
-        return terrain != null;
-    }
-
-    public Texture getAlphamapTexture() {
-        return alphamapText;
-    }
-
-    public Texture getHeightmapTexture() {
-        return heightmapText;
-    }
-
-    public BulletAppState getBulletAppState() {
-        return bulletAppState;
+    private Vector3f getCoordsRelativeToTerrain(Vector3f location, TerrainQuad terrain) {
+        Vector3f terrainTranslation2D = terrain.getLocalTranslation().divide(terrain.getLocalScale());
+        Vector3f diff = terrainTranslation2D.add(location);
+        return diff;
     }
     
-    public TerrainQuad getTerrain() {
-        return terrain;
+    private void refreshPhysicsControl(String name) {
+        Spatial spatial = terrainNode.getChild(name);
+        bulletAppState.getPhysicsSpace().remove(spatial);
+        spatial.removeControl(landscapeControl);
+        landscapeControl = new RigidBodyControl(0.0f);
+        spatial.addControl(landscapeControl);
+        bulletAppState.getPhysicsSpace().add(spatial);
+    }
+    
+    /**
+     * Ändert die Höhe von bestimmten Positionen um einen Delta-Wert
+     * @param xzs Positionen, wo die Höhe geändert werden muss
+     * @param delta Delta-Werte von den Positionen
+     */
+    public void adjustHeights(List<Vector2f> xzs, List<Float> delta) {
+        for(Spatial spatial : new ArrayList<>(terrainNode.getChildren())) {
+            for(int i = 0;i < xzs.size();i++) {
+                Vector2f xz = (Vector2f) xzs.get(i);
+                TerrainQuad terrain = (TerrainQuad) spatial;
+                Vector3f diff = getCoordsRelativeToTerrain(new Vector3f(xz.getX(), 0, xz.getY()), terrain);
+                System.out.println(diff.getX() + " " + diff.getZ());
+                if(diff.getX() >= 0 && diff.getX() <= TERRAINSIZE) {
+                    if(diff.getZ() >= 0 && diff.getZ() <= TERRAINSIZE) {
+                        refreshPhysicsControl(terrain.getName());
+                        terrain.adjustHeight(xz, delta.get(i));
+                    }
+                }
+            }
+        }
+    }
+    
+    /**
+     * Ändert die Höhe von einer bestimmten Position um einen Delta-Wert
+     * @param xz Position, wo die Höhe geändert werden muss
+     * @param delta Delta-Wert von der Höhe der Position
+     */
+    public void adjustHeight(Vector2f xz, float delta) {
+        for(Spatial spatial : new ArrayList<>(terrainNode.getChildren())) {
+            TerrainQuad terrain = (TerrainQuad) spatial;
+            refreshPhysicsControl(terrain.getName());
+            terrain.adjustHeight(xz, delta);
+        }
+    }
+    
+    /**
+     * Entfernt alle Terrains
+     */
+    public void unloadAllTerrains() {
+        for(Spatial terrain : new ArrayList<>(terrainNode.getChildren())) {
+            unloadTerrain(terrain.getName());
+        }
+    }
+    
+    /**
+     * Entfernt das Terrain mit einem bestimmten Namen
+     * @param name Name vom Terrain
+     */
+    public void unloadTerrain(String name) {
+        Spatial terrain = terrainNode.getChild(name);
+        if(terrain != null) {
+            terrainNode.detachChild(terrain);
+            if(bulletAppState != null) {
+                bulletAppState.getPhysicsSpace().remove(terrain);
+            }
+        }
+    }
+    
+    /**
+     * @return Ist irgendein Terrain geladen?
+     */
+    public boolean isTerrainLoaded() {
+        return terrainNode.getChildren().size() > 0;
+    }
+    
+    /**
+     * @return Ist das Terrain mit einem bestimmten Namen geladen?
+     * @param terrainName Name vom Terrain
+     */
+    public boolean isTerrainLoaded(String terrainName) {
+        for(Spatial spatial : terrainNode.getChildren()) {
+            if(spatial.getName().equals(terrainName)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * @return Gibt das BulletAppState zurück
+     */
+    public BulletAppState getBulletAppState() {
+        return bulletAppState;
     }
     
     @Override
@@ -268,7 +388,7 @@ public class WorldAppState extends AbstractAppState {
         //TODO: clean up what you initialized in the initialize method,
         //e.g. remove all spatials from rootNode
         //this is called on the OpenGL thread after the AppState has been detached
-        unloadTerrain();
+        unloadAllTerrains();
         
         setSky(null);
         

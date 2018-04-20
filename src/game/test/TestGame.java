@@ -101,18 +101,18 @@ public class TestGame extends SimpleApplication implements ActionListener {
 
         Texture alphaMap = assetManager.loadTexture("Textures/Maps/test-maps/testalphamap2.png");
         Texture heightMap = assetManager.loadTexture("Textures/Maps/test-maps/testheightmap2.png");
-        worldAppState.loadTerrain(alphaMap, heightMap, Vector3f.ZERO, new Vector3f(2f, 0.5f, 2f));
+        worldAppState.loadTerrain("test-map", alphaMap, heightMap, Vector3f.ZERO, new Vector3f(2f, 0.5f, 2f));
 
         carAppState.getControl().setPhysicsLocation(new Vector3f(0, 100, 0));
 
         Texture grass = assetManager.loadTexture("Textures/Tile/Gras.jpg");
-        worldAppState.setTexture(1, grass, 5.0f);
+        worldAppState.setTexture("test-map", 1, grass, 5.0f);
 
         Texture dirt = assetManager.loadTexture("Textures/Tile/Dirt.jpg");
-        worldAppState.setTexture(2, dirt, 5.0f);
+        worldAppState.setTexture("test-map", 2, dirt, 5.0f);
 
         Texture rock = assetManager.loadTexture("Textures/Tile/Road.jpg");
-        worldAppState.setTexture(3, rock, 5.0f);
+        worldAppState.setTexture("test-map", 3, rock, 5.0f);
     }
 
     @Override
