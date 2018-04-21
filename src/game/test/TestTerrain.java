@@ -6,6 +6,7 @@
 package game.test;
 
 import com.jme3.app.SimpleApplication;
+import com.jme3.bounding.BoundingBox;
 import com.jme3.bullet.BulletAppState;
 import com.jme3.font.BitmapText;
 import com.jme3.input.KeyInput;
@@ -46,6 +47,7 @@ public class TestTerrain extends SimpleApplication implements ActionListener {
     private final float grassScale = 64;
     private final float dirtScale = 16;
     private final float roadScale = 128;
+    private final Vector3f carSpawnPoint = new Vector3f(256,100,256);
 
     private BulletAppState bulletAppState;
     private CarAppState carAppState;
@@ -53,6 +55,8 @@ public class TestTerrain extends SimpleApplication implements ActionListener {
     private WorldAppState worldAppState;
     
     private BitmapText informationText;
+    
+    private boolean terrainInitialized = false;
 
     public static void main(String[] args) {
         TestTerrain testTerrain = new TestTerrain();
@@ -70,7 +74,7 @@ public class TestTerrain extends SimpleApplication implements ActionListener {
         initHUD();
         initInput();
         
-        carAppState = new CarAppState(bulletAppState);
+        carAppState = new CarAppState(bulletAppState, carSpawnPoint);
         stateManager.attach(carAppState);
         
         flyCam.setEnabled(false);
@@ -84,7 +88,7 @@ public class TestTerrain extends SimpleApplication implements ActionListener {
         informationText.setSize(guiFont.getCharSet().getRenderedSize());
         informationText.setText("Press [1]: Load/Unload Map 1\nPress [2]: Load/Unload Map 2\n"
                 + "Press [3]: Load/Unload Map 3\n\nPress [4]: Load/Unload Real 1st Map\n\nPress [0]: Unload Map\n"
-                + "Press [SPACE]: Jump (billig)");
+                + "Press [SPACE]: Create Mountain (not functional)");
         informationText.setLocalTranslation(0, settings.getHeight() - informationText.getLineHeight(), 0);
         guiNode.attachChild(informationText);
     }
@@ -111,9 +115,7 @@ public class TestTerrain extends SimpleApplication implements ActionListener {
         
         Texture alphaMap = assetManager.loadTexture("Textures/Maps/test-maps/testalphamap2.png");
         Texture heightMap = assetManager.loadTexture("Textures/Maps/test-maps/testheightmap2.png");
-        worldAppState.loadTerrain("test_terrain",alphaMap, heightMap, Vector3f.ZERO, new Vector3f(2f,0.5f,2f));
-        
-        carAppState.getControl().setPhysicsLocation(new Vector3f(0,100,0));
+        worldAppState.loadTerrain("test_terrain",alphaMap, heightMap, Vector3f.ZERO, new Vector3f(1f,0.5f,1f));
         
         Texture grass = assetManager.loadTexture("Textures/Tile/Gras.jpg");
         worldAppState.setTexture("test_terrain",1,grass,grassScale);
@@ -127,17 +129,19 @@ public class TestTerrain extends SimpleApplication implements ActionListener {
 
     @Override
     public void simpleUpdate(float tpf) {
-        if(worldAppState.isInitialized() && !worldAppState.isTerrainLoaded()) initTerrain();
+        if(worldAppState.isInitialized() && !terrainInitialized) {
+            initTerrain();
+            terrainInitialized = true;
+        }
         
-//        if(carAppState != null) {
-//            BoundingBox boundBox = (BoundingBox) carAppState.getGeometry().getModelBound();
-//
-//            int x = (int)(carAppState.getControl().getPhysicsLocation().x - boundBox.getXExtent())/2 + 256;
-//            int z = 256 - (int)(carAppState.getControl().getPhysicsLocation().z)/2;
-//
-//            int textNumber = 1;
-//            worldAppState.changeTexture(new Vector3f(x,0,z), textNumber);
-//        }
+        if(carAppState != null) {
+            BoundingBox boundBox = (BoundingBox) carAppState.getGeometry().getModelBound();
+            
+            float x = carAppState.getControl().getPhysicsLocation().x - boundBox.getXExtent()*2;
+            float z = carAppState.getControl().getPhysicsLocation().z + boundBox.getZExtent()/2;
+
+            worldAppState.changeTexture(new Vector3f(x,0,z), ColorRGBA.Blue);
+        }
     }
 
     @Override
@@ -154,20 +158,23 @@ public class TestTerrain extends SimpleApplication implements ActionListener {
 //                    Geometry geom = carAppState.getGeometry();
 //                    List<Vector2f> locations = new ArrayList<>();
 //                    List<Float> heights = new ArrayList<>();
+//                    
 //                    BoundingBox boundBox = (BoundingBox) geom.getModelBound();
+//                    Vector3f carScale = new Vector3f();
+//                    boundBox.getExtent(carScale);
+//                    carScale.multLocal(geom.getLocalScale());
 //                    Vector3f location = carAppState.getControl().getPhysicsLocation();
-                    float defaultHeightDelta = 20f;
-//                    for(int x = 0;x < (int)Math.ceil(boundBox.getXExtent());x++) {
-//                        for(int z = 0;z < (int)Math.ceil(boundBox.getZExtent());z++) {
-//                            Vector2f locXZ = new Vector2f(location.getX() + x,location.getZ() + z);
-//                            locations.add(locXZ);
-//                            heights.add(defaultHeightDelta);
-//                        }
-//                    }
-//                    worldAppState.adjustHeights(locations, heights);
+//                    Vector3f maxLocation = location.add(carScale);
+//                    System.out.println(location + " to " + maxLocation);
+//                    
+                    float defaultHeightDelta = 20.0f;
+//                    
+//                    worldAppState.adjustHeights(location.getX(), location.getZ(),
+//                            maxLocation.getX(), maxLocation.getZ(), defaultHeightDelta);
+//
 
                     carAppState.getControl().setPhysicsLocation(carAppState.getControl().getPhysicsLocation()
-                            .add(new Vector3f(0,defaultHeightDelta/2,0)));
+                            .add(new Vector3f(0,defaultHeightDelta,0)));
                     break;
                 case MAPPING_SWITCH_MAP_0:
                     worldAppState.unloadAllTerrains();
@@ -220,12 +227,12 @@ public class TestTerrain extends SimpleApplication implements ActionListener {
                     if(!worldAppState.isTerrainLoaded("first_map")) {
                         worldAppState.loadTerrain("first_map",alphaMap, heightMap,
                             Vector3f.ZERO, new Vector3f(0.5f,0.05f,0.5f));
+                        
+                        Texture road = assetManager.loadTexture("Textures/Tile/Road.jpg");
+                        worldAppState.setTexture("first_map",1,road,64.0f);
 
                         Texture dirt = assetManager.loadTexture("Textures/Tile/Dirt.jpg");
                         worldAppState.setTexture("first_map",2,dirt,64.0f);
-
-                        Texture road = assetManager.loadTexture("Textures/Tile/Road.jpg");
-                        worldAppState.setTexture("first_map",1,road,64.0f);
 
                         Texture grass = assetManager.loadTexture("Textures/Tile/Gras.jpg");
                         worldAppState.setTexture("first_map",3,grass,64.0f);

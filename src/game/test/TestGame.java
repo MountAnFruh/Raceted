@@ -6,7 +6,6 @@
 package game.test;
 
 import com.jme3.app.SimpleApplication;
-import com.jme3.bounding.BoundingBox;
 import com.jme3.bullet.BulletAppState;
 import com.jme3.font.BitmapText;
 import com.jme3.input.KeyInput;
@@ -14,21 +13,13 @@ import com.jme3.input.controls.ActionListener;
 import com.jme3.input.controls.KeyTrigger;
 import com.jme3.input.controls.Trigger;
 import com.jme3.light.AmbientLight;
-import com.jme3.material.Material;
 import com.jme3.math.ColorRGBA;
-import com.jme3.math.Vector2f;
 import com.jme3.math.Vector3f;
 import com.jme3.renderer.RenderManager;
-import com.jme3.scene.Geometry;
 import com.jme3.scene.Spatial;
-import com.jme3.texture.Image;
 import com.jme3.texture.Texture;
 import game.entities.CarAppState;
 import game.map.WorldAppState;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  *
@@ -65,7 +56,7 @@ public class TestGame extends SimpleApplication implements ActionListener {
         initHUD();
         initInput();
 
-        carAppState = new CarAppState(bulletAppState);
+        carAppState = new CarAppState(bulletAppState, new Vector3f(512, 100, 512));
         stateManager.attach(carAppState);
 
         flyCam.setEnabled(false);
@@ -102,8 +93,6 @@ public class TestGame extends SimpleApplication implements ActionListener {
         Texture alphaMap = assetManager.loadTexture("Textures/Maps/test-maps/testalphamap2.png");
         Texture heightMap = assetManager.loadTexture("Textures/Maps/test-maps/testheightmap2.png");
         worldAppState.loadTerrain("test-map", alphaMap, heightMap, Vector3f.ZERO, new Vector3f(2f, 0.5f, 2f));
-
-        carAppState.getControl().setPhysicsLocation(new Vector3f(0, 100, 0));
 
         Texture grass = assetManager.loadTexture("Textures/Tile/Gras.jpg");
         worldAppState.setTexture("test-map", 1, grass, 5.0f);

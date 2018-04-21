@@ -6,7 +6,6 @@
 package game.entities;
 
 import com.jme3.app.Application;
-import com.jme3.app.SimpleApplication;
 import com.jme3.app.state.AbstractAppState;
 import com.jme3.app.state.AppStateManager;
 import com.jme3.asset.AssetManager;
@@ -16,8 +15,6 @@ import com.jme3.bullet.collision.shapes.CollisionShape;
 import com.jme3.bullet.control.RigidBodyControl;
 import com.jme3.bullet.util.CollisionShapeFactory;
 import com.jme3.collision.CollisionResults;
-import com.jme3.effect.ParticleEmitter;
-import com.jme3.effect.ParticleMesh;
 import com.jme3.input.ChaseCamera;
 import com.jme3.input.FlyByCamera;
 import com.jme3.input.InputManager;
@@ -26,7 +23,6 @@ import com.jme3.input.controls.ActionListener;
 import com.jme3.input.controls.KeyTrigger;
 import com.jme3.input.controls.Trigger;
 import com.jme3.material.Material;
-import com.jme3.math.ColorRGBA;
 import com.jme3.math.Matrix3f;
 import com.jme3.math.Vector3f;
 import com.jme3.renderer.Camera;
@@ -44,8 +40,6 @@ import game.test.Explosion;
  * @author Robbo13
  */
 public class RockAppState extends AbstractAppState implements ActionListener {
-
-    private RenderManager renderManager;
 
     // define triggers
     private static final Trigger TRIGGER_LEFT = new KeyTrigger(KeyInput.KEY_A);
@@ -68,6 +62,7 @@ public class RockAppState extends AbstractAppState implements ActionListener {
     private static final float DEFAULT_JUMP_COOLDOWN = 1.0f;
 
     private final BulletAppState bulletAppState;
+    private final RenderManager renderManager;
     private final Node rootNode;
     private final Spatial terrain;
 

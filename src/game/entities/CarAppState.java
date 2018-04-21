@@ -22,7 +22,6 @@ import com.jme3.input.KeyInput;
 import com.jme3.input.controls.ActionListener;
 import com.jme3.input.controls.KeyTrigger;
 import com.jme3.input.controls.Trigger;
-import com.jme3.light.Light;
 import com.jme3.material.Material;
 import com.jme3.math.ColorRGBA;
 import com.jme3.math.FastMath;
@@ -33,7 +32,6 @@ import com.jme3.renderer.queue.RenderQueue;
 import com.jme3.scene.Geometry;
 import com.jme3.scene.Node;
 import com.jme3.scene.Spatial;
-import com.jme3.scene.debug.WireBox;
 import com.jme3.scene.shape.Cylinder;
 
 /**
@@ -60,11 +58,9 @@ public class CarAppState extends AbstractAppState implements ActionListener {
     
     private static final float DEFAULT_JUMP_COOLDOWN = 1.0f;
 
-    private static Material getBoundingBoxMaterialForPickup() {
-        return new Material();
-    }
-    
     private final BulletAppState bulletAppState;
+    private final Vector3f spawnPoint;
+    
     private Node rootNode;
     
     private FlyByCamera deathCam;
@@ -82,9 +78,14 @@ public class CarAppState extends AbstractAppState implements ActionListener {
     private float accelerationValue;
     
     private float jumpCooldown = 0;
+    
+    private static Material getBoundingBoxMaterialForPickup() {
+        return new Material();
+    }
 
-    public CarAppState(BulletAppState bulletAppState) {
+    public CarAppState(BulletAppState bulletAppState, Vector3f spawnPoint) {
         this.bulletAppState = bulletAppState;
+        this.spawnPoint = spawnPoint;
         //this.bulletAppState.setDebugEnabled(true);
     }
     
@@ -254,6 +255,7 @@ public class CarAppState extends AbstractAppState implements ActionListener {
         rootNode.attachChild(vehicleNode);
         
         bulletAppState.getPhysicsSpace().add(carControl);
+        carControl.setPhysicsLocation(spawnPoint);
     }
     
     private void cleanupPlayer() {
@@ -325,7 +327,7 @@ public class CarAppState extends AbstractAppState implements ActionListener {
                 break;
             case MAPPING_RESET:
                 if (isPressed) {
-                    carControl.setPhysicsLocation(Vector3f.ZERO);
+                    carControl.setPhysicsLocation(spawnPoint);
                     carControl.setPhysicsRotation(new Matrix3f());
                     carControl.setLinearVelocity(Vector3f.ZERO);
                     carControl.setAngularVelocity(Vector3f.ZERO);
