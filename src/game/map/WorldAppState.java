@@ -12,11 +12,9 @@ import com.jme3.app.state.AppStateManager;
 import com.jme3.asset.AssetManager;
 import com.jme3.bullet.BulletAppState;
 import com.jme3.bullet.control.RigidBodyControl;
-import com.jme3.light.AmbientLight;
 import com.jme3.light.Light;
 import com.jme3.material.Material;
 import com.jme3.math.ColorRGBA;
-import com.jme3.math.Vector2f;
 import com.jme3.math.Vector3f;
 import com.jme3.renderer.Camera;
 import com.jme3.scene.Node;
@@ -31,6 +29,7 @@ import com.jme3.texture.Texture;
 import game.utils.ImageUtils;
 import java.util.ArrayList;
 import java.util.List;
+import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 /**
  *
@@ -64,8 +63,6 @@ public class WorldAppState extends AbstractAppState {
     @Override
     public void initialize(AppStateManager stateManager, Application app) {
         super.initialize(stateManager, app);
-        //TODO: initialize your AppState, e.g. attach spatials to rootNode
-        //this is called on the OpenGL thread after the AppState has been attached
         SimpleApplication simpleApp = (SimpleApplication) app;
         this.rootNode = simpleApp.getRootNode();
         this.assetManager = simpleApp.getAssetManager();
@@ -149,13 +146,15 @@ public class WorldAppState extends AbstractAppState {
         Material mat = matTerrain.clone();
         
         // ALPHA map (for splat textures)
+        alphamapText = alphamapText.clone();
+        alphamapText.setImage(ImageUtils.copyImage(alphamapText.getImage()));
         mat.setTexture("Alpha", alphamapText);
         
         // CREATE HEIGHTMAP
         AbstractHeightMap heightmap = null;
         try {
             //heightmap = new HillHeightMap(1025, 1000, 50, 100, (byte) 3);
-            heightmap = new ImageBasedHeightMap(heightmapText.getImage(), 1f);
+            heightmap = new ImageBasedHeightMap(ImageUtils.copyImage(heightmapText.getImage()), 1f);
             heightmap.load();
         } catch (Exception e) {
             e.printStackTrace();
@@ -172,7 +171,6 @@ public class WorldAppState extends AbstractAppState {
          */
         TerrainQuad terrain = new TerrainQuad(name, 65, TERRAINSIZE + 1, heightmap.getHeightMap());
         terrain.setCullHint(Spatial.CullHint.Never);
-        terrain.setLocalTranslation(moved);
         
         TerrainLodControl control = new TerrainLodControl(terrain, cam);
         control.setLodCalculator( new DistanceLodCalculator(65, 2.7f) ); // patch size, and a multiplier
@@ -180,11 +178,12 @@ public class WorldAppState extends AbstractAppState {
         
         terrain.setMaterial(mat);
         
-        terrain.setLocalScale(scale);
-        
         unloadTerrain(name);
         
         terrainNode.attachChild(terrain);
+        
+        terrain.setLocalScale(scale);
+        setTranslation(name, moved);
         
         if(bulletAppState != null) {
             landscapeControl = new RigidBodyControl(0.0f);
@@ -228,11 +227,17 @@ public class WorldAppState extends AbstractAppState {
     public void changeTexture(String terrainName, Vector3f location, ColorRGBA color) {
         TerrainQuad terrain = (TerrainQuad) terrainNode.getChild(terrainName);
         if(terrain != null) {
-            Material mat = terrain.getMaterial(location);
-            Texture texture = (Texture) mat.getTextureParam("Alpha").getTextureValue();
-            Image image = texture.getImage();
-
-            ImageUtils.manipulatePixel(image, Math.round(location.getX()), Math.round(location.getZ()), color, true);
+            Vector3f diff = getCoordsRelativeToTerrain(location, terrain).divide(terrain.getLocalScale());
+            
+            if(diff.getX() >= 0 && diff.getX() <= TERRAINSIZE) {
+                if(diff.getZ() >= 0 && diff.getZ() <= TERRAINSIZE) {
+                    Material mat = terrain.getMaterial(location);
+                    Texture texture = (Texture) mat.getTextureParam("Alpha").getTextureValue();
+                    Image image = texture.getImage();
+                    
+                    ImageUtils.manipulatePixel(image, Math.round(diff.getX()), terrain.getTerrainSize() - Math.round(diff.getZ()), color, true);
+                }
+            }
         }
     }
     
@@ -262,69 +267,80 @@ public class WorldAppState extends AbstractAppState {
     public void changeTexture(Vector3f location, ColorRGBA color) {
         for(Spatial spatial : terrainNode.getChildren()) {
             TerrainQuad terrain = (TerrainQuad) spatial;
-            
-            Vector3f diff = getCoordsRelativeToTerrain(location, terrain);
-            
-            if(diff.getX() >= 0 && diff.getX() <= TERRAINSIZE) {
-                if(diff.getZ() >= 0 && diff.getZ() <= TERRAINSIZE) {
-                    Material mat = terrain.getMaterial(location);
-                    Texture texture = (Texture) mat.getTextureParam("Alpha").getTextureValue();
-                    Image image = texture.getImage();
-
-                    ImageUtils.manipulatePixel(image, Math.round(diff.getX()), Math.round(diff.getZ()), color, true);
-                }
-            }
+            changeTexture(terrain.getName(), location, color);
         }
     }
     
     private Vector3f getCoordsRelativeToTerrain(Vector3f location, TerrainQuad terrain) {
-        Vector3f terrainTranslation2D = terrain.getLocalTranslation().divide(terrain.getLocalScale());
-        Vector3f diff = terrainTranslation2D.add(location);
-        return diff;
+        return location.subtract(getTranslation(terrain.getName()));
     }
     
     private void refreshPhysicsControl(String name) {
         Spatial spatial = terrainNode.getChild(name);
-        bulletAppState.getPhysicsSpace().remove(spatial);
-        spatial.removeControl(landscapeControl);
-        landscapeControl = new RigidBodyControl(0.0f);
-        spatial.addControl(landscapeControl);
-        bulletAppState.getPhysicsSpace().add(spatial);
+        if(spatial != null) {
+            bulletAppState.getPhysicsSpace().remove(spatial);
+            spatial.removeControl(landscapeControl);
+            landscapeControl = new RigidBodyControl(0.0f);
+            spatial.addControl(landscapeControl);
+            bulletAppState.getPhysicsSpace().add(spatial);
+        }
     }
     
     /**
      * Ändert die Höhe von bestimmten Positionen um einen Delta-Wert
-     * @param xzs Positionen, wo die Höhe geändert werden muss
+     * @param x1
+     * @param x2
+     * @param z1
+     * @param z2
      * @param delta Delta-Werte von den Positionen
      */
-    public void adjustHeights(List<Vector2f> xzs, List<Float> delta) {
-        for(Spatial spatial : new ArrayList<>(terrainNode.getChildren())) {
-            for(int i = 0;i < xzs.size();i++) {
-                Vector2f xz = (Vector2f) xzs.get(i);
-                TerrainQuad terrain = (TerrainQuad) spatial;
-                Vector3f diff = getCoordsRelativeToTerrain(new Vector3f(xz.getX(), 0, xz.getY()), terrain);
-                System.out.println(diff.getX() + " " + diff.getZ());
-                if(diff.getX() >= 0 && diff.getX() <= TERRAINSIZE) {
-                    if(diff.getZ() >= 0 && diff.getZ() <= TERRAINSIZE) {
-                        refreshPhysicsControl(terrain.getName());
-                        terrain.adjustHeight(xz, delta.get(i));
-                    }
-                }
-            }
+    public void adjustHeights(float x1, float x2, float z1, float z2, float delta) {
+        // TODO: Fix adjust Heights
+//        for(Spatial spatial : new ArrayList<>(terrainNode.getChildren())) {
+//            TerrainQuad terrain = (TerrainQuad) spatial;
+//            Vector3f scale = terrain.getLocalScale();
+//            List<Vector2f> realXZs = new ArrayList<>();
+//            List<Float> deltas = new ArrayList<>();
+//            for(float x = x1; x <= x2;x += scale.getX()) {
+//                for(float z = z1; z <= z2;z += scale.getZ()) {
+//                    Vector3f diff = getCoordsRelativeToTerrain(new Vector3f(x,0,z),terrain);
+//                    diff = diff.subtract(new Vector3f(TERRAINSIZE, 0, TERRAINSIZE).mult(terrain.getLocalScale()).divide(2));
+//                    realXZs.add(new Vector2f(diff.getX(), diff.getZ()));
+//                    deltas.add(delta * scale.getY());
+//                }
+//            }
+//            System.out.println("name: " + spatial.getName());
+//            System.out.println("xzs:  " + Arrays.toString(realXZs.toArray()));
+//            System.out.println("del:  " + Arrays.toString(deltas.toArray()));
+//            terrain.adjustHeight(realXZs, deltas);
+//            refreshPhysicsControl(spatial.getName());
+//        }
+        throw new NotImplementedException();
+    }
+    
+    /**
+     * Ändert die Position von einem Terrain
+     * @param name Name vom Terrain
+     * @param translation Die lokale Position
+     */
+    public void setTranslation(String name, Vector3f translation) {
+        Spatial terrain = terrainNode.getChild(name);
+        if(terrain != null) {
+            terrain.setLocalTranslation(translation.add(new Vector3f(TERRAINSIZE, 0, TERRAINSIZE).mult(terrain.getLocalScale()).divide(2)));
         }
     }
     
     /**
-     * Ändert die Höhe von einer bestimmten Position um einen Delta-Wert
-     * @param xz Position, wo die Höhe geändert werden muss
-     * @param delta Delta-Wert von der Höhe der Position
+     * Holt die jetzige Position von einem Terrain
+     * @param name Name vom Terrain
+     * @return Die lokale Position
      */
-    public void adjustHeight(Vector2f xz, float delta) {
-        for(Spatial spatial : new ArrayList<>(terrainNode.getChildren())) {
-            TerrainQuad terrain = (TerrainQuad) spatial;
-            refreshPhysicsControl(terrain.getName());
-            terrain.adjustHeight(xz, delta);
+    public Vector3f getTranslation(String name) {
+        Spatial terrain = terrainNode.getChild(name);
+        if(terrain != null) {
+            return terrain.getLocalTranslation().subtract(new Vector3f(TERRAINSIZE, 0, TERRAINSIZE).mult(terrain.getLocalScale()).divide(2));
         }
+        return null;
     }
     
     /**
@@ -385,9 +401,6 @@ public class WorldAppState extends AbstractAppState {
     @Override
     public void cleanup() {
         super.cleanup();
-        //TODO: clean up what you initialized in the initialize method,
-        //e.g. remove all spatials from rootNode
-        //this is called on the OpenGL thread after the AppState has been detached
         unloadAllTerrains();
         
         setSky(null);

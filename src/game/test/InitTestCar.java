@@ -13,6 +13,7 @@ import com.jme3.bullet.control.RigidBodyControl;
 import com.jme3.input.FlyByCamera;
 import com.jme3.light.AmbientLight;
 import com.jme3.math.ColorRGBA;
+import com.jme3.math.Vector3f;
 import com.jme3.scene.Node;
 import com.jme3.scene.Spatial;
 import game.entities.CarAppState;
@@ -22,14 +23,16 @@ import game.entities.CarAppState;
  * @author rober
  */
 public class InitTestCar {
-    private SimpleApplication app;
-    private AppStateManager stateManager;
-    private AssetManager assetManager;
+    
+    private final SimpleApplication app;
+    private final AppStateManager stateManager;
+    private final AssetManager assetManager;
+    private final BulletAppState bulletAppState;
+    private final Node rootNode;
+    private final FlyByCamera flyCam;
+    
     private CarAppState carAppState;
-    private BulletAppState bulletAppState;
     private Spatial terrain;
-    private Node rootNode;
-    private FlyByCamera flyCam;
 
     public InitTestCar(SimpleApplication app) {
         this.app = app;
@@ -50,7 +53,7 @@ public class InitTestCar {
         initSky();
         initTerrain();
         
-        carAppState = new CarAppState(bulletAppState);
+        carAppState = new CarAppState(bulletAppState, new Vector3f(0,100,0));
         stateManager.attach(carAppState);
     }
     

@@ -7,7 +7,11 @@ package game.utils;
 
 import com.jme3.math.ColorRGBA;
 import com.jme3.texture.Image;
+import com.jme3.texture.image.ColorSpace;
+import java.awt.image.BufferedImage;
 import java.nio.ByteBuffer;
+import java.util.ArrayList;
+import java.util.Arrays;
 
 /**
  *
@@ -21,7 +25,7 @@ public class ImageUtils {
     public static final String RACETED_ICON = IMAGES_FOLDER + "raceted_icon.png";
     
     /**
-     * We are only using RGBA8 images for alpha textures right now.
+     * Manipulate a pixel inside an image
      * @param image to get/set the color on
      * @param x location
      * @param y location
@@ -51,7 +55,6 @@ public class ImageUtils {
                        .put(float2byte(color.g))
                        .put(float2byte(color.b))
                        .put(float2byte(color.a));
-                    
                 }
                 break;
             case ABGR8:
@@ -75,12 +78,29 @@ public class ImageUtils {
         }
         image.setData(0, buf);
     }
+    
+    /**
+     * Copies another Image
+     * @param image the Image
+     * @return exact copy of {@code image}
+     */
+    public static Image copyImage(Image image) {
+        Image img = image.clone();
+        ByteBuffer original = image.getData(0);
+        ByteBuffer clone = ByteBuffer.allocateDirect(original.capacity());
+        original.rewind();
+        clone.put(original);
+        original.rewind();
+        clone.flip();
+        img.setData(0, clone);
+        return img;
+    }
 
-    public static float byte2float(byte b){
+    private static float byte2float(byte b){
         return ((float)(b & 0xFF)) / 255f;
     }
 
-    public static byte float2byte(float f){
+    private static byte float2byte(float f){
         return (byte) (f * 255f);
     }
 }

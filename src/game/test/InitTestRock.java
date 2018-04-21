@@ -23,14 +23,16 @@ import game.entities.RockAppState;
  * @author rober
  */
 public class InitTestRock {
-    private SimpleApplication app;
-    private AppStateManager stateManager;
-    private AssetManager assetManager;
+    
+    private final SimpleApplication app;
+    private final AppStateManager stateManager;
+    private final AssetManager assetManager;
+    private final BulletAppState bulletAppState;
+    private final Node rootNode;
+    private final FlyByCamera flyCam;
+    
     private RockAppState rockAppState;
-    private BulletAppState bulletAppState;
     private Spatial terrain;
-    private Node rootNode;
-    private FlyByCamera flyCam;
 
     public InitTestRock(SimpleApplication app) {
         this.app = app;

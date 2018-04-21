@@ -10,6 +10,7 @@ import com.jme3.bullet.BulletAppState;
 import com.jme3.bullet.control.RigidBodyControl;
 import com.jme3.light.AmbientLight;
 import com.jme3.math.ColorRGBA;
+import com.jme3.math.Vector3f;
 import com.jme3.renderer.RenderManager;
 import com.jme3.scene.Spatial;
 import com.jme3.system.JmeContext;
@@ -41,7 +42,7 @@ public class TestCar extends SimpleApplication {
         initSky();
         initTerrain();
         
-        carAppState = new CarAppState(bulletAppState);
+        carAppState = new CarAppState(bulletAppState, new Vector3f(0,30,0));
         stateManager.attach(carAppState);
     }
     
