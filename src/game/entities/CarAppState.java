@@ -59,6 +59,7 @@ public class CarAppState extends AbstractAppState implements ActionListener {
     private static final String MAPPING_RESET = "Reset";
     
     private static final float DEFAULT_JUMP_COOLDOWN = 1.0f;
+    private static final float MAX_SPEED = 300f;
 
     private static Material getBoundingBoxMaterialForPickup() {
         return new Material();
@@ -76,6 +77,8 @@ public class CarAppState extends AbstractAppState implements ActionListener {
     
     private boolean jump;
     private boolean onGround;
+    private int steer;
+    
     private VehicleControl carControl;
     private Node vehicleNode;
     private float steeringValue;
@@ -278,6 +281,8 @@ public class CarAppState extends AbstractAppState implements ActionListener {
                 jumpCooldown = DEFAULT_JUMP_COOLDOWN;
             }
         }
+        steeringValue = steer * 0.5f * FastMath.pow(((MAX_SPEED - carControl.getCurrentVehicleSpeedKmHour()) / MAX_SPEED) , 2);
+        carControl.steer(steeringValue);
         if (jumpCooldown > 0) {
             jumpCooldown -= tpf;
         }
@@ -293,22 +298,13 @@ public class CarAppState extends AbstractAppState implements ActionListener {
 
     @Override
     public void onAction(String name, boolean isPressed, float tpf) {
-        float maxSpeed = 300f;
         switch(name) {
             case MAPPING_SPACE: jump = isPressed; break;
             case MAPPING_LEFT:
-                if(isPressed) {
-                    steeringValue += 0.5f * FastMath.pow(((maxSpeed - carControl.getCurrentVehicleSpeedKmHour()) / maxSpeed) , 2);
-                } else {
-                    steeringValue = 0;
-                }
+                if(isPressed) steer++; else steer--;
                 break;
             case MAPPING_RIGHT:
-                if(isPressed) {
-                    steeringValue -= 0.5f * FastMath.pow(((maxSpeed - carControl.getCurrentVehicleSpeedKmHour()) / maxSpeed) , 2);
-                } else {
-                    steeringValue = 0;
-                }
+                if(isPressed) steer--; else steer++;
                 break;
             case MAPPING_UP:
                 if (isPressed) {
@@ -334,9 +330,8 @@ public class CarAppState extends AbstractAppState implements ActionListener {
                 break;
             default: break;
         }
-        carControl.steer(steeringValue);
-        carControl.accelerate(accelerationValue * ((maxSpeed - carControl.getCurrentVehicleSpeedKmHour()) / maxSpeed));
-        System.out.println(carControl.getCurrentVehicleSpeedKmHour() + ", " + accelerationValue + ", " + (maxSpeed - carControl.getCurrentVehicleSpeedKmHour()));
+        carControl.accelerate(accelerationValue * ((MAX_SPEED - carControl.getCurrentVehicleSpeedKmHour()) / MAX_SPEED));
+        System.out.println(carControl.getCurrentVehicleSpeedKmHour() + ", " + accelerationValue + ", " + (MAX_SPEED - carControl.getCurrentVehicleSpeedKmHour()));
     }
     
 }
