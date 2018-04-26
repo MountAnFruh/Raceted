@@ -22,7 +22,6 @@ import com.jme3.input.KeyInput;
 import com.jme3.input.controls.ActionListener;
 import com.jme3.input.controls.KeyTrigger;
 import com.jme3.input.controls.Trigger;
-import com.jme3.light.Light;
 import com.jme3.material.Material;
 import com.jme3.math.ColorRGBA;
 import com.jme3.math.FastMath;
@@ -33,7 +32,6 @@ import com.jme3.renderer.queue.RenderQueue;
 import com.jme3.scene.Geometry;
 import com.jme3.scene.Node;
 import com.jme3.scene.Spatial;
-import com.jme3.scene.debug.WireBox;
 import com.jme3.scene.shape.Cylinder;
 
 /**
@@ -59,12 +57,11 @@ public class CarAppState extends AbstractAppState implements ActionListener {
     private static final String MAPPING_RESET = "Reset";
     
     private static final float DEFAULT_JUMP_COOLDOWN = 1.0f;
+    private static final float MAX_SPEED = 300f;
 
-    private static Material getBoundingBoxMaterialForPickup() {
-        return new Material();
-    }
-    
     private final BulletAppState bulletAppState;
+    private final Vector3f spawnPoint;
+    
     private Node rootNode;
     
     private FlyByCamera deathCam;
@@ -76,15 +73,22 @@ public class CarAppState extends AbstractAppState implements ActionListener {
     
     private boolean jump;
     private boolean onGround;
+    private int steer;
+    
     private VehicleControl carControl;
     private Node vehicleNode;
     private float steeringValue;
     private float accelerationValue;
     
     private float jumpCooldown = 0;
+    
+    private static Material getBoundingBoxMaterialForPickup() {
+        return new Material();
+    }
 
-    public CarAppState(BulletAppState bulletAppState) {
+    public CarAppState(BulletAppState bulletAppState, Vector3f spawnPoint) {
         this.bulletAppState = bulletAppState;
+        this.spawnPoint = spawnPoint;
         //this.bulletAppState.setDebugEnabled(true);
     }
     
@@ -254,6 +258,7 @@ public class CarAppState extends AbstractAppState implements ActionListener {
         rootNode.attachChild(vehicleNode);
         
         bulletAppState.getPhysicsSpace().add(carControl);
+        carControl.setPhysicsLocation(spawnPoint);
     }
     
     private void cleanupPlayer() {
@@ -278,6 +283,8 @@ public class CarAppState extends AbstractAppState implements ActionListener {
                 jumpCooldown = DEFAULT_JUMP_COOLDOWN;
             }
         }
+        steeringValue = steer * 0.5f * FastMath.pow(((MAX_SPEED - carControl.getCurrentVehicleSpeedKmHour()) / MAX_SPEED) , 2);
+        carControl.steer(steeringValue);
         if (jumpCooldown > 0) {
             jumpCooldown -= tpf;
         }
@@ -293,22 +300,13 @@ public class CarAppState extends AbstractAppState implements ActionListener {
 
     @Override
     public void onAction(String name, boolean isPressed, float tpf) {
-        float maxSpeed = 300f;
         switch(name) {
             case MAPPING_SPACE: jump = isPressed; break;
             case MAPPING_LEFT:
-                if(isPressed) {
-                    steeringValue += 0.5f * FastMath.pow(((maxSpeed - carControl.getCurrentVehicleSpeedKmHour()) / maxSpeed) , 2);
-                } else {
-                    steeringValue = 0;
-                }
+                if(isPressed) steer++; else steer--;
                 break;
             case MAPPING_RIGHT:
-                if(isPressed) {
-                    steeringValue -= 0.5f * FastMath.pow(((maxSpeed - carControl.getCurrentVehicleSpeedKmHour()) / maxSpeed) , 2);
-                } else {
-                    steeringValue = 0;
-                }
+                if(isPressed) steer--; else steer++;
                 break;
             case MAPPING_UP:
                 if (isPressed) {
@@ -325,7 +323,7 @@ public class CarAppState extends AbstractAppState implements ActionListener {
                 break;
             case MAPPING_RESET:
                 if (isPressed) {
-                    carControl.setPhysicsLocation(Vector3f.ZERO);
+                    carControl.setPhysicsLocation(spawnPoint);
                     carControl.setPhysicsRotation(new Matrix3f());
                     carControl.setLinearVelocity(Vector3f.ZERO);
                     carControl.setAngularVelocity(Vector3f.ZERO);
@@ -334,9 +332,8 @@ public class CarAppState extends AbstractAppState implements ActionListener {
                 break;
             default: break;
         }
-        carControl.steer(steeringValue);
-        carControl.accelerate(accelerationValue * ((maxSpeed - carControl.getCurrentVehicleSpeedKmHour()) / maxSpeed));
-        System.out.println(carControl.getCurrentVehicleSpeedKmHour() + ", " + accelerationValue + ", " + (maxSpeed - carControl.getCurrentVehicleSpeedKmHour()));
+        carControl.accelerate(accelerationValue * ((MAX_SPEED - carControl.getCurrentVehicleSpeedKmHour()) / MAX_SPEED));
+        System.out.println(carControl.getCurrentVehicleSpeedKmHour() + ", " + accelerationValue + ", " + (MAX_SPEED - carControl.getCurrentVehicleSpeedKmHour()));
     }
     
 }
