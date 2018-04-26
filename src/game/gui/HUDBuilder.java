@@ -24,8 +24,8 @@ import de.lessvoid.nifty.screen.ScreenController;
  */
 public class HUDBuilder extends AbstractScreenBuilder {
     
-    public HUDBuilder(String string, Nifty nifty, SimpleApplication app, ScreenController controller) {
-        super(string, nifty, app, controller);
+    public HUDBuilder(String string, SimpleApplication app, ScreenController controller) {
+        super(string, app, controller);
     }
     
     @Override

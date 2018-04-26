@@ -24,8 +24,8 @@ import de.lessvoid.nifty.screen.ScreenController;
  */
 public class HUDTerrainTextBuilder extends AbstractScreenBuilder {
 
-    public HUDTerrainTextBuilder(String string, Nifty nifty, SimpleApplication app, ScreenController controller) {
-        super(string, nifty, app, controller);
+    public HUDTerrainTextBuilder(String string, SimpleApplication app, ScreenController controller) {
+        super(string, app, controller);
     }
 
     @Override

@@ -8,19 +8,11 @@ package game.gui;
 import com.jme3.app.Application;
 import com.jme3.app.SimpleApplication;
 import com.jme3.app.state.AbstractAppState;
-import com.jme3.app.state.AppState;
 import com.jme3.app.state.AppStateManager;
 import com.jme3.asset.AssetManager;
-import com.jme3.audio.AudioData;
 import com.jme3.audio.AudioNode;
 import com.jme3.niftygui.NiftyJmeDisplay;
 import de.lessvoid.nifty.Nifty;
-import de.lessvoid.nifty.builder.ImageBuilder;
-import de.lessvoid.nifty.builder.LayerBuilder;
-import de.lessvoid.nifty.builder.PanelBuilder;
-import de.lessvoid.nifty.builder.ScreenBuilder;
-import de.lessvoid.nifty.builder.TextBuilder;
-import de.lessvoid.nifty.controls.button.builder.ButtonBuilder;
 import game.test.AbstractInit;
 
 /**
@@ -38,6 +30,7 @@ public class MainScreen extends AbstractAppState {
     private GUIScreenController controller;
     private String currentScreen = "";
     private AbstractInit currentGame = null;
+    private NiftyJmeDisplay niftyDisplay;
     
     private static MainScreen theInstance;
     
@@ -58,7 +51,7 @@ public class MainScreen extends AbstractAppState {
         asset = app.getAssetManager();
 //        audioSource = new AudioNode(asset, "Sounds/Musics/Main.ogg", AudioData.DataType.Buffer);
 //        audioSource.play();
-        NiftyJmeDisplay niftyDisplay = NiftyJmeDisplay.newNiftyJmeDisplay(
+        niftyDisplay = NiftyJmeDisplay.newNiftyJmeDisplay(
                 app.getAssetManager(), app.getInputManager(), app.getAudioRenderer(), app.getGuiViewPort());
         nifty = niftyDisplay.getNifty();
         app.getGuiViewPort().addProcessor(niftyDisplay);
@@ -69,13 +62,13 @@ public class MainScreen extends AbstractAppState {
         
         controller = new GUIScreenController(nifty, app);
         
-        nifty.addScreen("start", new StartBuilder("start", nifty, app, controller).build(nifty));
+        nifty.addScreen("start", new StartBuilder("start", app, controller).build(nifty));
         
-        nifty.addScreen("hud", new HUDBuilder("hud", nifty, app, controller).build(nifty));
+        nifty.addScreen("hud", new HUDBuilder("hud", app, controller).build(nifty));
         
-        nifty.addScreen("hud_terrain_text", new HUDTerrainTextBuilder("hud_terrain_text", nifty, app, controller).build(nifty));
+        nifty.addScreen("hud_terrain_text", new HUDTerrainTextBuilder("hud_terrain_text", app, controller).build(nifty));
         
-        nifty.addScreen("chooser", new ChooseBuilder("chooser", nifty, app, controller).build(nifty));
+        nifty.addScreen("chooser", new ChooseBuilder("chooser", app, controller).build(nifty));
         
         goToScreen("start");
     }

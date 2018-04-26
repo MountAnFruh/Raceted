@@ -16,12 +16,10 @@ import de.lessvoid.nifty.screen.ScreenController;
  */
 public abstract class AbstractScreenBuilder extends ScreenBuilder{
 
-    protected Nifty nifty;
     protected SimpleApplication app;
     
-    public AbstractScreenBuilder(String string, Nifty nifty, SimpleApplication app, ScreenController controller) {
+    public AbstractScreenBuilder(String string, SimpleApplication app, ScreenController controller) {
         super(string);
-        this.nifty = nifty;
         this.app = app;
         init(controller);
     }

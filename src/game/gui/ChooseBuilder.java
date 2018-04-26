@@ -20,8 +20,8 @@ import de.lessvoid.nifty.screen.ScreenController;
  */
 public class ChooseBuilder extends AbstractScreenBuilder {
 
-    public ChooseBuilder(String string, Nifty nifty, SimpleApplication app, ScreenController controller) {
-        super(string, nifty, app, controller);
+    public ChooseBuilder(String string, SimpleApplication app, ScreenController controller) {
+        super(string, app, controller);
     }
 
     @Override

@@ -68,7 +68,6 @@ public class GUIScreenController implements ScreenController {
     public void backtomain() {
         audioSource.play();
         mainScreen.goToScreen("start");
-
     }
 
     public void playwithCart() {

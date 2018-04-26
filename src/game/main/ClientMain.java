@@ -60,7 +60,7 @@ public class ClientMain extends SimpleApplication {
     }
 
     private void initAppStates() {
-        startScreen = new MainScreen();
+        startScreen = MainScreen.getTheInstance();
         stateManager.attach(startScreen);
     }
 

@@ -21,8 +21,8 @@ import de.lessvoid.nifty.screen.ScreenController;
  */
 public class StartBuilder extends AbstractScreenBuilder {
 
-    public StartBuilder(String string, Nifty nifty, SimpleApplication app, ScreenController controller) {
-        super(string, nifty, app, controller);
+    public StartBuilder(String string, SimpleApplication app, ScreenController controller) {
+        super(string, app, controller);
     }
 
     @Override

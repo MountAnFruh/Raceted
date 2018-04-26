@@ -38,6 +38,7 @@ public abstract class AbstractInit {
         rootNode.detachAllChildren();
         
         bulletAppState = new BulletAppState();
+        
         stateManager.attachAll(bulletAppState);
         //bulletAppState.setDebugEnabled(true);
     }
