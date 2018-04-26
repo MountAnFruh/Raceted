@@ -8,7 +8,6 @@ package game.utils;
 import com.jme3.asset.AssetManager;
 import com.jme3.audio.AudioData;
 import com.jme3.audio.AudioNode;
-import com.sun.org.apache.bcel.internal.generic.AALOAD;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Stack;
@@ -25,15 +24,17 @@ public class AudioPlayer {
     private AssetManager asset;
     private Stack<Integer> idstack = new Stack<>();
     private HashMap<Integer, AudioNode> playlist = new HashMap<>();
+    private HashMap<Integer, AudioNode> effectlist = new HashMap<>();
 
     {
         for (int i = 0; i < 200; i++) {
             idstack.add(i);
         }
+
     }
 
     //Spielt Musik ab
-    public int playDaMusic(AssetManager asset, String filename) {
+    public int playDaMusic(AssetManager asset, String filename, boolean loop) {
         int id = -1;
         while (idstack.isEmpty()) {
             try {
@@ -43,10 +44,29 @@ public class AudioPlayer {
             }
         }
         id = idstack.pop();
-        audioSource = new AudioNode(asset, "Sounds/", AudioData.DataType.Buffer);
+        audioSource = new AudioNode(asset, filename, AudioData.DataType.Buffer);
         audioSource.setName(id + "");
         audioSource.play();
+        audioSource.setLooping(loop);
         playlist.put(id, audioSource);
+        return id;
+    }
+
+    public int playDaSound(AssetManager asset, String filename, boolean loop) {
+        int id = -1;
+        while (idstack.isEmpty()) {
+            try {
+                idstack.wait();
+            } catch (InterruptedException ex) {
+                Logger.getLogger(AudioPlayer.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+        id = idstack.pop();
+        audioSource = new AudioNode(asset, filename, AudioData.DataType.Buffer);
+        audioSource.setName(id + "");
+        audioSource.setLooping(loop);
+        effectlist.put(id, audioSource);
+        audioSource.play();
         return id;
     }
 
@@ -63,7 +83,6 @@ public class AudioPlayer {
     }
 
     public void stopAllMusics() {
-
         for (Map.Entry<Integer, AudioNode> entry : playlist.entrySet()) {
             entry.getValue().stop();
             idstack.add(entry.getKey());
