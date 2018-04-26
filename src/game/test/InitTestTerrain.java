@@ -6,7 +6,6 @@
 package game.test;
 
 import com.jme3.app.SimpleApplication;
-import com.jme3.bullet.BulletAppState;
 import com.jme3.font.BitmapText;
 import com.jme3.input.InputManager;
 import com.jme3.input.KeyInput;
@@ -47,7 +46,6 @@ public class InitTestTerrain extends AbstractInit implements ActionListener{
     private final float dirtScale = 16;
     private final float roadScale = 128;
 
-    private BulletAppState bulletAppState;
     private CarAppState carAppState;
     private WorldAppState worldAppState;
     
@@ -79,8 +77,7 @@ public class InitTestTerrain extends AbstractInit implements ActionListener{
         
         initHUD();
         initInput();
-        
-        carAppState = new CarAppState(bulletAppState);
+        carAppState = new CarAppState(bulletAppState, new Vector3f(50,0,50));
         stateManager.attach(carAppState);
         
         flyCam.setEnabled(false);
@@ -98,7 +95,7 @@ public class InitTestTerrain extends AbstractInit implements ActionListener{
 //        informationText.setLocalTranslation(0, settings.getHeight() - informationText.getLineHeight(), 0);
 //        guiNode.attachChild(informationText);
 //        
-        nifty.gotoScreen("hud_terrain_text");
+//        nifty.gotoScreen("hud_terrain_text");
                 
     }
     

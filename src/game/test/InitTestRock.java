@@ -31,8 +31,8 @@ public class InitTestRock extends AbstractInit{
         rockAppState = new RockAppState(bulletAppState, rootNode, terrain, app.getRenderManager());
         stateManager.attach(rockAppState);
     }
-    
-   private void initLight() {
+
+    private void initLight() {
         AmbientLight ambientLight = new AmbientLight();
         ambientLight.setColor(ColorRGBA.White);
         rootNode.addLight(ambientLight);
