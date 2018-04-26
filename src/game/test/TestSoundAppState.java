@@ -101,7 +101,7 @@ public class TestSoundAppState extends AbstractAppState implements ActionListene
         this.inputManager = app.getInputManager();
         this.assetManager = app.getAssetManager();
         this.cam = app.getCamera();
-
+        player.playDaMusic(assetManager, "Sounds/Musics/Main.ogg", true);
         initInput();
         initPlayer();
         initCamera();
@@ -183,13 +183,14 @@ public class TestSoundAppState extends AbstractAppState implements ActionListene
             lookVector.addLocal(cam.getLeft().negate());        /////////// RIGHT
         }
         if (forward) {
-              if (!rocksound) {
+            if (!rocksound) {
                 player.playDaSound(assetManager, "Sounds/Effects/Rock.ogg", true);
                 rocksound = true;
             }
             lookVector.addLocal(cam.getDirection());            /////////// UP
         }
         if (backward) {
+
             if (!rocksound) {
                 player.playDaSound(assetManager, "Sounds/Effects/Rock.ogg", true);
                 rocksound = true;

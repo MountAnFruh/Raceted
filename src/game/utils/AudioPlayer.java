@@ -23,7 +23,6 @@ public class AudioPlayer {
     private AudioNode audioSource;
     private AssetManager asset;
     private Stack<Integer> idstack = new Stack<>();
-    private HashMap<Integer, AudioNode> playlist = new HashMap<>();
     private HashMap<Integer, AudioNode> effectlist = new HashMap<>();
 
     {
@@ -34,22 +33,12 @@ public class AudioPlayer {
     }
 
     //Spielt Musik ab
-    public int playDaMusic(AssetManager asset, String filename, boolean loop) {
-        int id = -1;
-        while (idstack.isEmpty()) {
-            try {
-                idstack.wait();
-            } catch (InterruptedException ex) {
-                Logger.getLogger(AudioPlayer.class.getName()).log(Level.SEVERE, null, ex);
-            }
-        }
-        id = idstack.pop();
+    public void playDaMusic(AssetManager asset, String filename, boolean loop) {
         audioSource = new AudioNode(asset, filename, AudioData.DataType.Buffer);
-        audioSource.setName(id + "");
+        audioSource.setName("Music");
         audioSource.play();
         audioSource.setLooping(loop);
-        playlist.put(id, audioSource);
-        return id;
+
     }
 
     public int playDaSound(AssetManager asset, String filename, boolean loop) {
@@ -74,20 +63,24 @@ public class AudioPlayer {
         audioSource.pause();
     }
 
-    //Stoppt die Musik
-    public void stopDaMusic(int id) {
-        playlist.get(id).stop();
-        playlist.remove(id);
+     public void stopDaMusic() {
+       audioSource.stop();
+    }
+    
+    //Stoppt den Sound
+    public void stopDaSound(int id) {
+        effectlist.get(id).stop();
+        effectlist.remove(id);
         idstack.notify();
         idstack.add(id);
     }
 
-    public void stopAllMusics() {
-        for (Map.Entry<Integer, AudioNode> entry : playlist.entrySet()) {
+    public void stopAllSounds() {
+        for (Map.Entry<Integer, AudioNode> entry : effectlist.entrySet()) {
             entry.getValue().stop();
             idstack.add(entry.getKey());
             idstack.notify();
-            playlist.remove(entry.getKey());
+            effectlist.remove(entry.getKey());
 
         }
 
