@@ -13,25 +13,21 @@ import de.lessvoid.nifty.builder.PanelBuilder;
 import de.lessvoid.nifty.builder.ScreenBuilder;
 import de.lessvoid.nifty.builder.TextBuilder;
 import de.lessvoid.nifty.controls.button.builder.ButtonBuilder;
+import de.lessvoid.nifty.screen.ScreenController;
 
 /**
  *
  * @author Kevin
  */
-public class StartBuilder extends ScreenBuilder {
+public class StartBuilder extends AbstractScreenBuilder {
 
-    private Nifty nifty;
-    private SimpleApplication app;
-
-    public StartBuilder(String string, Nifty nifty, SimpleApplication app) {
-        super(string);
-        this.nifty = nifty;
-        this.app = app;
-init();
+    public StartBuilder(String string, Nifty nifty, SimpleApplication app, ScreenController controller) {
+        super(string, nifty, app, controller);
     }
-    public void init()
-    {
-        controller(new GUIScreenController(nifty, app));
+
+    @Override
+    public void init(ScreenController controller) {
+        controller(controller);
         layer(new LayerBuilder("background") {
             {
                 childLayoutCenter();

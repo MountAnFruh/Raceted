@@ -16,28 +16,21 @@ import de.lessvoid.nifty.builder.PanelBuilder;
 import de.lessvoid.nifty.builder.ScreenBuilder;
 import de.lessvoid.nifty.builder.TextBuilder;
 import de.lessvoid.nifty.controls.button.builder.ButtonBuilder;
+import de.lessvoid.nifty.screen.ScreenController;
 
 /**
  *
  * @author Kevin
  */
-public class ChooseBuilder extends ScreenBuilder {
+public class ChooseBuilder extends AbstractScreenBuilder {
 
-   
-  
-    private Nifty nifty;
-    private SimpleApplication app;
-
-    public ChooseBuilder(String string, Nifty nifty, SimpleApplication app) {
-        super(string);
-        this.nifty = nifty;
-        this.app = app;
-      
-        init();
+    public ChooseBuilder(String string, Nifty nifty, SimpleApplication app, ScreenController controller) {
+        super(string, nifty, app, controller);
     }
 
-    public void init() {
-        controller(new GUIScreenController(nifty, app));
+    @Override
+    public void init(ScreenController controller) {
+        controller(controller);
         layer(new LayerBuilder("background") {
             {
                 childLayoutCenter();
@@ -91,7 +84,7 @@ public class ChooseBuilder extends ScreenBuilder {
                                 childLayoutCenter();
                                 valignCenter();
                                 //backgroundColor("#88f8");
-                                height("50%");
+                                height("33%");
                                 width("50%");
 
                                 control(new ButtonBuilder("Cart", "cart") {
@@ -114,7 +107,7 @@ public class ChooseBuilder extends ScreenBuilder {
                                 childLayoutCenter();
                                 valignCenter();
                                 //backgroundColor("#88f8");
-                                height("50%");
+                                height("33%");
                                 width("50%");
 
                                 control(new ButtonBuilder("Rock", "rock") {
@@ -125,6 +118,28 @@ public class ChooseBuilder extends ScreenBuilder {
                                         width("50%");
                                         visibleToMouse(true);
                                         interactOnClick("playwithRock()");
+                                    }
+                                });
+
+                            }
+                        });
+
+                        panel(new PanelBuilder("panel_center_right_down") {
+                            {
+                                childLayoutCenter();
+                                valignCenter();
+                                //backgroundColor("#88f8");
+                                height("33%");
+                                width("50%");
+
+                                control(new ButtonBuilder("Terrain", "terrain") {
+                                    {
+                                        alignCenter();
+                                        valignCenter();
+                                        height("50%");
+                                        width("50%");
+                                        visibleToMouse(true);
+                                        interactOnClick("playwithTerrain()");
                                     }
                                 });
 

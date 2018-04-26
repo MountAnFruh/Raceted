@@ -8,6 +8,7 @@ package game.test;
 import com.jme3.app.SimpleApplication;
 import com.jme3.bullet.BulletAppState;
 import com.jme3.font.BitmapText;
+import com.jme3.input.InputManager;
 import com.jme3.input.KeyInput;
 import com.jme3.input.controls.ActionListener;
 import com.jme3.input.controls.KeyTrigger;
@@ -15,7 +16,6 @@ import com.jme3.input.controls.Trigger;
 import com.jme3.light.AmbientLight;
 import com.jme3.math.ColorRGBA;
 import com.jme3.math.Vector3f;
-import com.jme3.renderer.RenderManager;
 import com.jme3.scene.Spatial;
 import com.jme3.texture.Texture;
 import de.lessvoid.nifty.Nifty;
@@ -24,10 +24,9 @@ import game.map.WorldAppState;
 
 /**
  *
- * @author Robbo13
+ * @author rober
  */
-public class TestTerrain extends SimpleApplication implements ActionListener {
-    
+public class InitTestTerrain extends AbstractInit implements ActionListener{
     // define triggers
     private static final Trigger CREATE_MOUNTAIN = new KeyTrigger(KeyInput.KEY_SPACE);
     private static final Trigger SWITCH_MAP_0 = new KeyTrigger(KeyInput.KEY_0);
@@ -50,32 +49,31 @@ public class TestTerrain extends SimpleApplication implements ActionListener {
 
     private BulletAppState bulletAppState;
     private CarAppState carAppState;
-
     private WorldAppState worldAppState;
     
     private BitmapText informationText;
 
     private Nifty nifty;
+    private InputManager inputManager;
     
-    public static void main(String[] args) {
-        TestTerrain testTerrain = new TestTerrain();
-        testTerrain.start();
-    }
-
-    public TestTerrain() {
-    }
-    
-    public TestTerrain(Nifty nifty) {
+    public InitTestTerrain(Nifty nifty, SimpleApplication app) {
+        super(app);
         this.nifty = nifty;
+        
+        init();
     }
     
+    public InitTestTerrain(SimpleApplication app) {
+        super(app);
+        
+        inputManager = app.getInputManager();
+        
+        init();
+    }
     
 
-    @Override
-    public void simpleInitApp() {
-        bulletAppState = new BulletAppState();
+    public void init() {
         worldAppState = new WorldAppState(bulletAppState);
-        stateManager.attach(bulletAppState);
         stateManager.attach(worldAppState);
         //bulletAppState.setDebugEnabled(true);
         
@@ -100,7 +98,7 @@ public class TestTerrain extends SimpleApplication implements ActionListener {
 //        informationText.setLocalTranslation(0, settings.getHeight() - informationText.getLineHeight(), 0);
 //        guiNode.attachChild(informationText);
 //        
-//        nifty.gotoScreen("hud_terrain_text");
+        nifty.gotoScreen("hud_terrain_text");
                 
     }
     
@@ -140,8 +138,7 @@ public class TestTerrain extends SimpleApplication implements ActionListener {
         worldAppState.setTexture("test_terrain",3,rock,roadScale);
     }
 
-    @Override
-    public void simpleUpdate(float tpf) {
+    public void update(float tpf) {
         if(worldAppState.isInitialized() && !worldAppState.isTerrainLoaded()) initTerrain();
         
 //        if(carAppState != null) {
@@ -153,11 +150,6 @@ public class TestTerrain extends SimpleApplication implements ActionListener {
 //            int textNumber = 1;
 //            worldAppState.changeTexture(new Vector3f(x,0,z), textNumber);
 //        }
-    }
-
-    @Override
-    public void simpleRender(RenderManager rm) {
-        
     }
 
     @Override

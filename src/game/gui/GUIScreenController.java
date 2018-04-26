@@ -9,15 +9,12 @@ import com.jme3.app.SimpleApplication;
 import com.jme3.asset.AssetManager;
 import com.jme3.audio.AudioData;
 import com.jme3.audio.AudioNode;
-import com.jme3.scene.Node;
-import com.jme3.system.JmeContext;
 import de.lessvoid.nifty.Nifty;
 import de.lessvoid.nifty.screen.Screen;
 import de.lessvoid.nifty.screen.ScreenController;
 import game.test.InitTestCar;
 import game.test.InitTestRock;
-import game.test.TestCar;
-import game.test.TestRock;
+import game.test.InitTestTerrain;
 
 /**
  *
@@ -29,13 +26,15 @@ public class GUIScreenController implements ScreenController {
     private AssetManager asset;
     private Nifty nifty;
     private SimpleApplication app;
+    private MainScreen mainScreen;
 
     public GUIScreenController(Nifty nifty, SimpleApplication app) {
         this.nifty = nifty;
         this.app = app;
         asset = app.getAssetManager();
         audioSource = new AudioNode(asset, "Sounds/Effects/Select.ogg", AudioData.DataType.Buffer);
-
+        
+        mainScreen = MainScreen.getTheInstance();
     }
 
     public GUIScreenController(Nifty nifty) {
@@ -63,13 +62,12 @@ public class GUIScreenController implements ScreenController {
     }
 
     public void startGame() {
-        nifty.gotoScreen("chooser");
-
+        mainScreen.goToScreen("chooser");
     }
 
     public void backtomain() {
         audioSource.play();
-        nifty.gotoScreen("start");
+        mainScreen.goToScreen("start");
 
     }
 
@@ -83,30 +81,44 @@ public class GUIScreenController implements ScreenController {
         playwith("Rock");
     }
 
+    public void playwithTerrain() {
+        audioSource.stop();
+        playwith("Terrain");
+    }
+
     public void playwith(String character) {
         audioSource.stop();
         switch (character) {
             case "Cart":
                 System.out.println("testCar");
-                
-                InitTestCar testCar = new InitTestCar(app);
-                nifty.gotoScreen("hud");
-//                TestCar testCar = new TestCar();
-//                testCar.start(JmeContext.Type.Display);
 
+                InitTestCar testCar = new InitTestCar(app);
+                mainScreen.goToScreen("hud");
+                mainScreen.setCurrentGame(testCar);
                 break;
 
             case "Rock":
                 System.out.println("testRock");
-                
-                
-                InitTestRock testRock = new InitTestRock(app);
-                nifty.gotoScreen("hud");
-                
-//                TestRock testrock = new TestRock();
-//                testrock.start(JmeContext.Type.Display);
 
+                InitTestRock testRock = new InitTestRock(app);
+                mainScreen.goToScreen("hud");
+                mainScreen.setCurrentGame(testRock);
                 break;
+
+            case "Terrain":
+                System.out.println("testTerrain");
+
+                InitTestTerrain testTerrain = new InitTestTerrain(nifty, app);
+                mainScreen.goToScreen("hud");
+                mainScreen.setCurrentGame(testTerrain);
+                break;
+        }
+    }
+
+    public void update(float tpf) {
+        
+        if (mainScreen.getCurrentGame() instanceof InitTestTerrain) {
+            ((InitTestTerrain)mainScreen.getCurrentGame()).update(tpf);
         }
     }
 
