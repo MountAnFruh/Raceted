@@ -130,7 +130,7 @@ public class TestTerrain extends SimpleApplication implements ActionListener {
         
         Texture alphaMap = assetManager.loadTexture("Textures/Maps/test-maps/testalphamap2.png");
         Texture heightMap = assetManager.loadTexture("Textures/Maps/test-maps/testheightmap2.png");
-        worldAppState.loadTerrain("test_terrain",alphaMap, heightMap, Vector3f.ZERO, new Vector3f(1f,0.5f,1f));
+        worldAppState.loadTerrain("test_terrain",alphaMap, heightMap, null, Vector3f.ZERO, new Vector3f(1f,0.5f,1f));
         
         Texture grass = assetManager.loadTexture("Textures/Tile/Gras.jpg");
         worldAppState.setTexture("test_terrain",1,grass,grassScale);
@@ -157,6 +157,11 @@ public class TestTerrain extends SimpleApplication implements ActionListener {
 
             worldAppState.changeTexture(new Vector3f(x,0,z), ColorRGBA.Blue);
         }
+        
+        String value = worldAppState.insideCheckpointOrStart(carAppState.getControl().getPhysicsLocation());
+        if(value != null) {
+            System.out.println(value);
+        }
     }
 
     @Override
@@ -166,7 +171,7 @@ public class TestTerrain extends SimpleApplication implements ActionListener {
 
     @Override
     public void onAction(String name, boolean isPressed, float tpf) {
-        Texture alphaMap, heightMap;
+        Texture alphaMap, heightMap, mappingMap;
         if(isPressed) {
             switch(name) {
                 case MAPPING_CREATE_MOUNTAIN:
@@ -207,9 +212,9 @@ public class TestTerrain extends SimpleApplication implements ActionListener {
                 case MAPPING_SWITCH_MAP_2:
                     alphaMap = assetManager.loadTexture("Textures/Maps/test-maps/testalphamap2.png");
                     heightMap = assetManager.loadTexture("Textures/Maps/test-maps/testheightmap2.png");
-
+                    
                     if(!worldAppState.isTerrainLoaded("test_terrain_2")) {
-                        worldAppState.loadTerrain("test_terrain_2",alphaMap, heightMap,
+                        worldAppState.loadTerrain("test_terrain_2",alphaMap, heightMap, null,
                             new Vector3f(0,0,1024), new Vector3f(2f,0.5f,2f));
 
                         Texture dirt = assetManager.loadTexture("Textures/Tile/Sand.jpg");
@@ -238,9 +243,10 @@ public class TestTerrain extends SimpleApplication implements ActionListener {
                 case MAPPING_SWITCH_MAP_1_1:
                     alphaMap = assetManager.loadTexture("Textures/Maps/firstalphamap.png");
                     heightMap = assetManager.loadTexture("Textures/Maps/firstheightmap.png");
+                    mappingMap = assetManager.loadTexture("Textures/Maps/firstmap.png");
 
                     if(!worldAppState.isTerrainLoaded("first_map")) {
-                        worldAppState.loadTerrain("first_map",alphaMap, heightMap,
+                        worldAppState.loadTerrain("first_map",alphaMap, heightMap, mappingMap,
                             Vector3f.ZERO, new Vector3f(0.5f,0.05f,0.5f));
                         
                         Texture road = assetManager.loadTexture("Textures/Tile/Road.jpg");
@@ -261,7 +267,7 @@ public class TestTerrain extends SimpleApplication implements ActionListener {
     
     public void loadTerrain(String terrainName, Texture alphaMap, Texture heightMap,
             Vector3f moved, Vector3f scale) {
-        worldAppState.loadTerrain(terrainName,alphaMap, heightMap,
+        worldAppState.loadTerrain(terrainName,alphaMap, heightMap, null,
                         moved, scale);
         
         Texture grass = assetManager.loadTexture("Textures/Tile/Gras.jpg");
