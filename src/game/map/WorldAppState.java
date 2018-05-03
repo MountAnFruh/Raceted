@@ -5,18 +5,22 @@
  */
 package game.map;
 
+import beans.MapData;
 import com.jme3.app.Application;
 import com.jme3.app.SimpleApplication;
 import com.jme3.app.state.AbstractAppState;
 import com.jme3.app.state.AppStateManager;
 import com.jme3.asset.AssetManager;
+import com.jme3.bounding.BoundingBox;
 import com.jme3.bullet.BulletAppState;
 import com.jme3.bullet.control.RigidBodyControl;
 import com.jme3.light.Light;
 import com.jme3.material.Material;
 import com.jme3.math.ColorRGBA;
+import com.jme3.math.Vector2f;
 import com.jme3.math.Vector3f;
 import com.jme3.renderer.Camera;
+import com.jme3.scene.Geometry;
 import com.jme3.scene.Node;
 import com.jme3.scene.Spatial;
 import com.jme3.terrain.geomipmap.TerrainLodControl;
@@ -28,7 +32,13 @@ import com.jme3.texture.Image;
 import com.jme3.texture.Texture;
 import game.utils.ImageUtils;
 import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collector;
+import java.util.stream.Collectors;
+import javax.annotation.Nullable;
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 /**
@@ -44,6 +54,7 @@ public class WorldAppState extends AbstractAppState {
     private final BulletAppState bulletAppState;
     private final List<Light> lights = new ArrayList<>();
     private final Node terrainNode = new Node(TERRAINNODENAME);
+    private final Map<String,MapData> mapDatas = new HashMap<>();
     
     private Node rootNode;
     private AssetManager assetManager;
@@ -137,10 +148,11 @@ public class WorldAppState extends AbstractAppState {
      * @param name Name vom Terrain
      * @param alphamapText Textur von der Alphamap
      * @param heightmapText Textur von der Höhenmap
+     * @param mappingText Textur von den Mappings der Map
      * @param moved Verschiebt das Terrain um den Vektor
      * @param scale Vergrößert das Terrain um den Vektor
      */
-    public void loadTerrain(String name, Texture alphamapText, Texture heightmapText, Vector3f moved, Vector3f scale) {
+    public void loadTerrain(String name, Texture alphamapText, Texture heightmapText, @Nullable Texture mappingText, Vector3f moved, Vector3f scale) {
         // First, we load up our textures and the heightmap texture for the terrain
 
         Material mat = matTerrain.clone();
@@ -158,6 +170,11 @@ public class WorldAppState extends AbstractAppState {
             heightmap.load();
         } catch (Exception e) {
             e.printStackTrace();
+        }
+        
+        if(mappingText != null) {
+            Image mappingImg = mappingText.getImage();
+            loadMapping(name, moved, scale, mappingImg);
         }
 
         /*
@@ -190,6 +207,131 @@ public class WorldAppState extends AbstractAppState {
             terrain.addControl(landscapeControl);
             bulletAppState.getPhysicsSpace().add(terrain);
         }
+    }
+    
+    private void loadMapping(String name, Vector3f moved, Vector3f scale, Image mappingImage) {
+        Map<ColorRGBA,List<Vector3f>> boundCheckpoints = null;
+        List<Vector3f> boundStart = null;
+        for(int i = 0;i < mappingImage.getWidth();i++) {
+            for(int j = 0;j < mappingImage.getHeight();j++) {
+                ColorRGBA color = new ColorRGBA();
+                ImageUtils.manipulatePixel(mappingImage, i, j, color, false);
+                Vector2f coordinate = new Vector2f(i,mappingImage.getHeight() - 1 - j);
+                if(color.r == 0 && color.g == 0) {
+                    // Ist eine Checkpoint-Markierung
+                    if(boundCheckpoints == null) {
+                        boundCheckpoints = new HashMap<>();
+                    }
+                    if(boundCheckpoints.get(color) == null) {
+                        boundCheckpoints.put(color, new ArrayList<>());
+                        boundCheckpoints.get(color).add(new Vector3f(TERRAINSIZE + 1, Float.MAX_VALUE, TERRAINSIZE + 1));
+                        boundCheckpoints.get(color).add(new Vector3f(-1,-1,-1));
+                    }
+                    float minX = boundCheckpoints.get(color).get(0).x;
+                    float minZ = boundCheckpoints.get(color).get(0).z;
+                    float minY, maxY;
+                    float maxX = boundCheckpoints.get(color).get(1).x;
+                    float maxZ = boundCheckpoints.get(color).get(1).z;
+                    if(coordinate.x < minX) minX = coordinate.x;
+                    if(coordinate.y < minZ) minZ = coordinate.y;
+                    if(coordinate.x > maxX) maxX = coordinate.x;
+                    if(coordinate.y > maxZ) maxZ = coordinate.y;
+                    minY = -1; maxY = TERRAINSIZE + 1;
+                    boundCheckpoints.get(color).get(0).set(new Vector3f(minX,minY,minZ));
+                    boundCheckpoints.get(color).get(1).set(new Vector3f(maxX, maxY, maxZ));
+                } else if(color.r == 0 && color.b == 0) {
+                    // Ist eine Start-Ziel-Markierung
+                    if(boundStart == null) {
+                        boundStart = new ArrayList<>();
+                        boundStart.add(new Vector3f(TERRAINSIZE + 1, TERRAINSIZE + 1, TERRAINSIZE + 1));
+                        boundStart.add(new Vector3f(-1,-1,-1));
+                    }
+                    float minX = boundStart.get(0).x;
+                    float minZ = boundStart.get(0).z;
+                    float minY,maxY;
+                    float maxX = boundStart.get(1).x;
+                    float maxZ = boundStart.get(1).z;
+                    minY = -1; maxY = TERRAINSIZE + 1;
+                    if(coordinate.x < minX) minX = coordinate.x;
+                    if(coordinate.y < minZ) minZ = coordinate.y;
+                    if(coordinate.x > maxX) maxX = coordinate.x;
+                    if(coordinate.y > maxZ) maxZ = coordinate.y;
+                    boundStart.get(0).set(new Vector3f(minX,minY,minZ));
+                    boundStart.get(1).set(new Vector3f(maxX, maxY, maxZ));
+                } else {
+                    // TODO: Andere Markierungen hinzufügen
+                }
+            }
+        }
+        MapData mapData = new MapData();
+        if(boundCheckpoints != null) {
+            mapData.setCheckpoints(new ArrayList<>());
+            ArrayList<ColorRGBA> colorsList = new ArrayList<>();
+            colorsList.addAll(boundCheckpoints.keySet());
+            colorsList.sort(Comparator.comparing(ColorRGBA::getBlue));
+            for(ColorRGBA color : colorsList) {
+                Vector3f min = boundCheckpoints.get(color).get(0);
+                Vector3f max = boundCheckpoints.get(color).get(1);
+                min = min.mult(scale).add(moved);
+                max = max.mult(scale).add(moved);
+                BoundingBox boundBox = new BoundingBox(min,max);
+                mapData.getCheckpoints().add(boundBox);
+            }
+        }
+        if(boundStart != null) {
+            Vector3f min = boundStart.get(0);
+            Vector3f max = boundStart.get(1);
+            min = min.mult(scale).add(moved);
+            max = max.mult(scale).add(moved);
+            BoundingBox boundBox = new BoundingBox(min,max);
+            mapData.setStart(boundBox);
+            System.out.println("START: " + boundBox.getMin(null) + " - " + boundBox.getMax(null));
+        }
+        System.out.println("Mapping loaded!");
+        mapDatas.put(name, mapData);
+    }
+    
+    private boolean insideBoundingBox(Vector3f location, BoundingBox boundBox) {
+        float locX = location.getX();
+        float locY = location.getY();
+        float locZ = location.getZ();
+        float minX = boundBox.getMin(null).getX();
+        float minY = boundBox.getMin(null).getY();
+        float minZ = boundBox.getMin(null).getZ();
+        float maxX = boundBox.getMax(null).getX();
+        float maxY = boundBox.getMax(null).getY();
+        float maxZ = boundBox.getMax(null).getZ();
+        if(locX >= minX && locX <= maxX &&
+           locY >= minY && locY <= maxY &&
+           locZ >= minZ && locZ <= maxZ) {
+            return true;
+        }
+        return false;
+    }
+    
+    /**
+     * Liefert einen String im Format <code>[Terrain-Name];[Checkpoint-Index/Start]</code>
+     * wobei bei 0 der Vektor im Start-Feld ist und bei >=1 der Vektor in
+     * einem Checkpoint sich befindet. Wenn der Vektor in keinem Checkpoint/Start ist,
+     * dann wird <code>null</code> zurückgeliefert.
+     * @param location Position relativ zu (0,0,0)
+     * @return [Terrain-Name];[Checkpoint-Index/Start]
+     */
+    public String insideCheckpointOrStart(Vector3f location) {
+        for(String name : mapDatas.keySet()) {
+            MapData mapData = mapDatas.get(name);
+            for(int i = 0;i < mapData.getCheckpoints().size();i++) {
+                BoundingBox boundBox = mapData.getCheckpoints().get(i);
+                if(insideBoundingBox(location, boundBox)) {
+                    return name + ";" + (i + 1); 
+                }
+            }
+            BoundingBox boundStart = mapData.getStart();
+            if(insideBoundingBox(location, boundStart)) {
+                return name + ";0"; 
+            }
+        }
+        return null;
     }
     
     private void checkTextureNumber(int textNumber) throws RuntimeException {

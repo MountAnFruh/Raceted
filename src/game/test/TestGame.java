@@ -92,7 +92,7 @@ public class TestGame extends SimpleApplication implements ActionListener {
 
         Texture alphaMap = assetManager.loadTexture("Textures/Maps/test-maps/testalphamap2.png");
         Texture heightMap = assetManager.loadTexture("Textures/Maps/test-maps/testheightmap2.png");
-        worldAppState.loadTerrain("test-map", alphaMap, heightMap, Vector3f.ZERO, new Vector3f(2f, 0.5f, 2f));
+        worldAppState.loadTerrain("test-map", alphaMap, heightMap, null, Vector3f.ZERO, new Vector3f(2f, 0.5f, 2f));
 
         Texture grass = assetManager.loadTexture("Textures/Tile/Gras.jpg");
         worldAppState.setTexture("test-map", 1, grass, 5.0f);
