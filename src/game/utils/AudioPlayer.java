@@ -37,6 +37,7 @@ public class AudioPlayer {
         audioSource = new AudioNode(asset, filename, AudioData.DataType.Buffer);
         audioSource.setName("Music");
         audioSource.play();
+        audioSource.setPositional(false);
         audioSource.setLooping(loop);
 
     }
@@ -44,17 +45,15 @@ public class AudioPlayer {
     public int playDaSound(AssetManager asset, String filename, boolean loop) {
         int id = -1;
         while (idstack.isEmpty()) {
-            try {
-                idstack.wait();
-            } catch (InterruptedException ex) {
-                Logger.getLogger(AudioPlayer.class.getName()).log(Level.SEVERE, null, ex);
-            }
+            System.out.println("wait");
+            throw new IndexOutOfBoundsException();
         }
         id = idstack.pop();
         audioSource = new AudioNode(asset, filename, AudioData.DataType.Buffer);
         audioSource.setName(id + "");
         audioSource.setLooping(loop);
         effectlist.put(id, audioSource);
+        audioSource.setPositional(false);
         audioSource.play();
         return id;
     }
@@ -63,16 +62,16 @@ public class AudioPlayer {
         audioSource.pause();
     }
 
-     public void stopDaMusic() {
-       audioSource.stop();
+    public void stopDaMusic() {
+        audioSource.stop();
     }
-    
+
     //Stoppt den Sound
     public void stopDaSound(int id) {
         effectlist.get(id).stop();
         effectlist.remove(id);
-        idstack.notify();
         idstack.add(id);
+
     }
 
     public void stopAllSounds() {

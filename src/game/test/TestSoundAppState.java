@@ -83,6 +83,8 @@ public class TestSoundAppState extends AbstractAppState implements ActionListene
     private static final float MAX_DMG = 100f;
     private static final float SPIKE_DMG_REDUCE = 3f;
     private float dmg = 0;
+
+    int id = -1;
     private Explosion expl;
 
     private AudioPlayer player = new AudioPlayer();
@@ -169,6 +171,7 @@ public class TestSoundAppState extends AbstractAppState implements ActionListene
 
     @Override
     public void update(float tpf) {
+
         if (expl != null) {
             expl.updateExplotion(tpf);
         }
@@ -182,19 +185,23 @@ public class TestSoundAppState extends AbstractAppState implements ActionListene
         if (right) {
             lookVector.addLocal(cam.getLeft().negate());        /////////// RIGHT
         }
+
         if (forward) {
             if (!rocksound) {
-                player.playDaSound(assetManager, "Sounds/Effects/Rock.ogg", true);
+                id = player.playDaSound(assetManager, "Sounds/Effects/Rock.ogg", true);
                 rocksound = true;
             }
             lookVector.addLocal(cam.getDirection());            /////////// UP
         }
         if (backward) {
 
-            if (!rocksound) {
-                player.playDaSound(assetManager, "Sounds/Effects/Rock.ogg", true);
-                rocksound = true;
+            try {
+                player.stopDaSound(id);
+                rocksound = false;
+            } catch (NullPointerException e) {
+                System.out.println("nix zum stoppen");
             }
+
             lookVector.addLocal(cam.getDirection().negate());   /////////// DOWN 
         }
         lookVector = lookVector.normalize();

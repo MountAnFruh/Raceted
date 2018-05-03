@@ -6,16 +6,9 @@
 package game.gui;
 
 import com.jme3.app.SimpleApplication;
-import com.jme3.asset.AssetManager;
-import com.jme3.audio.AudioData;
-import com.jme3.audio.AudioNode;
-import de.lessvoid.nifty.Nifty;
 import de.lessvoid.nifty.builder.ImageBuilder;
 import de.lessvoid.nifty.builder.LayerBuilder;
 import de.lessvoid.nifty.builder.PanelBuilder;
-import de.lessvoid.nifty.builder.ScreenBuilder;
-import de.lessvoid.nifty.builder.TextBuilder;
-import de.lessvoid.nifty.controls.button.builder.ButtonBuilder;
 import de.lessvoid.nifty.screen.ScreenController;
 
 /**
