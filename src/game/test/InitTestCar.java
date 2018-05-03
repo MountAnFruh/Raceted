@@ -17,33 +17,33 @@ import game.entities.CarAppState;
  *
  * @author rober
  */
-public class InitTestCar extends AbstractInit{
+public class InitTestCar extends AbstractInit {
+
     private CarAppState carAppState;
-    
+
     public InitTestCar(SimpleApplication app) {
         super(app);
-        
         flyCam.setEnabled(false);
-        
+
         initLight();
         initSky();
         initTerrain();
-        
-        carAppState = new CarAppState(bulletAppState, new Vector3f(0,100,0));
+
+        carAppState = new CarAppState(bulletAppState, new Vector3f(0, 100, 0));
         stateManager.attach(carAppState);
     }
-    
+
     private void initLight() {
         AmbientLight ambientLight = new AmbientLight();
         ambientLight.setColor(ColorRGBA.White);
         rootNode.addLight(ambientLight);
     }
-    
+
     private void initSky() {
         Spatial sky = assetManager.loadModel("Scenes/Sky.j3o");
         rootNode.attachChild(sky);
     }
-    
+
     private void initTerrain() {
         terrain = assetManager.loadModel("Scenes/Terrain.j3o");
         terrain.setLocalTranslation(0, -5, 0);
@@ -52,6 +52,10 @@ public class InitTestCar extends AbstractInit{
         rootNode.attachChild(terrain);
         bulletAppState.getPhysicsSpace().add(landscapeControl);
     }
-    
-    
+
+    @Override
+    public void close() {
+        stateManager.detach(carAppState);
+    }
+
 }

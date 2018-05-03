@@ -6,6 +6,7 @@
 package game.entities;
 
 import com.jme3.app.Application;
+import com.jme3.app.SimpleApplication;
 import com.jme3.app.state.AbstractAppState;
 import com.jme3.app.state.AppStateManager;
 import com.jme3.asset.AssetManager;
@@ -32,6 +33,7 @@ import com.jme3.scene.Node;
 import com.jme3.scene.Spatial;
 import com.jme3.scene.shape.Sphere;
 import com.jme3.texture.Texture;
+import game.gui.MainScreen;
 import game.test.DMGArt;
 import game.test.Explosion;
 
@@ -49,6 +51,7 @@ public class RockAppState extends AbstractAppState implements ActionListener {
     private static final Trigger TRIGGER_SPACE = new KeyTrigger(KeyInput.KEY_SPACE);
     private static final Trigger TRIGGER_RESET = new KeyTrigger(KeyInput.KEY_RETURN);
     private static final Trigger TRIGGER_DMG = new KeyTrigger(KeyInput.KEY_F);
+    private static final Trigger TRIGGER_ESC = new KeyTrigger(KeyInput.KEY_ESCAPE);
 
     // define mappings
     private static final String MAPPING_LEFT = "Left";
@@ -58,6 +61,7 @@ public class RockAppState extends AbstractAppState implements ActionListener {
     private static final String MAPPING_SPACE = "Space";
     private static final String MAPPING_RESET = "Reset";
     private static final String MAPPING_DMG = "F";
+    private static final String MAPPING_ESC = "Escape";
 
     private static final float DEFAULT_JUMP_COOLDOWN = 1.0f;
 
@@ -74,6 +78,7 @@ public class RockAppState extends AbstractAppState implements ActionListener {
 
     private boolean forward, left, backward, right, jump;
     private boolean onGround;
+    private boolean gameRunning = true;
 
     private RigidBodyControl rockControl;
     private Geometry sphereGeo;
@@ -107,14 +112,19 @@ public class RockAppState extends AbstractAppState implements ActionListener {
     }
 
     private void initInput() {
+        if (inputManager.hasMapping(SimpleApplication.INPUT_MAPPING_EXIT)) {
+            inputManager.deleteMapping(SimpleApplication.INPUT_MAPPING_EXIT);
+        }
+
         inputManager.addMapping(MAPPING_DMG, TRIGGER_DMG);
+        inputManager.addMapping(MAPPING_ESC, TRIGGER_ESC);
         inputManager.addMapping(MAPPING_LEFT, TRIGGER_LEFT);
         inputManager.addMapping(MAPPING_RIGHT, TRIGGER_RIGHT);
         inputManager.addMapping(MAPPING_UP, TRIGGER_UP);
         inputManager.addMapping(MAPPING_DOWN, TRIGGER_DOWN);
         inputManager.addMapping(MAPPING_SPACE, TRIGGER_SPACE);
         inputManager.addMapping(MAPPING_RESET, TRIGGER_RESET);
-        inputManager.addListener(this, MAPPING_DMG, MAPPING_LEFT, MAPPING_RIGHT, MAPPING_UP,
+        inputManager.addListener(this, MAPPING_DMG, MAPPING_ESC, MAPPING_LEFT, MAPPING_RIGHT, MAPPING_UP,
                 MAPPING_DOWN, MAPPING_SPACE, MAPPING_RESET);
     }
 
@@ -166,37 +176,43 @@ public class RockAppState extends AbstractAppState implements ActionListener {
         deathCam.setEnabled(false);
     }
 
+    public void setRunning(boolean run) {
+        gameRunning = run;
+    }
+
     @Override
     public void update(float tpf) {
-        if (expl != null) {
-            expl.updateExplotion(tpf);
-        }
-        onGround = terrain.collideWith(sphereGeo.getWorldBound(), new CollisionResults()) != 0;
-        float divisor = 150;
-        Vector3f speedVector = rockControl.getLinearVelocity();
-        Vector3f lookVector = new Vector3f(0, 0, 0);
-        if (left) {
-            lookVector.addLocal(cam.getLeft());                 /////////// LEFT  
-        }
-        if (right) {
-            lookVector.addLocal(cam.getLeft().negate());        /////////// RIGHT
-        }
-        if (forward) {
-            lookVector.addLocal(cam.getDirection());            /////////// UP
-        }
-        if (backward) {
-            lookVector.addLocal(cam.getDirection().negate());   /////////// DOWN 
-        }
-        lookVector = lookVector.normalize();
-        rockControl.applyImpulse(lookVector.divide(divisor).setY(0), new Vector3f(0, 2, 0));
-        if (jump) {
-            if (onGround && jumpCooldown <= 0) {
-                rockControl.applyImpulse(rockControl.getGravity().negate().divide(2), Vector3f.ZERO);
-                jumpCooldown = DEFAULT_JUMP_COOLDOWN;
+        if (gameRunning) {
+            if (expl != null) {
+                expl.updateExplotion(tpf);
             }
-        }
-        if (jumpCooldown > 0) {
-            jumpCooldown -= tpf;
+            onGround = terrain.collideWith(sphereGeo.getWorldBound(), new CollisionResults()) != 0;
+            float divisor = 150;
+            Vector3f speedVector = rockControl.getLinearVelocity();
+            Vector3f lookVector = new Vector3f(0, 0, 0);
+            if (left) {
+                lookVector.addLocal(cam.getLeft());                 /////////// LEFT  
+            }
+            if (right) {
+                lookVector.addLocal(cam.getLeft().negate());        /////////// RIGHT
+            }
+            if (forward) {
+                lookVector.addLocal(cam.getDirection());            /////////// UP
+            }
+            if (backward) {
+                lookVector.addLocal(cam.getDirection().negate());   /////////// DOWN 
+            }
+            lookVector = lookVector.normalize();
+            rockControl.applyImpulse(lookVector.divide(divisor).setY(0), new Vector3f(0, 2, 0));
+            if (jump) {
+                if (onGround && jumpCooldown <= 0) {
+                    rockControl.applyImpulse(rockControl.getGravity().negate().divide(2), Vector3f.ZERO);
+                    jumpCooldown = DEFAULT_JUMP_COOLDOWN;
+                }
+            }
+            if (jumpCooldown > 0) {
+                jumpCooldown -= tpf;
+            }
         }
     }
 
@@ -225,6 +241,13 @@ public class RockAppState extends AbstractAppState implements ActionListener {
             case MAPPING_DMG:
                 if (isPressed) {
                     causeDmg(20, DMGArt.GRUBE);
+                }
+                break;
+            case MAPPING_ESC:
+                if (isPressed && MainScreen.getTheInstance().getCurrentScreenName().equals("hud")) {
+                    MainScreen.getTheInstance().goToScreen("esc_menu");
+                } else if (isPressed && MainScreen.getTheInstance().getCurrentScreenName().equals("esc_menu")) {
+                    MainScreen.getTheInstance().goToScreen("hud");
                 }
                 break;
             case MAPPING_LEFT:
@@ -290,9 +313,8 @@ public class RockAppState extends AbstractAppState implements ActionListener {
 //        debrisEffect.getParticleInfluencer().setVelocityVariation(.60f);
 //        rootNode.attachChild(debrisEffect);
 //        debrisEffect.emitAllParticles();
-
         sphereGeo.getLocalTranslation();
-        
+
         chaseCam.setEnabled(false);
         deathCam.setEnabled(true);
         try {
