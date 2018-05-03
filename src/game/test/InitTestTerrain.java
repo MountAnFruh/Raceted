@@ -25,7 +25,8 @@ import game.map.WorldAppState;
  *
  * @author rober
  */
-public class InitTestTerrain extends AbstractInit implements ActionListener{
+public class InitTestTerrain extends AbstractInit implements ActionListener {
+
     // define triggers
     private static final Trigger CREATE_MOUNTAIN = new KeyTrigger(KeyInput.KEY_SPACE);
     private static final Trigger SWITCH_MAP_0 = new KeyTrigger(KeyInput.KEY_0);
@@ -33,7 +34,7 @@ public class InitTestTerrain extends AbstractInit implements ActionListener{
     private static final Trigger SWITCH_MAP_2 = new KeyTrigger(KeyInput.KEY_2);
     private static final Trigger SWITCH_MAP_3 = new KeyTrigger(KeyInput.KEY_3);
     private static final Trigger SWITCH_MAP_1_1 = new KeyTrigger(KeyInput.KEY_4);
-    
+
     // define mappings
     private static final String MAPPING_CREATE_MOUNTAIN = "Mountain_Create";
     private static final String MAPPING_SWITCH_MAP_0 = "Switch_Map_0";
@@ -41,50 +42,54 @@ public class InitTestTerrain extends AbstractInit implements ActionListener{
     private static final String MAPPING_SWITCH_MAP_2 = "Switch_Map_2";
     private static final String MAPPING_SWITCH_MAP_3 = "Switch_Map_3";
     private static final String MAPPING_SWITCH_MAP_1_1 = "Switch_Map_1_1";
-    
+
     private final float grassScale = 64;
     private final float dirtScale = 16;
     private final float roadScale = 128;
 
     private CarAppState carAppState;
     private WorldAppState worldAppState;
-    
+
     private BitmapText informationText;
 
     private Nifty nifty;
     private InputManager inputManager;
-    
+
     public InitTestTerrain(Nifty nifty, SimpleApplication app) {
         super(app);
         this.nifty = nifty;
-        
-        init();
-    }
-    
-    public InitTestTerrain(SimpleApplication app) {
-        super(app);
-        
+
         inputManager = app.getInputManager();
         
         init();
     }
-    
+
+    public InitTestTerrain(SimpleApplication app) {
+        super(app);
+
+        inputManager = app.getInputManager();
+        
+        init();
+    }
 
     public void init() {
         worldAppState = new WorldAppState(bulletAppState);
         stateManager.attach(worldAppState);
         //bulletAppState.setDebugEnabled(true);
-        
+
         initHUD();
         initInput();
-        carAppState = new CarAppState(bulletAppState, new Vector3f(50,0,50));
-        stateManager.attach(carAppState);
         
+        carAppState = new CarAppState(bulletAppState, new Vector3f(0,0,0));
+        stateManager.attach(carAppState);
+
         flyCam.setEnabled(false);
     }
-    
+
     private void initHUD() {
-        /** Write text on the screen (HUD) */
+        /**
+         * Write text on the screen (HUD)
+         */
 //        guiNode.detachAllChildren();
 //        guiFont = assetManager.loadFont("Interface/Fonts/Default.fnt");
 //        informationText = new BitmapText(guiFont, false);
@@ -96,9 +101,9 @@ public class InitTestTerrain extends AbstractInit implements ActionListener{
 //        guiNode.attachChild(informationText);
 //        
 //        nifty.gotoScreen("hud_terrain_text");
-                
+
     }
-    
+
     private void initInput() {
         inputManager.addMapping(MAPPING_CREATE_MOUNTAIN, CREATE_MOUNTAIN);
         inputManager.addMapping(MAPPING_SWITCH_MAP_0, SWITCH_MAP_0);
@@ -110,34 +115,36 @@ public class InitTestTerrain extends AbstractInit implements ActionListener{
                 MAPPING_SWITCH_MAP_1, MAPPING_SWITCH_MAP_2, MAPPING_SWITCH_MAP_0,
                 MAPPING_SWITCH_MAP_3, MAPPING_SWITCH_MAP_1_1);
     }
-    
+
     private void initTerrain() {
         AmbientLight ambientLight = new AmbientLight();
         ambientLight.setColor(ColorRGBA.White);
         worldAppState.addLight(ambientLight);
-        
+
         Spatial sky = assetManager.loadModel("Scenes/Sky.j3o");
         worldAppState.setSky(sky);
-        
+
         Texture alphaMap = assetManager.loadTexture("Textures/Maps/test-maps/testalphamap2.png");
         Texture heightMap = assetManager.loadTexture("Textures/Maps/test-maps/testheightmap2.png");
-        worldAppState.loadTerrain("test_terrain",alphaMap, heightMap, Vector3f.ZERO, new Vector3f(2f,0.5f,2f));
+        worldAppState.loadTerrain("test_terrain",alphaMap, heightMap, null, Vector3f.ZERO, new Vector3f(2f,0.5f,2f));
         
         carAppState.getControl().setPhysicsLocation(new Vector3f(0,100,0));
         
         Texture grass = assetManager.loadTexture("Textures/Tile/Gras.jpg");
-        worldAppState.setTexture("test_terrain",1,grass,grassScale);
-        
+        worldAppState.setTexture("test_terrain", 1, grass, grassScale);
+
         Texture dirt = assetManager.loadTexture("Textures/Tile/Dirt.jpg");
-        worldAppState.setTexture("test_terrain",2,dirt,dirtScale);
-        
+        worldAppState.setTexture("test_terrain", 2, dirt, dirtScale);
+
         Texture rock = assetManager.loadTexture("Textures/Tile/Road.jpg");
-        worldAppState.setTexture("test_terrain",3,rock,roadScale);
+        worldAppState.setTexture("test_terrain", 3, rock, roadScale);
     }
 
     public void update(float tpf) {
-        if(worldAppState.isInitialized() && !worldAppState.isTerrainLoaded()) initTerrain();
-        
+        if (worldAppState.isInitialized() && !worldAppState.isTerrainLoaded()) {
+            initTerrain();
+        }
+
 //        if(carAppState != null) {
 //            BoundingBox boundBox = (BoundingBox) carAppState.getGeometry().getModelBound();
 //
@@ -151,7 +158,7 @@ public class InitTestTerrain extends AbstractInit implements ActionListener{
 
     @Override
     public void onAction(String name, boolean isPressed, float tpf) {
-        Texture alphaMap, heightMap;
+        Texture alphaMap, heightMap, mappingMap;
         if(isPressed) {
             switch(name) {
                 case MAPPING_CREATE_MOUNTAIN:
@@ -171,7 +178,7 @@ public class InitTestTerrain extends AbstractInit implements ActionListener{
 //                    worldAppState.adjustHeights(locations, heights);
 
                     carAppState.getControl().setPhysicsLocation(carAppState.getControl().getPhysicsLocation()
-                            .add(new Vector3f(0,defaultHeightDelta/2,0)));
+                            .add(new Vector3f(0, defaultHeightDelta / 2, 0)));
                     break;
                 case MAPPING_SWITCH_MAP_0:
                     worldAppState.unloadAllTerrains();
@@ -179,9 +186,9 @@ public class InitTestTerrain extends AbstractInit implements ActionListener{
                 case MAPPING_SWITCH_MAP_1:
                     alphaMap = assetManager.loadTexture("Textures/Maps/test-maps/testalphamap1.png");
                     heightMap = assetManager.loadTexture("Textures/Maps/test-maps/testheightmap1.png");
-                    if(!worldAppState.isTerrainLoaded("test_terrain")) {
-                        loadTerrain("test_terrain",alphaMap, heightMap,
-                                Vector3f.ZERO, new Vector3f(2f,0.2f,2f));
+                    if (!worldAppState.isTerrainLoaded("test_terrain")) {
+                        loadTerrain("test_terrain", alphaMap, heightMap,
+                                Vector3f.ZERO, new Vector3f(2f, 0.2f, 2f));
                     } else {
                         worldAppState.unloadTerrain("test_terrain");
                     }
@@ -191,17 +198,17 @@ public class InitTestTerrain extends AbstractInit implements ActionListener{
                     heightMap = assetManager.loadTexture("Textures/Maps/test-maps/testheightmap2.png");
 
                     if(!worldAppState.isTerrainLoaded("test_terrain_2")) {
-                        worldAppState.loadTerrain("test_terrain_2",alphaMap, heightMap,
+                        worldAppState.loadTerrain("test_terrain_2",alphaMap, heightMap, null,
                             new Vector3f(0,0,1024), new Vector3f(2f,0.5f,2f));
 
                         Texture dirt = assetManager.loadTexture("Textures/Tile/Sand.jpg");
-                        worldAppState.setTexture("test_terrain_2",2,dirt,dirtScale);
+                        worldAppState.setTexture("test_terrain_2", 2, dirt, dirtScale);
 
                         Texture grass = assetManager.loadTexture("Textures/Tile/Concrete.jpg");
-                        worldAppState.setTexture("test_terrain_2",1,grass,grassScale);
+                        worldAppState.setTexture("test_terrain_2", 1, grass, grassScale);
 
                         Texture rock = assetManager.loadTexture("Textures/Tile/Road.jpg");
-                        worldAppState.setTexture("test_terrain_2",3,rock,roadScale);
+                        worldAppState.setTexture("test_terrain_2", 3, rock, roadScale);
                     } else {
                         worldAppState.unloadTerrain("test_terrain_2");
                     }
@@ -210,9 +217,9 @@ public class InitTestTerrain extends AbstractInit implements ActionListener{
                 case MAPPING_SWITCH_MAP_3:
                     alphaMap = assetManager.loadTexture("Textures/Maps/test-maps/testalphamap3.png");
                     heightMap = assetManager.loadTexture("Textures/Maps/test-maps/testheightmap3.png");
-                    if(!worldAppState.isTerrainLoaded("test_terrain")) {
-                        loadTerrain("test_terrain",alphaMap, heightMap,
-                                Vector3f.ZERO, new Vector3f(2f,0.2f,2f));
+                    if (!worldAppState.isTerrainLoaded("test_terrain")) {
+                        loadTerrain("test_terrain", alphaMap, heightMap,
+                                Vector3f.ZERO, new Vector3f(2f, 0.2f, 2f));
                     } else {
                         worldAppState.unloadTerrain("test_terrain");
                     }
@@ -220,19 +227,20 @@ public class InitTestTerrain extends AbstractInit implements ActionListener{
                 case MAPPING_SWITCH_MAP_1_1:
                     alphaMap = assetManager.loadTexture("Textures/Maps/firstalphamap.png");
                     heightMap = assetManager.loadTexture("Textures/Maps/firstheightmap.png");
+                    mappingMap = assetManager.loadTexture("Textures/Maps/firstmap.png");
 
                     if(!worldAppState.isTerrainLoaded("first_map")) {
-                        worldAppState.loadTerrain("first_map",alphaMap, heightMap,
+                        worldAppState.loadTerrain("first_map",alphaMap, heightMap, mappingMap,
                             Vector3f.ZERO, new Vector3f(0.5f,0.05f,0.5f));
 
                         Texture dirt = assetManager.loadTexture("Textures/Tile/Dirt.jpg");
-                        worldAppState.setTexture("first_map",2,dirt,64.0f);
+                        worldAppState.setTexture("first_map", 2, dirt, 64.0f);
 
                         Texture road = assetManager.loadTexture("Textures/Tile/Road.jpg");
-                        worldAppState.setTexture("first_map",1,road,64.0f);
+                        worldAppState.setTexture("first_map", 1, road, 64.0f);
 
                         Texture grass = assetManager.loadTexture("Textures/Tile/Gras.jpg");
-                        worldAppState.setTexture("first_map",3,grass,64.0f);
+                        worldAppState.setTexture("first_map", 3, grass, 64.0f);
                     } else {
                         worldAppState.unloadTerrain("first_map");
                     }
@@ -240,20 +248,29 @@ public class InitTestTerrain extends AbstractInit implements ActionListener{
             }
         }
     }
-    
+
     public void loadTerrain(String terrainName, Texture alphaMap, Texture heightMap,
             Vector3f moved, Vector3f scale) {
-        worldAppState.loadTerrain(terrainName,alphaMap, heightMap,
+        worldAppState.loadTerrain(terrainName,alphaMap, heightMap, null,
                         moved, scale);
         
         Texture grass = assetManager.loadTexture("Textures/Tile/Gras.jpg");
-        worldAppState.setTexture(terrainName,1,grass,grassScale);
+        worldAppState.setTexture(terrainName, 1, grass, grassScale);
 
         Texture dirt = assetManager.loadTexture("Textures/Tile/Dirt.jpg");
-        worldAppState.setTexture(terrainName,2,dirt,dirtScale);
+        worldAppState.setTexture(terrainName, 2, dirt, dirtScale);
 
         Texture rock = assetManager.loadTexture("Textures/Tile/Road.jpg");
-        worldAppState.setTexture(terrainName,3,rock,roadScale);
+        worldAppState.setTexture(terrainName, 3, rock, roadScale);
     }
-    
+
+    @Override
+    public void close() {
+        try {
+            stateManager.detach(worldAppState);
+            stateManager.detach(carAppState);
+        } catch (Exception e) {
+        }
+    }
+
 }

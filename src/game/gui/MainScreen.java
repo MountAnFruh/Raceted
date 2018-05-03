@@ -20,9 +20,7 @@ import game.test.AbstractInit;
  * @author Robbo13
  */
 public class MainScreen extends AbstractAppState {
-    
-    
-    
+
     private AudioNode audioSource;
     private AssetManager asset;
     private Nifty nifty;
@@ -31,22 +29,20 @@ public class MainScreen extends AbstractAppState {
     private String currentScreen = "";
     private AbstractInit currentGame = null;
     private NiftyJmeDisplay niftyDisplay;
-    
+
     private static MainScreen theInstance;
-    
-    public static MainScreen getTheInstance()
-    {
-        if(theInstance==null)
-        {
+
+    public static MainScreen getTheInstance() {
+        if (theInstance == null) {
             theInstance = new MainScreen();
         }
-        
+
         return theInstance;
     }
-    
+
     @Override
     public void initialize(AppStateManager stateManager, Application appl) {
-        
+
         app = (SimpleApplication) appl;
         asset = app.getAssetManager();
 //        audioSource = new AudioNode(asset, "Sounds/Musics/Main.ogg", AudioData.DataType.Buffer);
@@ -56,20 +52,22 @@ public class MainScreen extends AbstractAppState {
         nifty = niftyDisplay.getNifty();
         app.getGuiViewPort().addProcessor(niftyDisplay);
         app.getFlyByCamera().setDragToRotate(true);
-        
+
         nifty.loadStyleFile("nifty-default-styles.xml");
         nifty.loadControlFile("nifty-default-controls.xml");
-        
+
         controller = new GUIScreenController(nifty, app);
-        
+
         nifty.addScreen("start", new StartBuilder("start", app, controller).build(nifty));
-        
+
         nifty.addScreen("hud", new HUDBuilder("hud", app, controller).build(nifty));
-        
+
         nifty.addScreen("hud_terrain_text", new HUDTerrainTextBuilder("hud_terrain_text", app, controller).build(nifty));
-        
+
         nifty.addScreen("chooser", new ChooseBuilder("chooser", app, controller).build(nifty));
-        
+
+        nifty.addScreen("esc_menu", new ESCMenuBuilder("esc_menu", app, controller).build(nifty));
+
         goToScreen("start");
     }
 
@@ -103,9 +101,11 @@ public class MainScreen extends AbstractAppState {
     public String getCurrentScreenName() {
         return currentScreen;
     }
-    
-    public void goToScreen(String screen)
-    {
+
+    public void goToScreen(String screen) {
+        if (screen.equals("start")) {
+            this.app.getRootNode().detachAllChildren();
+        }
         nifty.gotoScreen(screen);
         currentScreen = screen;
     }

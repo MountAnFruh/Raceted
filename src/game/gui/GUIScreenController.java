@@ -12,6 +12,8 @@ import com.jme3.audio.AudioNode;
 import de.lessvoid.nifty.Nifty;
 import de.lessvoid.nifty.screen.Screen;
 import de.lessvoid.nifty.screen.ScreenController;
+import game.entities.RockAppState;
+import game.test.AbstractInit;
 import game.test.InitTestCar;
 import game.test.InitTestRock;
 import game.test.InitTestTerrain;
@@ -27,13 +29,15 @@ public class GUIScreenController implements ScreenController {
     private Nifty nifty;
     private SimpleApplication app;
     private MainScreen mainScreen;
+    private AbstractInit tester;
+    private RockAppState rockapp;
 
     public GUIScreenController(Nifty nifty, SimpleApplication app) {
         this.nifty = nifty;
         this.app = app;
         asset = app.getAssetManager();
         audioSource = new AudioNode(asset, "Sounds/Effects/Select.ogg", AudioData.DataType.Buffer);
-        
+
         mainScreen = MainScreen.getTheInstance();
     }
 
@@ -57,7 +61,6 @@ public class GUIScreenController implements ScreenController {
     }
 
     public void quitGame() {
-        audioSource.play();
         app.stop();
     }
 
@@ -66,8 +69,18 @@ public class GUIScreenController implements ScreenController {
     }
 
     public void backtomain() {
-        audioSource.play();
-        mainScreen.goToScreen("start");
+//        if(rockapp != null)
+//        {
+//            rockapp.setRunning(false);
+//        }
+//        app.getRootNode().detachAllChildren();
+//        tester.close();
+//        mainScreen.goToScreen("start");
+        quitGame();
+    }
+
+    public void backtohud() {
+        mainScreen.goToScreen("hud");
     }
 
     public void playwithCart() {
@@ -86,12 +99,14 @@ public class GUIScreenController implements ScreenController {
     }
 
     public void playwith(String character) {
+        rockapp = null;
         audioSource.stop();
         switch (character) {
             case "Cart":
                 System.out.println("testCar");
 
                 InitTestCar testCar = new InitTestCar(app);
+                tester = testCar;
                 mainScreen.goToScreen("hud");
                 mainScreen.setCurrentGame(testCar);
                 break;
@@ -100,14 +115,17 @@ public class GUIScreenController implements ScreenController {
                 System.out.println("testRock");
 
                 InitTestRock testRock = new InitTestRock(app);
+                tester = testRock;
                 mainScreen.goToScreen("hud");
                 mainScreen.setCurrentGame(testRock);
+                rockapp = testRock.getAppState();
                 break;
 
             case "Terrain":
                 System.out.println("testTerrain");
 
                 InitTestTerrain testTerrain = new InitTestTerrain(nifty, app);
+                tester = testTerrain;
                 mainScreen.goToScreen("hud");
                 mainScreen.setCurrentGame(testTerrain);
                 break;
@@ -115,9 +133,9 @@ public class GUIScreenController implements ScreenController {
     }
 
     public void update(float tpf) {
-        
+
         if (mainScreen.getCurrentGame() instanceof InitTestTerrain) {
-            ((InitTestTerrain)mainScreen.getCurrentGame()).update(tpf);
+            ((InitTestTerrain) mainScreen.getCurrentGame()).update(tpf);
         }
     }
 

@@ -16,12 +16,13 @@ import game.entities.RockAppState;
  *
  * @author rober
  */
-public class InitTestRock extends AbstractInit{
+public class InitTestRock extends AbstractInit {
+
     private RockAppState rockAppState;
-    
+
     public InitTestRock(SimpleApplication app) {
         super(app);
-        
+
         flyCam.setEnabled(false);
 
         initLight();
@@ -30,6 +31,10 @@ public class InitTestRock extends AbstractInit{
 
         rockAppState = new RockAppState(bulletAppState, rootNode, terrain, app.getRenderManager());
         stateManager.attach(rockAppState);
+    }
+
+    public RockAppState getAppState() {
+        return rockAppState;
     }
 
     private void initLight() {
@@ -51,6 +56,10 @@ public class InitTestRock extends AbstractInit{
         rootNode.attachChild(terrain);
         bulletAppState.getPhysicsSpace().add(landscapeControl);
     }
-    
-    
+
+    @Override
+    public void close() {
+        stateManager.detach(rockAppState);
+    }
+
 }
