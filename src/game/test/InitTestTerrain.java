@@ -15,6 +15,7 @@ import com.jme3.input.controls.Trigger;
 import com.jme3.light.AmbientLight;
 import com.jme3.math.ColorRGBA;
 import com.jme3.math.Vector3f;
+import com.jme3.scene.Node;
 import com.jme3.scene.Spatial;
 import com.jme3.texture.Texture;
 import de.lessvoid.nifty.Nifty;
@@ -80,7 +81,7 @@ public class InitTestTerrain extends AbstractInit implements ActionListener {
         initHUD();
         initInput();
         
-        carAppState = new CarAppState(bulletAppState, new Vector3f(0,0,0));
+        carAppState = new CarAppState(bulletAppState, 100, new Vector3f(0,100,0), (Node)terrain);
         stateManager.attach(carAppState);
 
         flyCam.setEnabled(false);
@@ -128,8 +129,6 @@ public class InitTestTerrain extends AbstractInit implements ActionListener {
         Texture heightMap = assetManager.loadTexture("Textures/Maps/test-maps/testheightmap2.png");
         worldAppState.loadTerrain("test_terrain",alphaMap, heightMap, null, Vector3f.ZERO, new Vector3f(2f,0.5f,2f));
         
-        carAppState.getControl().setPhysicsLocation(new Vector3f(0,100,0));
-        
         Texture grass = assetManager.loadTexture("Textures/Tile/Gras.jpg");
         worldAppState.setTexture("test_terrain", 1, grass, grassScale);
 
@@ -175,10 +174,14 @@ public class InitTestTerrain extends AbstractInit implements ActionListener {
 //                            heights.add(defaultHeightDelta);
 //                        }
 //                    }
-//                    worldAppState.adjustHeights(locations, heights);
+//                  float defaultHeightDelta = 20.0f;
+//                    
+//                    worldAppState.adjustHeights(location.getX(), location.getZ(),
+//                            maxLocation.getX(), maxLocation.getZ(), defaultHeightDelta);
+//
 
                     carAppState.getControl().setPhysicsLocation(carAppState.getControl().getPhysicsLocation()
-                            .add(new Vector3f(0, defaultHeightDelta / 2, 0)));
+                            .add(new Vector3f(0,defaultHeightDelta,0)));
                     break;
                 case MAPPING_SWITCH_MAP_0:
                     worldAppState.unloadAllTerrains();

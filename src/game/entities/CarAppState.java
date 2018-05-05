@@ -33,90 +33,43 @@ import com.jme3.scene.Geometry;
 import com.jme3.scene.Node;
 import com.jme3.scene.Spatial;
 import com.jme3.scene.shape.Cylinder;
+import game.test.DMGArt;
 
 /**
  *
  * @author Robbo13
  */
-public class CarAppState extends AbstractAppState implements ActionListener {
+public class CarAppState extends CharacterAppState {
     
-    // define triggers
-    private static final Trigger TRIGGER_LEFT = new KeyTrigger(KeyInput.KEY_A);
-    private static final Trigger TRIGGER_UP = new KeyTrigger(KeyInput.KEY_W);
-    private static final Trigger TRIGGER_DOWN = new KeyTrigger(KeyInput.KEY_S);
-    private static final Trigger TRIGGER_RIGHT = new KeyTrigger(KeyInput.KEY_D);
-    private static final Trigger TRIGGER_SPACE = new KeyTrigger(KeyInput.KEY_SPACE);
-    private static final Trigger TRIGGER_RESET = new KeyTrigger(KeyInput.KEY_RETURN);
-    
-    // define mappings
-    private static final String MAPPING_LEFT = "Left";
-    private static final String MAPPING_UP = "Up";
-    private static final String MAPPING_DOWN = "Down";
-    private static final String MAPPING_RIGHT = "Right";
-    private static final String MAPPING_SPACE = "Space";
-    private static final String MAPPING_RESET = "Reset";
-    
-    private static final float DEFAULT_JUMP_COOLDOWN = 1.0f;
     private static final float MAX_SPEED = 300f;
-
-    private final BulletAppState bulletAppState;
-    private final Vector3f spawnPoint;
+    private static final float SPIKE_DMG_GAIN = 2f;
     
-    private Node rootNode;
-    
-    private FlyByCamera deathCam;
-    private ChaseCamera chaseCam;
-    private InputManager inputManager;
-    private AssetManager assetManager;
-    private Camera cam;
-    private Geometry chassis;
-    
-    private boolean jump;
-    private boolean onGround;
     private int steer;
     
     private VehicleControl carControl;
     private Node vehicleNode;
     private float steeringValue;
     private float accelerationValue;
-    
-    private float jumpCooldown = 0;
-    
-    private static Material getBoundingBoxMaterialForPickup() {
-        return new Material();
-    }
 
-    public CarAppState(BulletAppState bulletAppState, Vector3f spawnPoint) {
-        this.bulletAppState = bulletAppState;
-        this.spawnPoint = spawnPoint;
-        //this.bulletAppState.setDebugEnabled(true);
+    public CarAppState(BulletAppState bulletAppState, int maxHP, Vector3f spawnPoint, Node terrainNode) {
+        super(bulletAppState, maxHP, spawnPoint, terrainNode);
     }
     
     @Override
     public void initialize(AppStateManager stateManager, Application app) {
         super.initialize(stateManager, app);
-        SimpleApplication simpleApp = (SimpleApplication) app;
-        
-        this.inputManager = simpleApp.getInputManager();
-        this.assetManager = simpleApp.getAssetManager();
-        this.cam = simpleApp.getCamera();
-        this.rootNode = simpleApp.getRootNode();
-        
-        initInput();
-        
-        initPlayer();
-        
-        initCamera();
     }
     
-    private void initCamera() {
+    @Override
+    public void initCamera() {
+        super.initCamera();
 //        camNode = new CameraNode("CameraNode", cam);
 //        camNode.setControlDir(CameraControl.ControlDirection.SpatialToCamera);
 //        vehicleNode.attachChild(camNode);
 //        camNode.setLocalTranslation(0, 5, -15);
 
         //Work in Progresser als af
-        chaseCam = new ChaseCamera(cam, vehicleNode, inputManager);
+        chaseCam = new ChaseCamera(cam, geometry, inputManager);
         chaseCam.setInvertVerticalAxis(true);
         chaseCam.setSmoothMotion(true);
         chaseCam.setTrailingEnabled(true);
@@ -128,44 +81,8 @@ public class CarAppState extends AbstractAppState implements ActionListener {
         chaseCam.setZoomSensitivity(1000);
     }
     
-    private void cleanupCamera() {
-        chaseCam.setEnabled(false);
-    }
-    
-    private void initInput() {
-        inputManager.addMapping(MAPPING_LEFT, TRIGGER_LEFT);
-        inputManager.addMapping(MAPPING_RIGHT, TRIGGER_RIGHT);
-        inputManager.addMapping(MAPPING_UP, TRIGGER_UP);
-        inputManager.addMapping(MAPPING_DOWN, TRIGGER_DOWN);
-        inputManager.addMapping(MAPPING_SPACE, TRIGGER_SPACE);
-        inputManager.addMapping(MAPPING_RESET, TRIGGER_RESET);
-        inputManager.addListener(this, MAPPING_LEFT, MAPPING_RIGHT,
-                MAPPING_UP, MAPPING_DOWN, MAPPING_SPACE, MAPPING_RESET);
-    }
-    
-    private void cleanupInput() {
-        inputManager.removeListener(this);
-    }
-    
-    private Geometry findGeom(Spatial spatial, String name) {
-        if (spatial instanceof Node) {
-            Node node = (Node) spatial;
-            for (int i = 0; i < node.getQuantity(); i++) {
-                Spatial child = node.getChild(i);
-                Geometry result = findGeom(child, name);
-                if (result != null) {
-                    return result;
-                }
-            }
-        } else if (spatial instanceof Geometry) {
-            if (spatial.getName().startsWith(name)) {
-                return (Geometry) spatial;
-            }
-        }
-        return null;
-    }
-    
-    private void initPlayer() {
+    @Override
+    protected void initPlayer() {
         Material mat = new Material(assetManager, "Common/MatDefs/Misc/Unshaded.j3md");
         mat.getAdditionalRenderState().setWireframe(true);
         mat.setColor("Color", ColorRGBA.Red);
@@ -184,14 +101,14 @@ public class CarAppState extends AbstractAppState implements ActionListener {
         
         vehicleNode = new Node("vehicleNode");
         
-        chassis = (Geometry) assetManager.loadModel("Models/Car.obj");
-        vehicleNode.attachChild(chassis);
+        geometry = (Geometry) assetManager.loadModel("Models/Car.obj");
+        vehicleNode.attachChild(geometry);
         vehicleNode.setShadowMode(RenderQueue.ShadowMode.Cast);
         
-        BoundingBox box = (BoundingBox) chassis.getModelBound();
+        BoundingBox box = (BoundingBox) geometry.getModelBound();
 
         //Create a hull collision shape for the chassis
-        CollisionShape vehicleHull = CollisionShapeFactory.createDynamicMeshShape(chassis);
+        CollisionShape vehicleHull = CollisionShapeFactory.createDynamicMeshShape(geometry);
         
 
         //Create a vehicle control
@@ -261,22 +178,13 @@ public class CarAppState extends AbstractAppState implements ActionListener {
         carControl.setPhysicsLocation(spawnPoint);
     }
     
-    private void cleanupPlayer() {
+    @Override
+    protected void cleanupPlayer() {
         bulletAppState.getPhysicsSpace().remove(carControl);
-        rootNode.detachChild(vehicleNode);
-    }
-    
-    public VehicleControl getControl() {
-        return carControl;
-    }
-    
-    public Geometry getGeometry() {
-        return chassis;
     }
     
     @Override
     public void update(float tpf) {
-        //onGround = terrain.collideWith(vehicleNode.getWorldBound(), new CollisionResults()) != 0;
         if (jump) {
             if (/*onGround &&*/ jumpCooldown <= 0) {
                 carControl.applyImpulse(carControl.getGravity().negate().divide(2), Vector3f.ZERO);
@@ -285,23 +193,16 @@ public class CarAppState extends AbstractAppState implements ActionListener {
         }
         steeringValue = steer * 0.5f * FastMath.pow(((MAX_SPEED - carControl.getCurrentVehicleSpeedKmHour()) / MAX_SPEED) , 2);
         carControl.steer(steeringValue);
-        if (jumpCooldown > 0) {
-            jumpCooldown -= tpf;
-        }
     }
-    
-    @Override
-    public void cleanup() {
-        super.cleanup();
-        cleanupInput();
-        cleanupCamera();
-        cleanupPlayer();
+
+    public VehicleControl getControl() {
+        return carControl;
     }
 
     @Override
     public void onAction(String name, boolean isPressed, float tpf) {
+        super.onAction(name, isPressed, tpf);
         switch(name) {
-            case MAPPING_SPACE: jump = isPressed; break;
             case MAPPING_LEFT:
                 if(isPressed) steer++; else steer--;
                 break;
@@ -334,6 +235,18 @@ public class CarAppState extends AbstractAppState implements ActionListener {
         }
         carControl.accelerate(accelerationValue * ((MAX_SPEED - carControl.getCurrentVehicleSpeedKmHour()) / MAX_SPEED));
         System.out.println(carControl.getCurrentVehicleSpeedKmHour() + ", " + accelerationValue + ", " + (MAX_SPEED - carControl.getCurrentVehicleSpeedKmHour()));
+    }
+
+    @Override
+    public void causeDmg(int dmg, DMGArt art) {
+        switch (art) {
+            case SPIKE:
+                super.causeDmg((int)(dmg * SPIKE_DMG_GAIN));
+                break;
+            default:
+                super.causeDmg(dmg);
+                break;
+        }
     }
     
 }

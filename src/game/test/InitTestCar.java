@@ -10,6 +10,7 @@ import com.jme3.bullet.control.RigidBodyControl;
 import com.jme3.light.AmbientLight;
 import com.jme3.math.ColorRGBA;
 import com.jme3.math.Vector3f;
+import com.jme3.scene.Node;
 import com.jme3.scene.Spatial;
 import game.entities.CarAppState;
 
@@ -29,7 +30,7 @@ public class InitTestCar extends AbstractInit {
         initSky();
         initTerrain();
 
-        carAppState = new CarAppState(bulletAppState, new Vector3f(0, 100, 0));
+        carAppState = new CarAppState(bulletAppState, 100, new Vector3f(0, 20, 0),  (Node)terrain);
         stateManager.attach(carAppState);
     }
 

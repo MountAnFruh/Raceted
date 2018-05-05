@@ -534,6 +534,13 @@ public class WorldAppState extends AbstractAppState {
     public BulletAppState getBulletAppState() {
         return bulletAppState;
     }
+
+    /**
+     * @return Gibt die Terrain-Node zurück
+     */
+    public Node getTerrainNode() {
+        return terrainNode;
+    }
     
     @Override
     public void update(float tpf) {
