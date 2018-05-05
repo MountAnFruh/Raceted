@@ -11,10 +11,7 @@ import com.jme3.renderer.RenderManager;
 import com.jme3.system.AppSettings;
 import java.awt.GraphicsDevice;
 import java.awt.GraphicsEnvironment;
-import java.io.IOException;
-import java.net.ConnectException;
 import game.gui.MainScreen;
-import game.network.NetworkClient;
 import game.utils.ImageUtils;
 
 /**
@@ -23,7 +20,6 @@ import game.utils.ImageUtils;
  */
 public class ClientMain extends SimpleApplication {
 
-    private final NetworkClient client = new NetworkClient();
     private MainScreen startScreen;
     private AudioNode audioSource;
 
@@ -50,13 +46,6 @@ public class ClientMain extends SimpleApplication {
         initAppStates();
     
         flyCam.setDragToRotate(true);
-        try {
-            client.startConnection();
-        } catch (ConnectException ex) {
-            System.out.println("Server not running!");
-        } catch (IOException ex) {
-            ex.printStackTrace();
-        }
     }
 
     private void initAppStates() {
