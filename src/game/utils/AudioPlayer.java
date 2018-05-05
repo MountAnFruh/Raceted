@@ -8,11 +8,8 @@ package game.utils;
 import com.jme3.asset.AssetManager;
 import com.jme3.audio.AudioData;
 import com.jme3.audio.AudioNode;
+import com.jme3.audio.AudioSource;
 import java.util.HashMap;
-import java.util.Map;
-import java.util.Stack;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  *
@@ -20,69 +17,70 @@ import java.util.logging.Logger;
  */
 public class AudioPlayer {
 
-    private AudioNode audioSource;
-    private AssetManager asset;
-    private Stack<Integer> idstack = new Stack<>();
-    private HashMap<Integer, AudioNode> effectlist = new HashMap<>();
-
-    {
-        for (int i = 0; i < 200; i++) {
-            idstack.add(i);
-        }
-
+    private final AssetManager assetManager;
+    private final HashMap<String, AudioNode> soundNodes = new HashMap<>();
+    
+    private AudioNode musicNode;
+    
+    public AudioPlayer(AssetManager assetManager) {
+        this.assetManager = assetManager;
     }
 
     //Spielt Musik ab
-    public void playDaMusic(AssetManager asset, String filename, boolean loop) {
-        audioSource = new AudioNode(asset, filename, AudioData.DataType.Buffer);
-        audioSource.setName("Music");
-        audioSource.play();
-        audioSource.setPositional(false);
-        audioSource.setLooping(loop);
-
+    public void playMusic(String filename, boolean loop, float volume) {
+        if(musicNode != null) return;
+        
+        musicNode = new AudioNode(assetManager, filename, AudioData.DataType.Buffer);
+        musicNode.setName("Music");
+        musicNode.play();
+        musicNode.setVolume(volume);
+        musicNode.setPositional(false);
+        musicNode.setLooping(loop);
     }
 
-    public int playDaSound(AssetManager asset, String filename, boolean loop) {
-        int id = -1;
-        while (idstack.isEmpty()) {
-            System.out.println("wait");
-            throw new IndexOutOfBoundsException();
-        }
-        id = idstack.pop();
-        audioSource = new AudioNode(asset, filename, AudioData.DataType.Buffer);
-        audioSource.setName(id + "");
-        audioSource.setLooping(loop);
-        effectlist.put(id, audioSource);
-        audioSource.setPositional(false);
-        audioSource.play();
-        return id;
+    public void playSound(String name, String filename, boolean loop, float volume) {
+        if(soundNodes.get(name) != null) return;
+        
+        AudioNode soundNode = new AudioNode(assetManager, filename, AudioData.DataType.Buffer);
+        soundNode.setVolume(volume);
+        soundNode.setName(name);
+        soundNode.setLooping(loop);
+        soundNodes.put(name, soundNode);
+        soundNode.setPositional(false);
+        soundNode.play();
+    }
+    
+    public boolean isSoundPlaying(String name) {
+        return soundNodes.get(name) != null;
+    }
+    
+    public boolean isMusicPlaying() {
+        return musicNode != null;
     }
 
-    public void pauseDaMusic() {
-        audioSource.pause();
+    public void pauseMusic() {
+        if(musicNode == null) return;
+        if(musicNode.getStatus() == AudioSource.Status.Paused) return;
+        musicNode.pause();
     }
 
-    public void stopDaMusic() {
-        audioSource.stop();
+    public void stopMusic() {
+        if(musicNode == null) return;
+        musicNode.stop();
+        musicNode = null;
     }
 
     //Stoppt den Sound
-    public void stopDaSound(int id) {
-        effectlist.get(id).stop();
-        effectlist.remove(id);
-        idstack.add(id);
-
+    public void stopSound(String name) {
+        if(soundNodes.get(name) == null) return;
+        soundNodes.get(name).stop();
+        soundNodes.remove(name);
     }
 
     public void stopAllSounds() {
-        for (Map.Entry<Integer, AudioNode> entry : effectlist.entrySet()) {
-            entry.getValue().stop();
-            idstack.add(entry.getKey());
-            idstack.notify();
-            effectlist.remove(entry.getKey());
-
+        for (String name : soundNodes.keySet()) {
+            stopSound(name);
         }
-
     }
 
 }

@@ -59,6 +59,8 @@ public class TestSoundAppState extends AbstractAppState implements ActionListene
     private static final String MAPPING_SPACE = "Space";
     private static final String MAPPING_RESET = "Reset";
     private static final String MAPPING_DMG = "F";
+    
+    private static final String ROCK_ROLL_SOUND = "RockRollSound";
 
     private static final float DEFAULT_JUMP_COOLDOWN = 1.0f;
 
@@ -84,11 +86,9 @@ public class TestSoundAppState extends AbstractAppState implements ActionListene
     private static final float SPIKE_DMG_REDUCE = 3f;
     private float dmg = 0;
 
-    int id = -1;
     private Explosion expl;
 
-    private AudioPlayer player = new AudioPlayer();
-    private boolean rocksound = false;
+    private AudioPlayer player;
 
     public TestSoundAppState(BulletAppState bulletAppState, Node rootNode, Spatial terrain, RenderManager renderManager) {
         this.bulletAppState = bulletAppState;
@@ -103,7 +103,8 @@ public class TestSoundAppState extends AbstractAppState implements ActionListene
         this.inputManager = app.getInputManager();
         this.assetManager = app.getAssetManager();
         this.cam = app.getCamera();
-        player.playDaMusic(assetManager, "Sounds/Musics/Main.ogg", true);
+        this.player = new AudioPlayer(assetManager);
+        player.playMusic("Sounds/Musics/Main.ogg", true, 1f);
         initInput();
         initPlayer();
         initCamera();
@@ -178,6 +179,13 @@ public class TestSoundAppState extends AbstractAppState implements ActionListene
         onGround = terrain.collideWith(sphereGeo.getWorldBound(), new CollisionResults()) != 0;
         float divisor = 150;
         Vector3f speedVector = rockControl.getLinearVelocity();
+        if(Math.abs(speedVector.x) > 1 || Math.abs(speedVector.z) > 1) {
+            player.playSound(ROCK_ROLL_SOUND, "Sounds/Effects/Rock.ogg", true, 1f);
+        } else {
+            player.stopSound(ROCK_ROLL_SOUND);
+        }
+        System.out.println("Sound playing?: " + player.isSoundPlaying(ROCK_ROLL_SOUND));
+        System.out.println("Music playing?: " + player.isMusicPlaying());
         Vector3f lookVector = new Vector3f(0, 0, 0);
         if (left) {
             lookVector.addLocal(cam.getLeft());                 /////////// LEFT  
@@ -187,21 +195,9 @@ public class TestSoundAppState extends AbstractAppState implements ActionListene
         }
 
         if (forward) {
-            if (!rocksound) {
-                id = player.playDaSound(assetManager, "Sounds/Effects/Rock.ogg", true);
-                rocksound = true;
-            }
             lookVector.addLocal(cam.getDirection());            /////////// UP
         }
         if (backward) {
-
-            try {
-                player.stopDaSound(id);
-                rocksound = false;
-            } catch (NullPointerException e) {
-                System.out.println("nix zum stoppen");
-            }
-
             lookVector.addLocal(cam.getDirection().negate());   /////////// DOWN 
         }
         lookVector = lookVector.normalize();
@@ -257,7 +253,6 @@ public class TestSoundAppState extends AbstractAppState implements ActionListene
                 backward = isPressed;
                 break;
             case MAPPING_SPACE:
-
                 jump = isPressed;
                 break;
             default:
@@ -265,6 +260,7 @@ public class TestSoundAppState extends AbstractAppState implements ActionListene
         }
         if (name.equals(MAPPING_RESET)) {
             if (isPressed) {
+                player.stopMusic();
                 rockControl.setPhysicsLocation(Vector3f.ZERO);
                 rockControl.setPhysicsRotation(new Matrix3f());
                 rockControl.setLinearVelocity(Vector3f.ZERO);

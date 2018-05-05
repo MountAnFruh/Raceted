@@ -13,7 +13,6 @@ import com.jme3.math.ColorRGBA;
 import com.jme3.renderer.RenderManager;
 import com.jme3.scene.Spatial;
 import com.jme3.system.JmeContext;
-import game.entities.RockAppState;
 import game.utils.AudioPlayer;
 
 /**
@@ -22,7 +21,6 @@ import game.utils.AudioPlayer;
  */
 public class TestAudio extends SimpleApplication {
  
-    private AudioPlayer player = new  AudioPlayer();
     private TestSoundAppState rockAppState;
     private BulletAppState bulletAppState;
     private Spatial terrain;
@@ -30,11 +28,8 @@ public class TestAudio extends SimpleApplication {
     public static void main(String[] args) {
         TestAudio testRock = new TestAudio();
         testRock.start(JmeContext.Type.Display);
-     
     }
 
-    
-    
     @Override
     public void simpleInitApp() {
         bulletAppState = new BulletAppState();
