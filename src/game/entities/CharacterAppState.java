@@ -10,32 +10,21 @@ import com.jme3.app.SimpleApplication;
 import com.jme3.app.state.AbstractAppState;
 import com.jme3.app.state.AppStateManager;
 import com.jme3.asset.AssetManager;
-import com.jme3.bounding.BoundingSphere;
 import com.jme3.bullet.BulletAppState;
-import com.jme3.bullet.collision.PhysicsCollisionObject;
-import com.jme3.bullet.collision.shapes.CollisionShape;
-import com.jme3.bullet.control.PhysicsControl;
-import com.jme3.bullet.control.RigidBodyControl;
-import com.jme3.bullet.objects.PhysicsRigidBody;
-import com.jme3.bullet.util.CollisionShapeFactory;
 import com.jme3.collision.CollisionResults;
 import com.jme3.input.ChaseCamera;
 import com.jme3.input.FlyByCamera;
 import com.jme3.input.InputManager;
 import com.jme3.input.KeyInput;
 import com.jme3.input.controls.ActionListener;
-import com.jme3.input.controls.AnalogListener;
 import com.jme3.input.controls.KeyTrigger;
 import com.jme3.input.controls.Trigger;
-import com.jme3.material.Material;
+import com.jme3.math.Quaternion;
 import com.jme3.math.Vector3f;
 import com.jme3.renderer.Camera;
 import com.jme3.renderer.RenderManager;
 import com.jme3.scene.Geometry;
 import com.jme3.scene.Node;
-import com.jme3.scene.Spatial;
-import com.jme3.scene.shape.Sphere;
-import com.jme3.texture.Texture;
 import game.gui.MainScreen;
 import game.test.DMGArt;
 import game.test.Explosion;
@@ -46,7 +35,7 @@ import game.test.Explosion;
  */
 public abstract class CharacterAppState extends AbstractAppState implements ActionListener {
     
-    private static final Vector3f GRAVITY = new Vector3f(0, -20, 0);
+    protected static final Vector3f GRAVITY = new Vector3f(0, -20, 0);
     
     protected static final float DEFAULT_JUMP_COOLDOWN = 1.0f;
     
@@ -90,11 +79,13 @@ public abstract class CharacterAppState extends AbstractAppState implements Acti
     protected int maxHP, hp;
     protected float jumpCooldown = 0;
     protected Vector3f spawnPoint;
+    protected Quaternion spawnRotation;
     
-    public CharacterAppState(BulletAppState bulletAppState, int maxHP, Vector3f spawnPoint, Node terrainNode) {
+    public CharacterAppState(BulletAppState bulletAppState, int maxHP, Vector3f spawnPoint, Quaternion spawnRotation, Node terrainNode) {
         this.maxHP = maxHP;
         this.hp = maxHP;
         this.spawnPoint = spawnPoint;
+        this.spawnRotation = spawnRotation;
         this.terrainNode = terrainNode;
         this.bulletAppState = bulletAppState;
     }
@@ -209,6 +200,15 @@ public abstract class CharacterAppState extends AbstractAppState implements Acti
     
     public abstract void causeDmg(int dmg, DMGArt art);
     
+    public abstract Vector3f getLocation();
+    
+    public abstract void setLocation(Vector3f location);
+    
+    public abstract Quaternion getRotation();
+    
+    public abstract void setRotation(Quaternion rotation);
+    
+    // TODO: Fix Explosion working for Car
     public void onDeath() {
         /**
          * Explosion effect. Uses Texture from jme3-test-data library!
@@ -270,6 +270,10 @@ public abstract class CharacterAppState extends AbstractAppState implements Acti
 
     public void setSpawnPoint(Vector3f spawnPoint) {
         this.spawnPoint = spawnPoint;
+    }
+
+    public void setSpawnRotation(Quaternion spawnRotation) {
+        this.spawnRotation = spawnRotation;
     }
 
     public Geometry getGeometry() {

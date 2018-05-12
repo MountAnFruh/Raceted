@@ -9,6 +9,7 @@ import com.jme3.app.SimpleApplication;
 import com.jme3.bullet.control.RigidBodyControl;
 import com.jme3.light.AmbientLight;
 import com.jme3.math.ColorRGBA;
+import com.jme3.math.Quaternion;
 import com.jme3.math.Vector3f;
 import com.jme3.scene.Node;
 import com.jme3.scene.Spatial;
@@ -31,7 +32,7 @@ public class InitTestRock extends AbstractInit {
         initSky();
         initTerrain();
 
-        rockAppState = new RockAppState(bulletAppState, 100, new Vector3f(0,50,0), (Node)terrain);
+        rockAppState = new RockAppState(bulletAppState, 100, new Vector3f(0,50,0), new Quaternion(), (Node)terrain);
         stateManager.attach(rockAppState);
     }
 

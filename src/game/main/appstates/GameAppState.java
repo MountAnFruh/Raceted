@@ -1,0 +1,174 @@
+/*
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
+ * and open the template in the editor.
+ */
+package game.main.appstates;
+
+import com.jme3.app.Application;
+import com.jme3.app.SimpleApplication;
+import com.jme3.app.state.AbstractAppState;
+import com.jme3.app.state.AppStateManager;
+import com.jme3.asset.AssetManager;
+import com.jme3.bounding.BoundingBox;
+import com.jme3.bullet.BulletAppState;
+import com.jme3.light.AmbientLight;
+import com.jme3.math.ColorRGBA;
+import com.jme3.math.Quaternion;
+import com.jme3.math.Vector2f;
+import com.jme3.math.Vector3f;
+import com.jme3.scene.Spatial;
+import com.jme3.texture.Texture;
+import game.entities.CarAppState;
+import game.entities.CharacterAppState;
+import game.entities.RockAppState;
+import game.utils.AudioPlayer;
+import java.util.ArrayList;
+import java.util.List;
+
+/**
+ *
+ * @author Robbo13
+ */
+public class GameAppState extends AbstractAppState {
+    
+    private static final int INITHP = 200;
+    
+    private final Character character;
+    private final Level level;
+    
+    private BulletAppState bulletAppState;
+    private WorldAppState worldAppState;
+    private AudioPlayer audioPlayer;
+    private CharacterAppState characterAppState;
+    private AssetManager assetManager;
+    
+    private AppStateManager stateManager;
+    
+    private int currCheckpoint = 0;
+    private int currRound = 1;
+    
+    private boolean terrainInitialized = false;
+    
+    public GameAppState(Character character, Level level) {
+        this.worldAppState = new WorldAppState(bulletAppState);
+        this.character = character;
+        this.level = level;
+    }
+    
+    @Override
+    public void initialize(AppStateManager stateManager, Application app) {
+        super.initialize(stateManager, app);
+        SimpleApplication simpleApp = (SimpleApplication) app;
+        simpleApp.getFlyByCamera().setEnabled(false);
+        this.assetManager = simpleApp.getAssetManager();
+        this.stateManager = stateManager;
+        
+        this.bulletAppState = new BulletAppState();
+        this.worldAppState = new WorldAppState(bulletAppState);
+        this.audioPlayer = new AudioPlayer(assetManager);
+        
+        stateManager.attach(bulletAppState);
+        stateManager.attach(worldAppState);
+    }
+    
+    private void loadLevel() {
+        AmbientLight ambientLight = new AmbientLight();
+        ambientLight.setColor(ColorRGBA.White);
+        worldAppState.addLight(ambientLight);
+        
+        Spatial sky = assetManager.loadModel("Scenes/Sky.j3o");
+        worldAppState.setSky(sky);
+        
+        Texture alphaMap, heightMap, mappingMap;
+        Texture[] textures = new Texture[3];
+        float[] scales = { 64f, 64f, 64f };
+        Quaternion spawnRotation = new Quaternion();
+        switch(level) {
+            case LEVEL1:
+                alphaMap = assetManager.loadTexture("Textures/Maps/firstalphamap.png");
+                heightMap = assetManager.loadTexture("Textures/Maps/firstheightmap.png");
+                mappingMap = assetManager.loadTexture("Textures/Maps/firstmap.png");
+                textures[0] = assetManager.loadTexture("Textures/Tile/Road.jpg");
+                textures[1] = assetManager.loadTexture("Textures/Tile/Dirt.jpg");
+                textures[2] = assetManager.loadTexture("Textures/Tile/Gras.jpg");
+                spawnRotation.fromAngles(0, (float) Math.toRadians(180), 0);
+                break;
+            default:
+                alphaMap = null; heightMap = null; mappingMap = null;
+                break;
+        }
+        String name = level.name();
+        worldAppState.loadTerrain(name, alphaMap, heightMap, mappingMap, Vector3f.ZERO, new Vector3f(1.2f,0.1f,1.2f));
+        for(int i = 1;i <= 3;i++) {
+            worldAppState.setTexture(level.name(),i,textures[i-1],scales[i-1]);
+        }
+        BoundingBox startBox = worldAppState.getStart(name);
+        Vector3f spawnPoint = new Vector3f(startBox.getCenter());
+        Vector2f spawnPoint2D = new Vector2f(spawnPoint.x, spawnPoint.z);
+        float height = worldAppState.getHeight(spawnPoint2D);
+        spawnPoint.setY(height);
+        
+        switch(character) {
+            case ROCK:
+                characterAppState = new RockAppState(bulletAppState, INITHP, spawnPoint, spawnRotation, worldAppState.getTerrainNode());
+                break;
+            case CAR:
+                characterAppState = new CarAppState(bulletAppState, INITHP, spawnPoint, spawnRotation, worldAppState.getTerrainNode());
+                break;
+        }
+        stateManager.attach(characterAppState);
+        
+    }
+    
+    @Override
+    public void update(float tpf) {
+        // Initialisiere Terrain wenn alles bereit ist.
+        if(worldAppState.isInitialized() && !terrainInitialized) {
+            loadLevel();
+            terrainInitialized = true;
+        }
+        if(worldAppState.isInitialized() && characterAppState.isInitialized()) {
+            String value = worldAppState.insideCheckpointOrStart(characterAppState.getLocation());
+            if(value != null) {
+                String[] parts = value.split(";");
+                String mapName = parts[0];
+                int checkpoint = Integer.parseInt(parts[1]);
+                List<BoundingBox> checkpoints = worldAppState.getCheckpoints(mapName);
+                int checkpointCount = checkpoints.size() + 1;
+                if(mapName.equals(level.name())) {
+                    int nextCheckpoint = (currCheckpoint + 1) % checkpointCount;
+                    if(checkpoint == nextCheckpoint) {
+                        currCheckpoint = nextCheckpoint;
+                        BoundingBox checkpointbb;
+                        if(currCheckpoint == 0) {
+                            currRound++;
+                            System.out.println("NEW ROUND: " + currRound);
+                            checkpointbb = worldAppState.getStart(mapName);
+                        } else {
+                            checkpointbb = checkpoints.get(currCheckpoint - 1);
+                        }
+                        Vector3f spawnPoint = new Vector3f(checkpointbb.getCenter());
+                        Vector2f spawnPoint2D = new Vector2f(spawnPoint.x, spawnPoint.z);
+                        float height = worldAppState.getHeight(spawnPoint2D);
+                        spawnPoint.setY(height);
+                        characterAppState.setSpawnPoint(spawnPoint);
+                        characterAppState.setSpawnRotation(characterAppState.getRotation());
+                        
+                    }
+                }
+            }
+        }
+    }
+    
+    @Override
+    public void cleanup() {
+        super.cleanup();
+        
+    }
+    
+    public enum Character { ROCK, CAR };
+    
+    public enum Level { LEVEL1 };
+    
+}

@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package game.map;
+package game.main.appstates;
 
 import beans.MapData;
 import com.jme3.app.Application;
@@ -20,7 +20,6 @@ import com.jme3.math.ColorRGBA;
 import com.jme3.math.Vector2f;
 import com.jme3.math.Vector3f;
 import com.jme3.renderer.Camera;
-import com.jme3.scene.Geometry;
 import com.jme3.scene.Node;
 import com.jme3.scene.Spatial;
 import com.jme3.terrain.geomipmap.TerrainLodControl;
@@ -36,8 +35,6 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collector;
-import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
@@ -236,14 +233,14 @@ public class WorldAppState extends AbstractAppState {
                     if(coordinate.y < minZ) minZ = coordinate.y;
                     if(coordinate.x > maxX) maxX = coordinate.x;
                     if(coordinate.y > maxZ) maxZ = coordinate.y;
-                    minY = -1; maxY = TERRAINSIZE + 1;
+                    minY = -1; maxY = Float.MAX_VALUE;
                     boundCheckpoints.get(color).get(0).set(new Vector3f(minX,minY,minZ));
                     boundCheckpoints.get(color).get(1).set(new Vector3f(maxX, maxY, maxZ));
                 } else if(color.r == 0 && color.b == 0) {
                     // Ist eine Start-Ziel-Markierung
                     if(boundStart == null) {
                         boundStart = new ArrayList<>();
-                        boundStart.add(new Vector3f(TERRAINSIZE + 1, TERRAINSIZE + 1, TERRAINSIZE + 1));
+                        boundStart.add(new Vector3f(TERRAINSIZE + 1, Float.MAX_VALUE, TERRAINSIZE + 1));
                         boundStart.add(new Vector3f(-1,-1,-1));
                     }
                     float minX = boundStart.get(0).x;
@@ -251,7 +248,7 @@ public class WorldAppState extends AbstractAppState {
                     float minY,maxY;
                     float maxX = boundStart.get(1).x;
                     float maxZ = boundStart.get(1).z;
-                    minY = -1; maxY = TERRAINSIZE + 1;
+                    minY = -1; maxY = Float.MAX_VALUE;
                     if(coordinate.x < minX) minX = coordinate.x;
                     if(coordinate.y < minZ) minZ = coordinate.y;
                     if(coordinate.x > maxX) maxX = coordinate.x;
@@ -285,9 +282,7 @@ public class WorldAppState extends AbstractAppState {
             max = max.mult(scale).add(moved);
             BoundingBox boundBox = new BoundingBox(min,max);
             mapData.setStart(boundBox);
-            System.out.println("START: " + boundBox.getMin(null) + " - " + boundBox.getMax(null));
         }
-        System.out.println("Mapping loaded!");
         mapDatas.put(name, mapData);
     }
     
@@ -332,6 +327,34 @@ public class WorldAppState extends AbstractAppState {
             }
         }
         return null;
+    }
+    
+    /**
+     * Liefert den Start von einem Terrain zurück
+     * @param name Terrain-Name
+     * @return BoundingBox vom Start
+     */
+    public BoundingBox getStart(String name) {
+        MapData mapData = mapDatas.get(name);
+        if(mapData != null) {
+            return mapData.getStart();
+        } else {
+            return null;
+        }
+    }
+    
+    /**
+     * Liefert die Checkpoints von einem Terrain zurück
+     * @param name Terrain-Name
+     * @return Checkpoint-Boundingboxes
+     */
+    public List<BoundingBox> getCheckpoints(String name) {
+        MapData mapData = mapDatas.get(name);
+        if(mapData != null) {
+            return mapData.getCheckpoints();
+        } else {
+            return null;
+        }
     }
     
     private void checkTextureNumber(int textNumber) throws RuntimeException {
@@ -458,6 +481,21 @@ public class WorldAppState extends AbstractAppState {
 //            refreshPhysicsControl(spatial.getName());
 //        }
         throw new NotImplementedException();
+    }
+    
+    /**
+     * Gibt die Höhe an einer bestimmten Position zurück
+     * @param location Position
+     * @return Höhe
+     */
+    public float getHeight(Vector2f location) {
+        float maxHeight = Float.MIN_NORMAL;
+        for(Spatial spatial : terrainNode.getChildren()) {
+            TerrainQuad terrain = (TerrainQuad) spatial;
+            float currHeight = terrain.getHeight(location);
+            if(currHeight > maxHeight) maxHeight = currHeight;
+        }
+        return maxHeight;
     }
     
     /**

@@ -3,37 +3,36 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package game.main;
+package game.test;
 
 import com.jme3.app.SimpleApplication;
+import com.jme3.audio.AudioNode;
 import com.jme3.renderer.RenderManager;
 import com.jme3.system.AppSettings;
-import game.main.appstates.GameAppState;
+import game.gui.MainScreen;
 import game.utils.ImageUtils;
+import java.awt.GraphicsDevice;
+import java.awt.GraphicsEnvironment;
 
 /**
  *
  * @author Robbo13
  */
-public class ClientMain extends SimpleApplication {
-    
-    private GameAppState gameAppState;
+public class TestGUI extends SimpleApplication {
+
+    private MainScreen startScreen;
+    private AudioNode audioSource;
 
     public static void main(String[] args) {
         AppSettings settings = new AppSettings(true);
         settings.setSettingsDialogImage(ImageUtils.RACETED_TEXT);
-        //settings.setResolution(1920, 1080);
+        settings.setResolution(1920, 1080);
         settings.setSamples(16);
-        //GraphicsDevice device = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice();
-        //settings.setFullscreen(device.isFullScreenSupported());
-        
-        // DELETE AFTER TESTS
-        settings.setFullscreen(false);
-        settings.setResolution(640, 480);
-        
+        GraphicsDevice device = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice();
+        settings.setFullscreen(device.isFullScreenSupported());
         settings.setTitle("Raceted");
 
-        ClientMain app = new ClientMain();
+        TestGUI app = new TestGUI();
         app.setShowSettings(true);
         app.setSettings(settings);
         app.setDisplayFps(true);
@@ -43,9 +42,15 @@ public class ClientMain extends SimpleApplication {
 
     @Override
     public void simpleInitApp() {
-        gameAppState = new GameAppState(GameAppState.Character.ROCK,
-                GameAppState.Level.LEVEL1);
-        stateManager.attach(gameAppState);
+
+        initAppStates();
+    
+        flyCam.setDragToRotate(true);
+    }
+
+    private void initAppStates() {
+        startScreen = MainScreen.getTheInstance();
+        stateManager.attach(startScreen);
     }
 
     @Override
@@ -58,3 +63,4 @@ public class ClientMain extends SimpleApplication {
         //TODO: add render code
     }
 }
+

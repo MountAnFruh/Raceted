@@ -6,32 +6,21 @@
 package game.entities;
 
 import com.jme3.app.Application;
-import com.jme3.app.SimpleApplication;
-import com.jme3.app.state.AbstractAppState;
 import com.jme3.app.state.AppStateManager;
-import com.jme3.asset.AssetManager;
 import com.jme3.bounding.BoundingBox;
 import com.jme3.bullet.BulletAppState;
 import com.jme3.bullet.collision.shapes.CollisionShape;
 import com.jme3.bullet.control.VehicleControl;
 import com.jme3.bullet.util.CollisionShapeFactory;
 import com.jme3.input.ChaseCamera;
-import com.jme3.input.FlyByCamera;
-import com.jme3.input.InputManager;
-import com.jme3.input.KeyInput;
-import com.jme3.input.controls.ActionListener;
-import com.jme3.input.controls.KeyTrigger;
-import com.jme3.input.controls.Trigger;
 import com.jme3.material.Material;
 import com.jme3.math.ColorRGBA;
 import com.jme3.math.FastMath;
-import com.jme3.math.Matrix3f;
+import com.jme3.math.Quaternion;
 import com.jme3.math.Vector3f;
-import com.jme3.renderer.Camera;
 import com.jme3.renderer.queue.RenderQueue;
 import com.jme3.scene.Geometry;
 import com.jme3.scene.Node;
-import com.jme3.scene.Spatial;
 import com.jme3.scene.shape.Cylinder;
 import game.test.DMGArt;
 
@@ -51,8 +40,8 @@ public class CarAppState extends CharacterAppState {
     private float steeringValue;
     private float accelerationValue;
 
-    public CarAppState(BulletAppState bulletAppState, int maxHP, Vector3f spawnPoint, Node terrainNode) {
-        super(bulletAppState, maxHP, spawnPoint, terrainNode);
+    public CarAppState(BulletAppState bulletAppState, int maxHP, Vector3f spawnPoint, Quaternion spawnRotation, Node terrainNode) {
+        super(bulletAppState, maxHP, spawnPoint, spawnRotation, terrainNode);
     }
     
     @Override
@@ -79,6 +68,7 @@ public class CarAppState extends CharacterAppState {
         chaseCam.setDefaultDistance(7);
         chaseCam.setTrailingSensitivity(10);
         chaseCam.setZoomSensitivity(1000);
+        chaseCam.setEnabled(true);
     }
     
     @Override
@@ -176,6 +166,7 @@ public class CarAppState extends CharacterAppState {
         
         bulletAppState.getPhysicsSpace().add(carControl);
         carControl.setPhysicsLocation(spawnPoint);
+        carControl.setPhysicsRotation(spawnRotation);
     }
     
     @Override
@@ -225,7 +216,7 @@ public class CarAppState extends CharacterAppState {
             case MAPPING_RESET:
                 if (isPressed) {
                     carControl.setPhysicsLocation(spawnPoint);
-                    carControl.setPhysicsRotation(new Matrix3f());
+                    carControl.setPhysicsRotation(spawnRotation);
                     carControl.setLinearVelocity(Vector3f.ZERO);
                     carControl.setAngularVelocity(Vector3f.ZERO);
                     carControl.resetSuspension();
@@ -247,6 +238,26 @@ public class CarAppState extends CharacterAppState {
                 super.causeDmg(dmg);
                 break;
         }
+    }
+
+    @Override
+    public Vector3f getLocation() {
+        return carControl.getPhysicsLocation();
+    }
+
+    @Override
+    public void setLocation(Vector3f location) {
+        carControl.setPhysicsLocation(location);
+    }
+
+    @Override
+    public Quaternion getRotation() {
+        return carControl.getPhysicsRotation();
+    }
+
+    @Override
+    public void setRotation(Quaternion rotation) {
+        carControl.setPhysicsRotation(rotation);
     }
     
 }
