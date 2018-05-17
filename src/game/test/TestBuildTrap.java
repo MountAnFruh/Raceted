@@ -57,11 +57,13 @@ public class TestBuildTrap extends SimpleApplication implements AnalogListener, 
     private static final Trigger PLACE_TRAP = new MouseButtonTrigger(MouseInput.BUTTON_LEFT);
     private static final Trigger CAMERA_DRAG = new MouseButtonTrigger(MouseInput.BUTTON_RIGHT);
     private static final Trigger CAMERA_DRAG2 = new KeyTrigger(KeyInput.KEY_LCONTROL);
+    
 
     
     private static final Trigger CHOOSE_TRAP1 = new KeyTrigger(KeyInput.KEY_1);
     private static final Trigger CHOOSE_TRAP2 = new KeyTrigger(KeyInput.KEY_2);
     private static final Trigger CHOOSE_TRAP3 = new KeyTrigger(KeyInput.KEY_3);
+    private static final Trigger DELETE_TRAP  = new KeyTrigger(KeyInput.KEY_DELETE);
 
     
     // define mappings
@@ -78,6 +80,7 @@ public class TestBuildTrap extends SimpleApplication implements AnalogListener, 
     private static final String MAPPING_CHOOSE_TRAP1 = "Place_Trap1";
     private static final String MAPPING_CHOOSE_TRAP2 = "Place_Trap2";
     private static final String MAPPING_CHOOSE_TRAP3 = "Place_Trap3";
+    private static final String MAPPING_DELETE_TRAP = "Delete_Trap";
 
     
     private BulletAppState bulletAppState;
@@ -91,7 +94,7 @@ public class TestBuildTrap extends SimpleApplication implements AnalogListener, 
     private Spatial  Trap2 = null;
     private Spatial  Trap3 = null;
     private Spatial  teaGeom = null;
-    private LinkedList<Spatial> llplacedtraps = null;
+    private LinkedList<Spatial> llplacedtraps = new LinkedList<Spatial>();
 
     public static void main(String[] args) {
         TestBuildTrap testBuild = new TestBuildTrap();
@@ -112,21 +115,19 @@ public class TestBuildTrap extends SimpleApplication implements AnalogListener, 
         initTerrain();
         
         buildPlayer();
-        initCamera();
-        
-                    
+        initCamera();            
                     
                     //Material mat = new Material(assetManager, "Common/MatDefs/Misc/Unshaded.j3md");
                   
                     Material mat = new Material(assetManager, "Common/MatDefs/Misc/ShowNormals.j3md");
                  
-                    
                     Trap1 =  assetManager.loadModel("Models/pylon.obj"); 
                     Trap1.setMaterial(mat); 
                     Trap2 =  assetManager.loadModel("Models/Stachel.obj");
                     Trap2.setMaterial(mat);
                     Trap3 =  assetManager.loadModel("Models/bushes.obj");
                     Trap3.setMaterial(mat);
+                    //mat.setColor("Color", new ColorRGBA(0.0f, 0.0f, 0.0f, 1.0f));
                     teaGeom = Trap1;
                     
                        
@@ -168,12 +169,13 @@ public class TestBuildTrap extends SimpleApplication implements AnalogListener, 
         inputManager.addMapping(MAPPING_CHOOSE_TRAP1, CHOOSE_TRAP1);
         inputManager.addMapping(MAPPING_CHOOSE_TRAP2, CHOOSE_TRAP2);
         inputManager.addMapping(MAPPING_CHOOSE_TRAP3, CHOOSE_TRAP3);
+        inputManager.addMapping(MAPPING_DELETE_TRAP, DELETE_TRAP);
 
         
         inputManager.addListener(this, MAPPING_CAMERA_LEFT, MAPPING_CAMERA_RIGHT
                 , MAPPING_CAMERA_DOWN, MAPPING_CAMERA_UP, MAPPING_CAMERA_DRAG, MAPPING_CAMERA_DRAG2
                 , MAPPING_CAMERA_ZOOMIN, MAPPING_CAMERA_ZOOMOUT, MAPPING_PLACE_TRAP,MAPPING_CHOOSE_TRAP1
-                ,MAPPING_CHOOSE_TRAP2, MAPPING_CHOOSE_TRAP3);
+                ,MAPPING_CHOOSE_TRAP2, MAPPING_CHOOSE_TRAP3, MAPPING_DELETE_TRAP);
     }
     
     private void initLight() {
@@ -229,10 +231,57 @@ public class TestBuildTrap extends SimpleApplication implements AnalogListener, 
         
     }
     
+    private boolean deletemode = false;
     
     @Override
     public void onAction(String name, boolean isPressed, float tpf) {
-        if(name.equals(MAPPING_CAMERA_DRAG) || name.equals(MAPPING_CAMERA_DRAG2)) {
+                if(name.equals(MAPPING_DELETE_TRAP))
+                     {
+                         if(deletemode == false)
+                         {
+                             deletemode = true;
+                         }
+                         else{
+                             deletemode = false;
+                         }
+                         
+                     }
+                if(deletemode ==true)
+                {
+                    
+                Vector3f origin = cam.getWorldCoordinates(inputManager.getCursorPosition(), 0.0f);
+                Vector3f direction = cam.getWorldCoordinates(inputManager.getCursorPosition(), 0.3f);
+                direction.subtractLocal(origin).normalizeLocal();
+
+                Ray ray = new Ray(origin, direction);
+                CollisionResults results = new CollisionResults();
+                terrain.collideWith(ray, results);
+
+                if (results.size() > 0) {
+                CollisionResult closest = results.getClosestCollision();
+                
+                teaGeom.setLocalTranslation(closest.getContactPoint().add(0, 0, 0));
+                CollisionShape collShape = CollisionShapeFactory.createDynamicMeshShape(teaGeom);
+                rootNode.attachChild(teaGeom);
+                    
+                 CollisionResults rs = new CollisionResults();
+                    for (Spatial sp : llplacedtraps) {
+                       // sp.collideWith((Geometry)teaGeom,rs);
+                          sp.removeFromParent();
+//                        if(rs.size()>0)
+//                                {
+//                                    //teaGeom.move(100, 100, 100);
+//                                    //sp.removeFromParent();
+//                                    //llplacedtraps.remove(sp);
+//                                }
+                                
+                    }
+                    
+                //----------------
+                }
+                }
+                else{
+                     if(name.equals(MAPPING_CAMERA_DRAG) || name.equals(MAPPING_CAMERA_DRAG2)) {
             if(isPressed) {
                 isDragging = true;
                 inputManager.setCursorVisible(false);
@@ -252,8 +301,10 @@ public class TestBuildTrap extends SimpleApplication implements AnalogListener, 
 
                 if (results.size() > 0) {
                     
-                     Spatial  settrap=null;
-                       Material mat = new Material(assetManager, "Common/MatDefs/Misc/ShowNormals.j3md"); 
+                       Spatial  settrap=null;
+                       Material mat = new Material(assetManager, "Common/MatDefs/Misc/ShowNormals.j3md");
+                       //mat.setColor("Color", ColorRGBA.White);
+		                    //mat.getAdditionalRenderState().setLineWidth(1);
                        //mat.setColor("Diffuse", new ColorRGBA(1, 1, 1, 0.5f));
                        //mat.setBoolean("UseMaterialColors", true);
                        //mat.setColor("m_Color", new ColorRGBA(0, 1, 0, 0.5f));
@@ -271,12 +322,13 @@ public class TestBuildTrap extends SimpleApplication implements AnalogListener, 
                      
                      if(teaGeom == Trap3)
                     {
+                        
                         settrap = (Spatial) assetManager.loadModel("Models/bushes.obj");
                     }
                    
-                     settrap.setMaterial(mat); 
+                    settrap.setMaterial(mat); 
                      
-                     //llplacedtraps.add(settrap);
+                    llplacedtraps.add(settrap);
                     
                     
                     CollisionResult closest = results.getClosestCollision();   
@@ -285,13 +337,19 @@ public class TestBuildTrap extends SimpleApplication implements AnalogListener, 
                     settrap.setLocalTranslation(closest.getContactPoint().add(0, 0, 0));
                     
                     CollisionShape collShape = CollisionShapeFactory.createDynamicMeshShape(settrap);
-    
-                    
+                        
                     rootNode.attachChild(settrap);
 
                 }
             }
+            
+             
         }
+                }
+        
+       
+        
+
     }
 
     @Override
@@ -325,22 +383,20 @@ public class TestBuildTrap extends SimpleApplication implements AnalogListener, 
         
                 switch(name)
                     {
-                    case MAPPING_CHOOSE_TRAP1:
-                    teaGeom = Trap1;  
+                    case MAPPING_CHOOSE_TRAP1:Trap2.move(1000, 1000, 1000);Trap3.move(1000, 1000, 1000);
+                    teaGeom = Trap1; 
                     break;
-                    case MAPPING_CHOOSE_TRAP2:
+                    case MAPPING_CHOOSE_TRAP2:Trap1.move(1000, 1000, 1000);Trap3.move(1000, 1000, 1000);
                     teaGeom = Trap2;
                     break;
-                    case MAPPING_CHOOSE_TRAP3:
+                    case MAPPING_CHOOSE_TRAP3:Trap2.move(1000, 1000, 1000);Trap1.move(1000, 1000, 1000);
                     teaGeom = Trap3;
                     break;
                     }
         
-                
-                
-        
-                
-                 Vector3f origin = cam.getWorldCoordinates(inputManager.getCursorPosition(), 0.0f);
+                if(deletemode ==false)
+                {
+                Vector3f origin = cam.getWorldCoordinates(inputManager.getCursorPosition(), 0.0f);
                 Vector3f direction = cam.getWorldCoordinates(inputManager.getCursorPosition(), 0.3f);
                 direction.subtractLocal(origin).normalizeLocal();
 
@@ -350,7 +406,6 @@ public class TestBuildTrap extends SimpleApplication implements AnalogListener, 
 
                 if (results.size() > 0) {
                 CollisionResult closest = results.getClosestCollision();
-
   
                 teaGeom.setLocalTranslation(closest.getContactPoint().add(0, 0, 0));
                     
@@ -359,7 +414,31 @@ public class TestBuildTrap extends SimpleApplication implements AnalogListener, 
                 rootNode.attachChild(teaGeom);
                 //----------------
                 }
+                
+                }
         
         
     }
+    
+    
+    public String getTrapName()//zeigt ausgewählte falle an
+    {
+        String str="";
+        
+        if(teaGeom == Trap1)
+        {
+            str="Trap1";
+        }else if(teaGeom == Trap2)
+            {
+               str="Trap1"; 
+            }
+        else if(teaGeom == Trap3)
+            {
+                str="Trap3";
+            }
+        
+        return str;
+    }
+    
+    
 }
