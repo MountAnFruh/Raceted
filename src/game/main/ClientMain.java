@@ -43,7 +43,7 @@ public class ClientMain extends SimpleApplication {
 
     @Override
     public void simpleInitApp() {
-        gameAppState = new GameAppState(GameAppState.Character.ROCK,
+        gameAppState = new GameAppState(GameAppState.Character.CAR,
                 GameAppState.Level.LEVEL1);
         stateManager.attach(gameAppState);
     }

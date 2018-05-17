@@ -23,7 +23,8 @@ import game.entities.CarAppState;
 import game.entities.CharacterAppState;
 import game.entities.RockAppState;
 import game.utils.AudioPlayer;
-import java.util.ArrayList;
+import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 /**
@@ -37,6 +38,8 @@ public class GameAppState extends AbstractAppState {
     private final Character character;
     private final Level level;
     
+    private long startNanos;
+    
     private BulletAppState bulletAppState;
     private WorldAppState worldAppState;
     private AudioPlayer audioPlayer;
@@ -49,6 +52,7 @@ public class GameAppState extends AbstractAppState {
     private int currRound = 1;
     
     private boolean terrainInitialized = false;
+    private boolean started = false;
     
     public GameAppState(Character character, Level level) {
         this.worldAppState = new WorldAppState(bulletAppState);
@@ -129,6 +133,10 @@ public class GameAppState extends AbstractAppState {
             terrainInitialized = true;
         }
         if(worldAppState.isInitialized() && characterAppState.isInitialized()) {
+            if(!started) {
+                startNanos = LocalTime.now().toNanoOfDay();
+                started = true;
+            }
             String value = worldAppState.insideCheckpointOrStart(characterAppState.getLocation());
             if(value != null) {
                 String[] parts = value.split(";");
@@ -143,11 +151,15 @@ public class GameAppState extends AbstractAppState {
                         BoundingBox checkpointbb;
                         if(currCheckpoint == 0) {
                             currRound++;
-                            System.out.println("NEW ROUND: " + currRound);
+                            System.out.println("*** NEW ROUND: " + currRound);
                             checkpointbb = worldAppState.getStart(mapName);
                         } else {
                             checkpointbb = checkpoints.get(currCheckpoint - 1);
                         }
+                        long checkpointNanos = LocalTime.now().toNanoOfDay() - startNanos;
+                        LocalTime chTime = LocalTime.ofNanoOfDay(checkpointNanos);
+                        System.out.println("TIME: " + chTime.format(DateTimeFormatter.ISO_TIME));
+                        
                         Vector3f spawnPoint = new Vector3f(checkpointbb.getCenter());
                         Vector2f spawnPoint2D = new Vector2f(spawnPoint.x, spawnPoint.z);
                         float height = worldAppState.getHeight(spawnPoint2D);
