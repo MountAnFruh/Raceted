@@ -77,8 +77,8 @@ public class StartBuilder extends AbstractScreenBuilder {
                         // add text
                         text(new TextBuilder() {
                             {
-                                text("Here goes some text describing the game and the rules and stuff. "
-                                        + "Incidentally, the text is quite long and needs to wrap at the end of lines. ");
+                                text("Raceted ist ein Racer, bei dem es rein ums gewinnen geht! \n"
+                                    +"Durch das Platzieren von Fallen kann man den Gegner den Weg zum Ziel erschweren und sich somit einen Vorteil gegenüber diese verschaffen.");
                                 font("Interface/Fonts/Default.fnt");
                                 wrap(true);
                                 height("100%");
