@@ -25,6 +25,7 @@ import com.jme3.renderer.Camera;
 import com.jme3.renderer.RenderManager;
 import com.jme3.scene.Geometry;
 import com.jme3.scene.Node;
+import com.jme3.scene.control.CameraControl;
 import game.gui.MainScreen;
 import game.test.DMGArt;
 import game.test.Explosion;
@@ -71,7 +72,6 @@ public abstract class CharacterAppState extends AbstractAppState implements Acti
     protected Geometry geometry;
     
     protected Explosion explosion;
-    protected FlyByCamera deathCam;
     protected ChaseCamera chaseCam;
     
     protected boolean forward, left, backward, right, jump;
@@ -84,8 +84,8 @@ public abstract class CharacterAppState extends AbstractAppState implements Acti
     public CharacterAppState(BulletAppState bulletAppState, int maxHP, Vector3f spawnPoint, Quaternion spawnRotation, Node terrainNode) {
         this.maxHP = maxHP;
         this.hp = maxHP;
-        this.spawnPoint = spawnPoint;
-        this.spawnRotation = spawnRotation;
+        setSpawnPoint(new Vector3f(spawnPoint));
+        setSpawnRotation(new Quaternion(spawnRotation));
         this.terrainNode = terrainNode;
         this.bulletAppState = bulletAppState;
     }
@@ -131,17 +131,11 @@ public abstract class CharacterAppState extends AbstractAppState implements Acti
     protected abstract void initPlayer();
     
     protected void initCamera() {
+        cam.setLocation(getLocation());
         chaseCam = new ChaseCamera(cam, geometry, inputManager);
         chaseCam.setInvertVerticalAxis(true);
         chaseCam.setLookAtOffset(new Vector3f(0, 2, 0));
         chaseCam.setEnabled(true);
-
-        deathCam = new FlyByCamera(cam);
-        deathCam.setMoveSpeed(0);
-        deathCam.setZoomSpeed(0);
-        deathCam.setDragToRotate(false);
-        deathCam.setRotationSpeed(0);
-        deathCam.setEnabled(false);
     }
     
     @Override
@@ -172,6 +166,14 @@ public abstract class CharacterAppState extends AbstractAppState implements Acti
     
     protected void cleanupInput() {
         inputManager.removeListener(this);
+        inputManager.deleteMapping(MAPPING_DMG);
+        inputManager.deleteMapping(MAPPING_ESC);
+        inputManager.deleteMapping(MAPPING_LEFT);
+        inputManager.deleteMapping(MAPPING_RIGHT);
+        inputManager.deleteMapping(MAPPING_UP);
+        inputManager.deleteMapping(MAPPING_DOWN);
+        inputManager.deleteMapping(MAPPING_SPACE);
+        inputManager.deleteMapping(MAPPING_RESET);
     }
     
     protected void cleanupPlayer() {
@@ -180,7 +182,9 @@ public abstract class CharacterAppState extends AbstractAppState implements Acti
 
     protected void cleanupCamera() {
         chaseCam.setEnabled(false);
-        deathCam.setEnabled(false);
+        chaseCam.cleanupWithInput(inputManager);
+        cam.setLocation(Vector3f.ZERO);
+        cam.setRotation(Quaternion.IDENTITY);
     }
     
     public void healHP(int pHP) {

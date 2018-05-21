@@ -36,7 +36,6 @@ public class RockAppState extends CharacterAppState {
 
     public RockAppState(BulletAppState bulletAppState, int maxHP, Vector3f spawnPoint, Quaternion spawnRotation, Node terrainNode) {
         super(bulletAppState, maxHP, spawnPoint, spawnRotation, terrainNode);
-        spawnPoint.setY(spawnPoint.getY() + RADIUS);
     }
 
     @Override
@@ -46,7 +45,8 @@ public class RockAppState extends CharacterAppState {
     
     @Override
     public void initCamera() {
-        super.initCamera();
+        cam.setLocation(getLocation());
+        cam.setRotation(getRotation());
 //        camNode = new CameraNode("CameraNode", cam);
 //        camNode.setControlDir(CameraControl.ControlDirection.SpatialToCamera);
 //        vehicleNode.attachChild(camNode);
@@ -76,6 +76,7 @@ public class RockAppState extends CharacterAppState {
         sphere.setBound(new BoundingSphere());
         sphere.updateBound();
         geometry = new Geometry("Rocksphere", sphere);
+        geometry.setCullHint(Geometry.CullHint.Never);
         geometry.setMaterial(mat);
 
         CollisionShape collShape = CollisionShapeFactory.createDynamicMeshShape(geometry);
@@ -128,7 +129,7 @@ public class RockAppState extends CharacterAppState {
     @Override
     public void setSpawnPoint(Vector3f spawnPoint) {
         super.setSpawnPoint(spawnPoint);
-        spawnPoint.setY(spawnPoint.getY() + RADIUS);
+        this.spawnPoint.setY(this.spawnPoint.getY() + RADIUS);
     }
 
     public RigidBodyControl getControl() {

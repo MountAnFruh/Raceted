@@ -51,7 +51,8 @@ public class CarAppState extends CharacterAppState {
     
     @Override
     public void initCamera() {
-        super.initCamera();
+        cam.setLocation(getLocation());
+        cam.setRotation(getRotation());
 //        camNode = new CameraNode("CameraNode", cam);
 //        camNode.setControlDir(CameraControl.ControlDirection.SpatialToCamera);
 //        vehicleNode.attachChild(camNode);
@@ -92,6 +93,7 @@ public class CarAppState extends CharacterAppState {
         vehicleNode = new Node("vehicleNode");
         
         geometry = (Geometry) assetManager.loadModel("Models/Car.obj");
+        geometry.setCullHint(Geometry.CullHint.Never);
         vehicleNode.attachChild(geometry);
         vehicleNode.setShadowMode(RenderQueue.ShadowMode.Cast);
         
@@ -172,6 +174,7 @@ public class CarAppState extends CharacterAppState {
     @Override
     protected void cleanupPlayer() {
         bulletAppState.getPhysicsSpace().remove(carControl);
+        rootNode.detachChild(vehicleNode);
     }
     
     @Override

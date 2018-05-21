@@ -12,6 +12,11 @@ import com.jme3.app.state.AppStateManager;
 import com.jme3.asset.AssetManager;
 import com.jme3.bounding.BoundingBox;
 import com.jme3.bullet.BulletAppState;
+import com.jme3.input.InputManager;
+import com.jme3.input.KeyInput;
+import com.jme3.input.controls.ActionListener;
+import com.jme3.input.controls.KeyTrigger;
+import com.jme3.input.controls.Trigger;
 import com.jme3.light.AmbientLight;
 import com.jme3.math.ColorRGBA;
 import com.jme3.math.Quaternion;
@@ -31,7 +36,11 @@ import java.util.List;
  *
  * @author Robbo13
  */
-public class GameAppState extends AbstractAppState {
+public class GameAppState extends AbstractAppState implements ActionListener {
+    
+    private static final Trigger TRIGGER_MODE = new KeyTrigger(KeyInput.KEY_T);
+    
+    private static final String MAPPING_MODE = "Change_Mode";
     
     private static final int INITHP = 200;
     
@@ -44,15 +53,21 @@ public class GameAppState extends AbstractAppState {
     private WorldAppState worldAppState;
     private AudioPlayer audioPlayer;
     private CharacterAppState characterAppState;
+    private TrapPlaceAppState trapPlaceAppState;
     private AssetManager assetManager;
+    private InputManager inputManager;
     
     private AppStateManager stateManager;
+    
+    private Quaternion spawnRotation;
+    private Vector3f spawnPoint;
     
     private int currCheckpoint = 0;
     private int currRound = 1;
     
     private boolean terrainInitialized = false;
     private boolean started = false;
+    private Mode currMode = null;
     
     public GameAppState(Character character, Level level) {
         this.worldAppState = new WorldAppState(bulletAppState);
@@ -66,14 +81,23 @@ public class GameAppState extends AbstractAppState {
         SimpleApplication simpleApp = (SimpleApplication) app;
         simpleApp.getFlyByCamera().setEnabled(false);
         this.assetManager = simpleApp.getAssetManager();
+        this.inputManager = simpleApp.getInputManager();
         this.stateManager = stateManager;
         
         this.bulletAppState = new BulletAppState();
         this.worldAppState = new WorldAppState(bulletAppState);
+        this.trapPlaceAppState = new TrapPlaceAppState(bulletAppState, worldAppState);
         this.audioPlayer = new AudioPlayer(assetManager);
+        
+        initInput();
         
         stateManager.attach(bulletAppState);
         stateManager.attach(worldAppState);
+    }
+    
+    protected void initInput() {
+        inputManager.addMapping(MAPPING_MODE, TRIGGER_MODE);
+        inputManager.addListener(this, MAPPING_MODE);
     }
     
     private void loadLevel() {
@@ -87,7 +111,7 @@ public class GameAppState extends AbstractAppState {
         Texture alphaMap, heightMap, mappingMap;
         Texture[] textures = new Texture[3];
         float[] scales = { 64f, 64f, 64f };
-        Quaternion spawnRotation = new Quaternion();
+        spawnRotation = new Quaternion();
         switch(level) {
             case LEVEL1:
                 alphaMap = assetManager.loadTexture("Textures/Maps/firstalphamap.png");
@@ -108,21 +132,12 @@ public class GameAppState extends AbstractAppState {
             worldAppState.setTexture(level.name(),i,textures[i-1],scales[i-1]);
         }
         BoundingBox startBox = worldAppState.getStart(name);
-        Vector3f spawnPoint = new Vector3f(startBox.getCenter());
+        spawnPoint = new Vector3f(startBox.getCenter());
         Vector2f spawnPoint2D = new Vector2f(spawnPoint.x, spawnPoint.z);
         float height = worldAppState.getHeight(spawnPoint2D);
         spawnPoint.setY(height);
         
-        switch(character) {
-            case ROCK:
-                characterAppState = new RockAppState(bulletAppState, INITHP, spawnPoint, spawnRotation, worldAppState.getTerrainNode());
-                break;
-            case CAR:
-                characterAppState = new CarAppState(bulletAppState, INITHP, spawnPoint, spawnRotation, worldAppState.getTerrainNode());
-                break;
-        }
-        stateManager.attach(characterAppState);
-        
+        changeMode(Mode.DRIVEMODE);
     }
     
     @Override
@@ -132,52 +147,94 @@ public class GameAppState extends AbstractAppState {
             loadLevel();
             terrainInitialized = true;
         }
-        if(worldAppState.isInitialized() && characterAppState.isInitialized()) {
-            if(!started) {
-                startNanos = LocalTime.now().toNanoOfDay();
-                started = true;
-            }
-            String value = worldAppState.insideCheckpointOrStart(characterAppState.getLocation());
-            if(value != null) {
-                String[] parts = value.split(";");
-                String mapName = parts[0];
-                int checkpoint = Integer.parseInt(parts[1]);
-                List<BoundingBox> checkpoints = worldAppState.getCheckpoints(mapName);
-                int checkpointCount = checkpoints.size() + 1;
-                if(mapName.equals(level.name())) {
-                    int nextCheckpoint = (currCheckpoint + 1) % checkpointCount;
-                    if(checkpoint == nextCheckpoint) {
-                        currCheckpoint = nextCheckpoint;
-                        BoundingBox checkpointbb;
-                        if(currCheckpoint == 0) {
-                            currRound++;
-                            System.out.println("*** NEW ROUND: " + currRound);
-                            checkpointbb = worldAppState.getStart(mapName);
-                        } else {
-                            checkpointbb = checkpoints.get(currCheckpoint - 1);
+        if(currMode == Mode.DRIVEMODE) {
+            if(worldAppState.isInitialized() && characterAppState.isInitialized()) {
+                if(!started) {
+                    startNanos = LocalTime.now().toNanoOfDay();
+                    started = true;
+                }
+                String value = worldAppState.insideCheckpointOrStart(characterAppState.getLocation());
+                if(value != null) {
+                    String[] parts = value.split(";");
+                    String mapName = parts[0];
+                    int checkpoint = Integer.parseInt(parts[1]);
+                    List<BoundingBox> checkpoints = worldAppState.getCheckpoints(mapName);
+                    int checkpointCount = checkpoints.size() + 1;
+                    if(mapName.equals(level.name())) {
+                        int nextCheckpoint = (currCheckpoint + 1) % checkpointCount;
+                        if(checkpoint == nextCheckpoint) {
+                            currCheckpoint = nextCheckpoint;
+                            BoundingBox checkpointbb;
+                            if(currCheckpoint == 0) {
+                                currRound++;
+                                System.out.println("*** NEW ROUND: " + currRound);
+                                checkpointbb = worldAppState.getStart(mapName);
+                            } else {
+                                checkpointbb = checkpoints.get(currCheckpoint - 1);
+                            }
+                            long checkpointNanos = LocalTime.now().toNanoOfDay() - startNanos;
+                            LocalTime chTime = LocalTime.ofNanoOfDay(checkpointNanos);
+                            System.out.println("TIME: " + chTime.format(DateTimeFormatter.ISO_TIME));
+
+                            Vector3f spawnPoint = new Vector3f(checkpointbb.getCenter());
+                            Vector2f spawnPoint2D = new Vector2f(spawnPoint.x, spawnPoint.z);
+                            float height = worldAppState.getHeight(spawnPoint2D);
+                            spawnPoint.setY(height);
+                            characterAppState.setSpawnPoint(spawnPoint);
+                            characterAppState.setSpawnRotation(characterAppState.getRotation());
+
                         }
-                        long checkpointNanos = LocalTime.now().toNanoOfDay() - startNanos;
-                        LocalTime chTime = LocalTime.ofNanoOfDay(checkpointNanos);
-                        System.out.println("TIME: " + chTime.format(DateTimeFormatter.ISO_TIME));
-                        
-                        Vector3f spawnPoint = new Vector3f(checkpointbb.getCenter());
-                        Vector2f spawnPoint2D = new Vector2f(spawnPoint.x, spawnPoint.z);
-                        float height = worldAppState.getHeight(spawnPoint2D);
-                        spawnPoint.setY(height);
-                        characterAppState.setSpawnPoint(spawnPoint);
-                        characterAppState.setSpawnRotation(characterAppState.getRotation());
-                        
                     }
                 }
             }
         }
     }
     
+    private void changeMode(Mode mode) {
+        System.out.println("Activated " + mode);
+        currMode = mode;
+        switch(mode) {
+            case TRAPMODE:
+                stateManager.detach(trapPlaceAppState);
+                trapPlaceAppState = new TrapPlaceAppState(bulletAppState, worldAppState);
+                stateManager.attach(trapPlaceAppState);
+                stateManager.detach(characterAppState);
+                started = false;
+                break;
+            case DRIVEMODE:
+                stateManager.detach(characterAppState);
+                switch(character) {
+                    case ROCK:
+                        characterAppState = new RockAppState(bulletAppState, INITHP, spawnPoint, spawnRotation, worldAppState.getTerrainNode());
+                        break;
+                    case CAR:
+                        characterAppState = new CarAppState(bulletAppState, INITHP, spawnPoint, spawnRotation, worldAppState.getTerrainNode());
+                        break;
+                }
+                stateManager.attach(characterAppState);
+                stateManager.detach(trapPlaceAppState);
+                break;
+        }
+    }
+    
     @Override
     public void cleanup() {
         super.cleanup();
-        
+        // Add cleanup
     }
+
+    @Override
+    public void onAction(String name, boolean isPressed, float tpf) {
+        if(name.equals(MAPPING_MODE) && isPressed) {
+            if(currMode == Mode.DRIVEMODE) {
+                changeMode(Mode.TRAPMODE);
+            } else {
+                changeMode(Mode.DRIVEMODE);
+            }
+        }
+    }
+    
+    public enum Mode { TRAPMODE, DRIVEMODE};
     
     public enum Character { ROCK, CAR };
     
