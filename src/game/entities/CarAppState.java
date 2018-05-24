@@ -22,6 +22,8 @@ import com.jme3.renderer.queue.RenderQueue;
 import com.jme3.scene.Geometry;
 import com.jme3.scene.Node;
 import com.jme3.scene.shape.Cylinder;
+import com.jme3.texture.Texture;
+import static game.entities.CharacterAppState.DEFAULT_JUMP_COOLDOWN;
 import game.test.DMGArt;
 
 /**
@@ -34,7 +36,7 @@ public class CarAppState extends CharacterAppState {
     private static final float SPIKE_DMG_GAIN = 2f;
     
     private int steer;
-    
+    private float wheelRadius;
     private VehicleControl carControl;
     private Node vehicleNode;
     private float steeringValue;
@@ -51,8 +53,7 @@ public class CarAppState extends CharacterAppState {
     
     @Override
     public void initCamera() {
-        cam.setLocation(getLocation());
-        cam.setRotation(getRotation());
+        super.initCamera();
 //        camNode = new CameraNode("CameraNode", cam);
 //        camNode.setControlDir(CameraControl.ControlDirection.SpatialToCamera);
 //        vehicleNode.attachChild(camNode);
@@ -75,25 +76,13 @@ public class CarAppState extends CharacterAppState {
     @Override
     protected void initPlayer() {
         Material mat = new Material(assetManager, "Common/MatDefs/Misc/Unshaded.j3md");
-        mat.getAdditionalRenderState().setWireframe(true);
-        mat.setColor("Color", ColorRGBA.Red);
-        
-//        CompoundCollisionShape compoundShape = new CompoundCollisionShape();
-//        BoxCollisionShape collBox = new BoxCollisionShape(new Vector3f(1.2f, 0.5f, 2.4f));
-//        compoundShape.addChildShape(collBox, new Vector3f(0, 1, 0));
-//        
-//        Box box = new Box(1.2f, 0.5f, 2.4f);
-//        Geometry boxGeo = new Geometry("base", box);
-//        boxGeo.setLocalTranslation(new Vector3f(0, 1, 0));
-//        boxGeo.setMaterial(mat);
-//        
-//        vehicleNode = new Node("vehicleNode");
-//        vehicleNode.attachChild(boxGeo);
+        Texture tex = assetManager.loadTexture("Textures/chassis.png");
+//        mat.getAdditionalRenderState().setWireframe(true);
+        mat.setTexture("ColorMap", tex);
         
         vehicleNode = new Node("vehicleNode");
-        
-        geometry = (Geometry) assetManager.loadModel("Models/Car.obj");
-        geometry.setCullHint(Geometry.CullHint.Never);
+        geometry = (Geometry) assetManager.loadModel("Models/geruestedit1.obj");
+        geometry.setMaterial(mat);
         vehicleNode.attachChild(geometry);
         vehicleNode.setShadowMode(RenderQueue.ShadowMode.Cast);
         
@@ -108,62 +97,119 @@ public class CarAppState extends CharacterAppState {
         
         
         //Hier sollte man noch'n paar neue Zahlen draufschreiben, hmmm...
-        carControl.setSuspensionCompression(0.1f  * 2.0f * FastMath.sqrt(200.0f));
-        carControl.setSuspensionDamping(0.2f  * 2.0f * FastMath.sqrt(200.0f));
-        carControl.setSuspensionStiffness(200.0f);
-        carControl.setMaxSuspensionForce(5000);
+        carControl.setSuspensionCompression(0.2f  * 2.0f * FastMath.sqrt(120.0f));
+        carControl.setSuspensionDamping(0.3f  * 2.0f * FastMath.sqrt(120.0f));
+        carControl.setSuspensionStiffness(120.0f);
+        carControl.setMaxSuspensionForce(10000);
         
         vehicleNode.addControl(carControl);
         
+//        //Create four wheels and add them at their locations
+//        //note that our fancy car actually goes backwards..
+//        Vector3f wheelDirection = new Vector3f(0, -1, 0);
+//        Vector3f wheelAxle = new Vector3f(-1, 0, 0);
+//
+//        Geometry wheel_fr = (Geometry) assetManager.loadModel("Models/wheel_rf.obj");
+//        mat = new Material(assetManager, "Common/MatDefs/Misc/Unshaded.j3md");
+//        tex = assetManager.loadTexture("Textures/wheel.png");
+////        mat.getAdditionalRenderState().setWireframe(true);
+//        mat.setTexture("ColorMap", tex);
+//        wheel_fr.setMaterial(mat);
+//        wheel_fr.center();
+//        box = (BoundingBox) wheel_fr.getModelBound();
+//        wheelRadius = box.getZExtent();
+//        System.out.println(box.getYExtent());
+//        float back_wheel_h = (wheelRadius * 1.7f) - 1f;
+//        float front_wheel_h = (wheelRadius * 1.9f) - 1f;
+//        carControl.addWheel(wheel_fr, box.getCenter().add(0, -front_wheel_h, 0),
+//                wheelDirection, wheelAxle, 0.2f, wheelRadius, true);
+//
+//        Geometry wheel_fl = (Geometry) assetManager.loadModel("Models/wheel_lf.obj");
+//        wheel_fl.setMaterial(mat);
+//        wheel_fl.center();
+//        box = (BoundingBox) wheel_fl.getModelBound();
+//        carControl.addWheel(wheel_fl, box.getCenter().add(0, -front_wheel_h, 0),
+//                wheelDirection, wheelAxle, 0.2f, wheelRadius, true);
+//
+//        Geometry wheel_br = (Geometry) assetManager.loadModel("Models/wheel_rr.obj");
+//        wheel_br.setMaterial(mat);
+//        wheel_br.center();
+//        wheelRadius = box.getZExtent();
+//        System.out.println(box.getYExtent());
+//        box = (BoundingBox) wheel_br.getModelBound();
+//        carControl.addWheel(wheel_br, box.getCenter().add(0, -back_wheel_h, 0),
+//                wheelDirection, wheelAxle, 0.2f, wheelRadius, false);
+//
+//        Geometry wheel_bl = (Geometry) assetManager.loadModel("Models/wheel_lr.obj");
+//        wheel_bl.setMaterial(mat);
+//        wheel_bl.center();
+//        box = (BoundingBox) wheel_bl.getModelBound();
+//        carControl.addWheel(wheel_bl, box.getCenter().add(0, -back_wheel_h, 0),
+//                wheelDirection, wheelAxle, 0.2f, wheelRadius, false);
+//
+////        carControl.getWheel(2).setFrictionSlip(4);
+////        carControl.getWheel(3).setFrictionSlip(4);
+
+
         //Create four wheels and add them at their locations
-        float radius = 0.35f;
+        Vector3f wheelDirection = new Vector3f(0, -1, 0); // was 0, -1, 0
+        Vector3f wheelAxle = new Vector3f(-1, 0, 0); // was -1, 0, 0
+        float radius1 = 0.4f;
+        float radius2 = 0.3f;
         float restLength = 0.3f;
         float yOff = 0.5f;
-        float xOff = 1f;
-        float zOff = 1.7f;
+        float xOff = 0.85f;
+        float zOff = 0.8f;
+
+        Cylinder wheelMesh1 = new Cylinder(16, 16, radius1, radius1 * 2f, true);
+        Cylinder wheelMesh2 = new Cylinder(16, 16, radius2, radius2 * 2f, true);
         
-        Vector3f wheelDirection = new Vector3f(0, -1, 0);
-        Vector3f wheelAxle = new Vector3f(-1, 0, 0);
 
-        Cylinder wheelMesh = new Cylinder(16, 16, radius, radius * 0.6f, true);
-
+        mat = new Material(assetManager, "Common/MatDefs/Misc/Unshaded.j3md");
+        tex = assetManager.loadTexture("Textures/wheel.png");
+//        mat.getAdditionalRenderState().setWireframe(true);
+        mat.setTexture("ColorMap", tex);
+        
         Node node1 = new Node("wheel 1 node");
-        Geometry wheels1 = new Geometry("wheel 1", wheelMesh);
+        Geometry wheels1 = new Geometry("wheel 1", wheelMesh2);
         node1.attachChild(wheels1);
         wheels1.rotate(0, FastMath.HALF_PI, 0);
         wheels1.setMaterial(mat);
         carControl.addWheel(node1, new Vector3f(-xOff, yOff, zOff),
-                wheelDirection, wheelAxle, restLength, radius, true);
+                wheelDirection, wheelAxle, restLength, radius2, true);
 
         Node node2 = new Node("wheel 2 node");
-        Geometry wheels2 = new Geometry("wheel 2", wheelMesh);
+        Geometry wheels2 = new Geometry("wheel 2", wheelMesh2);
         node2.attachChild(wheels2);
         wheels2.rotate(0, FastMath.HALF_PI, 0);
         wheels2.setMaterial(mat);
         carControl.addWheel(node2, new Vector3f(xOff, yOff, zOff),
-                wheelDirection, wheelAxle, restLength, radius, true);
+                wheelDirection, wheelAxle, restLength, radius2, true);
 
+        yOff += 0.1f;
+        zOff += 1;
+        xOff += 0.15f;
+        
         Node node3 = new Node("wheel 3 node");
-        Geometry wheels3 = new Geometry("wheel 3", wheelMesh);
+        Geometry wheels3 = new Geometry("wheel 3", wheelMesh1);
         node3.attachChild(wheels3);
         wheels3.rotate(0, FastMath.HALF_PI, 0);
         wheels3.setMaterial(mat);
         carControl.addWheel(node3, new Vector3f(-xOff, yOff, -zOff),
-                wheelDirection, wheelAxle, restLength, radius, false);
+                wheelDirection, wheelAxle, restLength, radius1, false);
 
         Node node4 = new Node("wheel 4 node");
-        Geometry wheels4 = new Geometry("wheel 4", wheelMesh);
+        Geometry wheels4 = new Geometry("wheel 4", wheelMesh1);
         node4.attachChild(wheels4);
         wheels4.rotate(0, FastMath.HALF_PI, 0);
         wheels4.setMaterial(mat);
         carControl.addWheel(node4, new Vector3f(xOff, yOff, -zOff),
-                wheelDirection, wheelAxle, restLength, radius, false);
+                wheelDirection, wheelAxle, restLength, radius1, false);
 
         vehicleNode.attachChild(node1);
         vehicleNode.attachChild(node2);
         vehicleNode.attachChild(node3);
         vehicleNode.attachChild(node4);
-
         rootNode.attachChild(vehicleNode);
         
         bulletAppState.getPhysicsSpace().add(carControl);
@@ -174,7 +220,6 @@ public class CarAppState extends CharacterAppState {
     @Override
     protected void cleanupPlayer() {
         bulletAppState.getPhysicsSpace().remove(carControl);
-        rootNode.detachChild(vehicleNode);
     }
     
     @Override
