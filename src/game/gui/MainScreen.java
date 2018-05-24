@@ -67,6 +67,8 @@ public class MainScreen extends AbstractAppState {
         nifty.addScreen("chooser", new ChooseBuilder("chooser", app, controller).build(nifty));
 
         nifty.addScreen("esc_menu", new ESCMenuBuilder("esc_menu", app, controller).build(nifty));
+        
+        nifty.addScreen("trap_chooser", new FallenAuswahlHUDBuilder("trap_chooser", app, controller).build(nifty));
 
         goToScreen("start");
     }

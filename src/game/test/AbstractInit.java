@@ -43,6 +43,11 @@ public abstract class AbstractInit {
         stateManager.attachAll(bulletAppState);
         //bulletAppState.setDebugEnabled(true);
     }
+    
+    public void update(float tpf)
+    {
+        
+    }
 
     public abstract void close();
 

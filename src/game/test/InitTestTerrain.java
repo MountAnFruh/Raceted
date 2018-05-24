@@ -140,6 +140,7 @@ public class InitTestTerrain extends AbstractInit implements ActionListener {
         worldAppState.setTexture("test_terrain", 3, rock, roadScale);
     }
 
+    @Override
     public void update(float tpf) {
         if (worldAppState.isInitialized() && !worldAppState.isTerrainLoaded()) {
             initTerrain();

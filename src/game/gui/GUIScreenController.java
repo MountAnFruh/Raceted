@@ -10,13 +10,18 @@ import com.jme3.asset.AssetManager;
 import com.jme3.audio.AudioData;
 import com.jme3.audio.AudioNode;
 import de.lessvoid.nifty.Nifty;
+import de.lessvoid.nifty.elements.Element;
+import de.lessvoid.nifty.elements.render.PanelRenderer;
 import de.lessvoid.nifty.screen.Screen;
 import de.lessvoid.nifty.screen.ScreenController;
+import de.lessvoid.nifty.tools.Color;
 import game.entities.RockAppState;
 import game.test.AbstractInit;
 import game.test.InitTestCar;
 import game.test.InitTestRock;
 import game.test.InitTestTerrain;
+import game.test.InitTestTrap;
+import java.util.List;
 
 /**
  *
@@ -31,6 +36,9 @@ public class GUIScreenController implements ScreenController {
     private MainScreen mainScreen;
     private AbstractInit tester;
     private RockAppState rockapp;
+    private InitTestTrap trapapp;
+    public final Color bgColor = new Color(255, 16, 0, 50);
+    private final String panelname = "panel_left_center_2";
 
     public GUIScreenController(Nifty nifty, SimpleApplication app) {
         this.nifty = nifty;
@@ -98,13 +106,65 @@ public class GUIScreenController implements ScreenController {
         playwith("Terrain");
     }
 
+    public void playwithTraps() {
+        audioSource.stop();
+        playwith("Traps");
+    }
+
+    public void trap1() {
+        if (trapapp != null) {
+            trapapp.getTrapPlaceAppState().setTrap(1);
+
+            Element e = nifty.getScreen("trap_chooser").findElementById(panelname + "_1");
+            System.out.println(e.getId());
+            e.getRenderer(PanelRenderer.class).setBackgroundColor(bgColor);
+
+            e = nifty.getScreen("trap_chooser").findElementById(panelname + "_3");
+            e.getRenderer(PanelRenderer.class).setBackgroundColor(null);
+
+            e = nifty.getScreen("trap_chooser").findElementById(panelname + "_2");
+            e.getRenderer(PanelRenderer.class).setBackgroundColor(null);
+        }
+    }
+
+    public void trap2() {
+        if (trapapp != null) {
+            trapapp.getTrapPlaceAppState().setTrap(2);
+
+            Element e = nifty.getScreen("trap_chooser").findElementById(panelname + "_2");
+            System.out.println(e.getId());
+            e.getRenderer(PanelRenderer.class).setBackgroundColor(bgColor);
+
+            e = nifty.getScreen("trap_chooser").findElementById(panelname + "_1");
+            e.getRenderer(PanelRenderer.class).setBackgroundColor(null);
+
+            e = nifty.getScreen("trap_chooser").findElementById(panelname + "_3");
+            e.getRenderer(PanelRenderer.class).setBackgroundColor(null);
+        }
+    }
+
+    public void trap3() {
+        if (trapapp != null) {
+            trapapp.getTrapPlaceAppState().setTrap(3);
+
+            Element e = nifty.getScreen("trap_chooser").findElementById(panelname + "_3");
+            e.getRenderer(PanelRenderer.class).setBackgroundColor(bgColor);
+
+            e = nifty.getScreen("trap_chooser").findElementById(panelname + "_1");
+            e.getRenderer(PanelRenderer.class).setBackgroundColor(null);
+
+            e = nifty.getScreen("trap_chooser").findElementById(panelname + "_2");
+            e.getRenderer(PanelRenderer.class).setBackgroundColor(null);
+        }
+    }
+
     public void playwith(String character) {
         rockapp = null;
+        trapapp = null;
         audioSource.stop();
         switch (character) {
             case "Cart":
                 System.out.println("testCar");
-
                 InitTestCar testCar = new InitTestCar(app);
                 tester = testCar;
                 mainScreen.goToScreen("hud");
@@ -129,13 +189,20 @@ public class GUIScreenController implements ScreenController {
                 mainScreen.goToScreen("hud");
                 mainScreen.setCurrentGame(testTerrain);
                 break;
+            case "Traps":
+                System.out.println("testTerrain");
+
+                trapapp = new InitTestTrap(app);
+                tester = trapapp;
+                mainScreen.goToScreen("trap_chooser");
+                mainScreen.setCurrentGame(trapapp);
+                break;
         }
     }
 
     public void update(float tpf) {
-
-        if (mainScreen.getCurrentGame() instanceof InitTestTerrain) {
-            ((InitTestTerrain) mainScreen.getCurrentGame()).update(tpf);
+        if (tester != null) {
+            tester.update(tpf);
         }
     }
 
