@@ -46,7 +46,7 @@ public class HUDBuilder extends AbstractScreenBuilder {
                                 text(new TextBuilder() {
                                     {
                                         text("Platz 0\n");
-                                        font("Interface/Fonts/Pasajero.ttf");
+                                        font("Interface/Fonts/ErasBoldITC.fnt");
                                         valignTop();
                                         alignLeft();
                                         height("50%");
@@ -57,7 +57,7 @@ public class HUDBuilder extends AbstractScreenBuilder {
                                 text(new TextBuilder() {
                                     {
                                         text("00:00:00\n");
-                                        font("Interface/Fonts/Pasajero.ttf");
+                                        font("Interface/Fonts/ErasBoldITC.fnt");
                                         valignTop();
                                         alignLeft();
                                         height("70%");
@@ -86,7 +86,7 @@ public class HUDBuilder extends AbstractScreenBuilder {
                                 text(new TextBuilder() {
                                     {
                                         text("Runde 0\n");
-                                        font("Interface/Fonts/Pasajero.ttf");
+                                        font("Interface/Fonts/ErasBoldITC.fnt");
                                         valignTop();
                                         alignLeft();
                                         height("50%");
@@ -107,9 +107,9 @@ public class HUDBuilder extends AbstractScreenBuilder {
 
                         panel(new PanelBuilder("panel_top_right") {
                             {
-                                childLayoutVertical();
+                                childLayoutCenter();
                                 //backgroundColor("#44f8");
-                                height("5%");
+                                height("50%");
                                 width("100%");
 
                                 // add image
@@ -117,6 +117,27 @@ public class HUDBuilder extends AbstractScreenBuilder {
                                     {
                                         filename("Textures/Images/raceted_icon.png");
                                         valignTop();
+                                        alignRight();
+                                    }
+                                });
+
+                            }
+                        });
+
+                        panel(new PanelBuilder("panel_bottom_right") {
+                            {
+                                childLayoutCenter();
+                                //backgroundColor("#44f8");
+                                height("50%");
+                                width("100%");
+                                valignBottom();
+                                alignRight();
+
+                                // add image
+                                image(new ImageBuilder() {
+                                    {
+                                        filename("Textures/Images/raceted_icon.png");
+                                        valignBottom();
                                         alignRight();
                                     }
                                 });

@@ -77,9 +77,11 @@ public class StartBuilder extends AbstractScreenBuilder {
                         // add text
                         text(new TextBuilder() {
                             {
-                                text("Raceted ist ein Racer, bei dem es rein ums gewinnen geht! \n"
-                                    +"Durch das Platzieren von Fallen kann man den Gegner den Weg zum Ziel erschweren und sich somit einen Vorteil gegenüber diese verschaffen.");
-                                font("Interface/Fonts/Default.fnt");
+                                text("Raceted ist ein Racer, \n"
+                                        + "bei dem es rein ums gewinnen geht! \n"
+                                        + "Durch das Platzieren von Fallen kann man den Gegner den Weg zum Ziel erschweren\n"
+                                        + " und sich somit einen Vorteil gegenüber diese verschaffen.");
+                                font("Interface/Fonts/ErasBoldITC.fnt");
                                 wrap(true);
                                 height("100%");
                                 width("100%");
@@ -104,9 +106,10 @@ public class StartBuilder extends AbstractScreenBuilder {
                                 //backgroundColor("#44f8");
                                 height("50%");
                                 width("50%");
-
+                              
                                 control(new ButtonBuilder("StartButton", "Start") {
                                     {
+
                                         alignCenter();
                                         valignCenter();
                                         height("50%");
@@ -125,9 +128,10 @@ public class StartBuilder extends AbstractScreenBuilder {
                                 //backgroundColor("#88f8");
                                 height("50%");
                                 width("50%");
-
+                             
                                 control(new ButtonBuilder("QuitButton", "quit") {
                                     {
+
                                         alignCenter();
                                         valignCenter();
                                         height("50%");
