@@ -9,8 +9,6 @@ import com.jme3.app.Application;
 import com.jme3.app.SimpleApplication;
 import com.jme3.app.state.AbstractAppState;
 import com.jme3.app.state.AppStateManager;
-import com.jme3.asset.AssetManager;
-import com.jme3.audio.AudioNode;
 import com.jme3.niftygui.NiftyJmeDisplay;
 import de.lessvoid.nifty.Nifty;
 import game.test.AbstractInit;
@@ -19,56 +17,55 @@ import game.test.AbstractInit;
  *
  * @author Robbo13
  */
-public class MainScreen extends AbstractAppState {
+public class GUIAppState extends AbstractAppState {
 
-    private AudioNode audioSource;
-    private AssetManager asset;
+    public static final String START_SCREEN = "start";
+    public static final String GAME_HUD = "game_hud";
+    public static final String TRAP_PLACE_HUD = "trap_place_hud";
+    public static final String ESC_MENU = "esc_menu";
+    public static final String CHARACTER_CHOOSER = "chooser";
+    
     private Nifty nifty;
     private SimpleApplication app;
     private GUIScreenController controller;
-    private String currentScreen = "";
-    private AbstractInit currentGame = null;
+    private String currentScreen = null;
     private NiftyJmeDisplay niftyDisplay;
-
-    private static MainScreen theInstance;
-
-    public static MainScreen getTheInstance() {
-        if (theInstance == null) {
-            theInstance = new MainScreen();
-        }
-
-        return theInstance;
-    }
 
     @Override
     public void initialize(AppStateManager stateManager, Application appl) {
 
         app = (SimpleApplication) appl;
-        asset = app.getAssetManager();
+        
 //        audioSource = new AudioNode(asset, "Sounds/Musics/Main.ogg", AudioData.DataType.Buffer);
 //        audioSource.play();
+
         niftyDisplay = NiftyJmeDisplay.newNiftyJmeDisplay(
-                app.getAssetManager(), app.getInputManager(), app.getAudioRenderer(), app.getGuiViewPort());
+                app.getAssetManager(),
+                app.getInputManager(),
+                app.getAudioRenderer(),
+                app.getGuiViewPort()
+        );
         nifty = niftyDisplay.getNifty();
+        
         app.getGuiViewPort().addProcessor(niftyDisplay);
         app.getFlyByCamera().setDragToRotate(true);
 
         nifty.loadStyleFile("nifty-default-styles.xml");
         nifty.loadControlFile("nifty-default-controls.xml");
 
-        controller = new GUIScreenController(nifty, app);
+        controller = new GUIScreenController(this, nifty, app);
 
-        nifty.addScreen("start", new StartBuilder("start", app, controller).build(nifty));
+        nifty.addScreen(START_SCREEN, new StartBuilder(START_SCREEN, app, controller).build(nifty));
 
-        nifty.addScreen("hud", new HUDBuilder("hud", app, controller).build(nifty));
+        nifty.addScreen(GAME_HUD, new GameHUDBuilder(GAME_HUD, app, controller).build(nifty));
 
-        nifty.addScreen("hud_terrain_text", new HUDTerrainTextBuilder("hud_terrain_text", app, controller).build(nifty));
+//        nifty.addScreen("hud_terrain_text", new HUDTerrainTextBuilder("hud_terrain_text", app, controller).build(nifty));
 
-        nifty.addScreen("chooser", new ChooseBuilder("chooser", app, controller).build(nifty));
+        nifty.addScreen(CHARACTER_CHOOSER, new ChooseBuilder(CHARACTER_CHOOSER, app, controller).build(nifty));
 
-        nifty.addScreen("esc_menu", new ESCMenuBuilder("esc_menu", app, controller).build(nifty));
+        nifty.addScreen(ESC_MENU, new ESCMenuBuilder(ESC_MENU, app, controller).build(nifty));
         
-        nifty.addScreen("trap_chooser", new FallenAuswahlHUDBuilder("trap_chooser", app, controller).build(nifty));
+        nifty.addScreen(TRAP_PLACE_HUD, new TrapPlaceHUDBuilder(TRAP_PLACE_HUD, app, controller).build(nifty));
 
         goToScreen("start");
     }
@@ -94,10 +91,11 @@ public class MainScreen extends AbstractAppState {
 //        nifty.exit();
 //        app.stop();
 //    }
+    
     @Override
     public void update(float tpf) {
         super.update(tpf); //To change body of generated methods, choose Tools | Templates.
-        controller.update(tpf);
+//        controller.update(tpf);
     }
 
     public String getCurrentScreenName() {
@@ -105,18 +103,10 @@ public class MainScreen extends AbstractAppState {
     }
 
     public void goToScreen(String screen) {
-        if (screen.equals("start")) {
+        if (screen.equals(GUIAppState.START_SCREEN)) {
             this.app.getRootNode().detachAllChildren();
         }
         nifty.gotoScreen(screen);
         currentScreen = screen;
-    }
-
-    public void setCurrentGame(AbstractInit currentGame) {
-        this.currentGame = currentGame;
-    }
-
-    public AbstractInit getCurrentGame() {
-        return currentGame;
     }
 }

@@ -25,8 +25,7 @@ import com.jme3.renderer.Camera;
 import com.jme3.renderer.RenderManager;
 import com.jme3.scene.Geometry;
 import com.jme3.scene.Node;
-import com.jme3.scene.control.CameraControl;
-import game.gui.MainScreen;
+import game.gui.GUIAppState;
 import game.test.DMGArt;
 import game.test.Explosion;
 
@@ -48,7 +47,6 @@ public abstract class CharacterAppState extends AbstractAppState implements Acti
     protected static final Trigger TRIGGER_SPACE = new KeyTrigger(KeyInput.KEY_SPACE);
     protected static final Trigger TRIGGER_RESET = new KeyTrigger(KeyInput.KEY_RETURN);
     protected static final Trigger TRIGGER_DMG = new KeyTrigger(KeyInput.KEY_F);
-    protected static final Trigger TRIGGER_ESC = new KeyTrigger(KeyInput.KEY_ESCAPE);
 
     // define mappings
     protected static final String MAPPING_LEFT = "Left";
@@ -58,7 +56,8 @@ public abstract class CharacterAppState extends AbstractAppState implements Acti
     protected static final String MAPPING_SPACE = "Space";
     protected static final String MAPPING_RESET = "Reset";
     protected static final String MAPPING_DMG = "F";
-    protected static final String MAPPING_ESC = "Escape";
+    
+    protected final GUIAppState guiAppState;
     
     protected BulletAppState bulletAppState;
     protected AssetManager assetManager;
@@ -81,7 +80,8 @@ public abstract class CharacterAppState extends AbstractAppState implements Acti
     protected Vector3f spawnPoint;
     protected Quaternion spawnRotation;
     
-    public CharacterAppState(BulletAppState bulletAppState, int maxHP, Vector3f spawnPoint, Quaternion spawnRotation, Node terrainNode) {
+    public CharacterAppState(GUIAppState guiAppState, BulletAppState bulletAppState, int maxHP, Vector3f spawnPoint, Quaternion spawnRotation, Node terrainNode) {
+        this.guiAppState = guiAppState;
         this.maxHP = maxHP;
         this.hp = maxHP;
         setSpawnPoint(new Vector3f(spawnPoint));
@@ -117,14 +117,13 @@ public abstract class CharacterAppState extends AbstractAppState implements Acti
             inputManager.deleteMapping(SimpleApplication.INPUT_MAPPING_EXIT);
         }
         inputManager.addMapping(MAPPING_DMG, TRIGGER_DMG);
-        inputManager.addMapping(MAPPING_ESC, TRIGGER_ESC);
         inputManager.addMapping(MAPPING_LEFT, TRIGGER_LEFT);
         inputManager.addMapping(MAPPING_RIGHT, TRIGGER_RIGHT);
         inputManager.addMapping(MAPPING_UP, TRIGGER_UP);
         inputManager.addMapping(MAPPING_DOWN, TRIGGER_DOWN);
         inputManager.addMapping(MAPPING_SPACE, TRIGGER_SPACE);
         inputManager.addMapping(MAPPING_RESET, TRIGGER_RESET);
-        inputManager.addListener(this, MAPPING_DMG, MAPPING_ESC, MAPPING_LEFT, MAPPING_RIGHT, MAPPING_UP,
+        inputManager.addListener(this, MAPPING_DMG, MAPPING_LEFT, MAPPING_RIGHT, MAPPING_UP,
                 MAPPING_DOWN, MAPPING_SPACE, MAPPING_RESET);
     }
     
@@ -167,7 +166,6 @@ public abstract class CharacterAppState extends AbstractAppState implements Acti
     protected void cleanupInput() {
         inputManager.removeListener(this);
         inputManager.deleteMapping(MAPPING_DMG);
-        inputManager.deleteMapping(MAPPING_ESC);
         inputManager.deleteMapping(MAPPING_LEFT);
         inputManager.deleteMapping(MAPPING_RIGHT);
         inputManager.deleteMapping(MAPPING_UP);
@@ -239,36 +237,31 @@ public abstract class CharacterAppState extends AbstractAppState implements Acti
 
     @Override
     public void onAction(String name, boolean isPressed, float tpf) {
-        switch (name) {
-            case MAPPING_ESC:
-                if (isPressed && MainScreen.getTheInstance().getCurrentScreenName().equals("hud")) {
-                    MainScreen.getTheInstance().goToScreen("esc_menu");
-                } else if (isPressed && MainScreen.getTheInstance().getCurrentScreenName().equals("esc_menu")) {
-                    MainScreen.getTheInstance().goToScreen("hud");
-                }
-                break;
-            case MAPPING_DMG:
-                if (isPressed) {
-                    causeDmg(20, DMGArt.GRUBE);
-                }
-                break;
-            case MAPPING_LEFT:
-                left = isPressed;
-                break;
-            case MAPPING_RIGHT:
-                right = isPressed;
-                break;
-            case MAPPING_UP:
-                forward = isPressed;
-                break;
-            case MAPPING_DOWN:
-                backward = isPressed;
-                break;
-            case MAPPING_SPACE:
-                jump = isPressed;
-                break;
-            default:
-                break;
+        if(this.isEnabled()) {
+            switch (name) {
+                case MAPPING_DMG:
+                    if (isPressed) {
+                        causeDmg(20, DMGArt.GRUBE);
+                    }
+                    break;
+                case MAPPING_LEFT:
+                    left = isPressed;
+                    break;
+                case MAPPING_RIGHT:
+                    right = isPressed;
+                    break;
+                case MAPPING_UP:
+                    forward = isPressed;
+                    break;
+                case MAPPING_DOWN:
+                    backward = isPressed;
+                    break;
+                case MAPPING_SPACE:
+                    jump = isPressed;
+                    break;
+                default:
+                    break;
+            }
         }
     }
 

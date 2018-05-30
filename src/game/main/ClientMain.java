@@ -8,6 +8,7 @@ package game.main;
 import com.jme3.app.SimpleApplication;
 import com.jme3.renderer.RenderManager;
 import com.jme3.system.AppSettings;
+import game.gui.GUIAppState;
 import game.main.appstates.GameAppState;
 import game.utils.ImageUtils;
 
@@ -17,19 +18,19 @@ import game.utils.ImageUtils;
  */
 public class ClientMain extends SimpleApplication {
     
-    private GameAppState gameAppState;
+    private GUIAppState guiAppState;
 
     public static void main(String[] args) {
         AppSettings settings = new AppSettings(true);
         settings.setSettingsDialogImage(ImageUtils.RACETED_TEXT);
-        //settings.setResolution(1920, 1080);
         settings.setSamples(16);
         //GraphicsDevice device = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice();
         //settings.setFullscreen(device.isFullScreenSupported());
         
         // DELETE AFTER TESTS
-        settings.setFullscreen(false);
-        settings.setResolution(640, 480);
+        settings.setFullscreen(true);
+        settings.setResolution(1920, 1080);
+        //settings.setResolution(640, 480);
         
         settings.setTitle("Raceted");
 
@@ -43,9 +44,8 @@ public class ClientMain extends SimpleApplication {
 
     @Override
     public void simpleInitApp() {
-        gameAppState = new GameAppState(GameAppState.Character.ROCK,
-                GameAppState.Level.LEVEL1);
-        stateManager.attach(gameAppState);
+        guiAppState = new GUIAppState();
+        stateManager.attach(guiAppState);
     }
 
     @Override

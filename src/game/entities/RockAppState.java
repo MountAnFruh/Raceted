@@ -21,6 +21,7 @@ import com.jme3.scene.Geometry;
 import com.jme3.scene.Node;
 import com.jme3.scene.shape.Sphere;
 import com.jme3.texture.Texture;
+import game.gui.GUIAppState;
 import game.test.DMGArt;
 
 /**
@@ -35,7 +36,11 @@ public class RockAppState extends CharacterAppState {
     private RigidBodyControl rockControl;
 
     public RockAppState(BulletAppState bulletAppState, int maxHP, Vector3f spawnPoint, Quaternion spawnRotation, Node terrainNode) {
-        super(bulletAppState, maxHP, spawnPoint, spawnRotation, terrainNode);
+        this(null, bulletAppState, maxHP, spawnPoint, spawnRotation, terrainNode);
+    }
+    
+    public RockAppState(GUIAppState guiAppState, BulletAppState bulletAppState, int maxHP, Vector3f spawnPoint, Quaternion spawnRotation, Node terrainNode) {
+        super(guiAppState, bulletAppState, maxHP, spawnPoint, spawnRotation, terrainNode);
     }
 
     @Override
@@ -151,12 +156,14 @@ public class RockAppState extends CharacterAppState {
     @Override
     public void onAction(String name, boolean isPressed, float tpf) {
         super.onAction(name, isPressed, tpf);
-        if (name.equals(MAPPING_RESET)) {
-            if (isPressed) {
-                rockControl.setPhysicsLocation(spawnPoint);
-                rockControl.setPhysicsRotation(spawnRotation);
-                rockControl.setLinearVelocity(Vector3f.ZERO);
-                rockControl.setAngularVelocity(Vector3f.ZERO);
+        if(this.isEnabled()) {
+            if (name.equals(MAPPING_RESET)) {
+                if (isPressed) {
+                    rockControl.setPhysicsLocation(spawnPoint);
+                    rockControl.setPhysicsRotation(spawnRotation);
+                    rockControl.setLinearVelocity(Vector3f.ZERO);
+                    rockControl.setAngularVelocity(Vector3f.ZERO);
+                }
             }
         }
     }

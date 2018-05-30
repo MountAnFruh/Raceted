@@ -14,7 +14,6 @@ import com.jme3.bullet.control.VehicleControl;
 import com.jme3.bullet.util.CollisionShapeFactory;
 import com.jme3.input.ChaseCamera;
 import com.jme3.material.Material;
-import com.jme3.math.ColorRGBA;
 import com.jme3.math.FastMath;
 import com.jme3.math.Quaternion;
 import com.jme3.math.Vector3f;
@@ -24,6 +23,7 @@ import com.jme3.scene.Node;
 import com.jme3.scene.shape.Cylinder;
 import com.jme3.texture.Texture;
 import static game.entities.CharacterAppState.DEFAULT_JUMP_COOLDOWN;
+import game.gui.GUIAppState;
 import game.test.DMGArt;
 
 /**
@@ -41,9 +41,13 @@ public class CarAppState extends CharacterAppState {
     private Node vehicleNode;
     private float steeringValue;
     private float accelerationValue;
-
+    
     public CarAppState(BulletAppState bulletAppState, int maxHP, Vector3f spawnPoint, Quaternion spawnRotation, Node terrainNode) {
-        super(bulletAppState, maxHP, spawnPoint, spawnRotation, terrainNode);
+        this(null, bulletAppState, maxHP, spawnPoint, spawnRotation, terrainNode);
+    }
+
+    public CarAppState(GUIAppState guiAppState, BulletAppState bulletAppState, int maxHP, Vector3f spawnPoint, Quaternion spawnRotation, Node terrainNode) {
+        super(guiAppState, bulletAppState, maxHP, spawnPoint, spawnRotation, terrainNode);
     }
     
     @Override
@@ -53,7 +57,8 @@ public class CarAppState extends CharacterAppState {
     
     @Override
     public void initCamera() {
-        super.initCamera();
+        cam.setLocation(getLocation());
+        cam.setRotation(getRotation());
 //        camNode = new CameraNode("CameraNode", cam);
 //        camNode.setControlDir(CameraControl.ControlDirection.SpatialToCamera);
 //        vehicleNode.attachChild(camNode);
@@ -82,6 +87,7 @@ public class CarAppState extends CharacterAppState {
         
         vehicleNode = new Node("vehicleNode");
         geometry = (Geometry) assetManager.loadModel("Models/geruestedit1.obj");
+        geometry.setCullHint(Geometry.CullHint.Never);
         geometry.setMaterial(mat);
         vehicleNode.attachChild(geometry);
         vehicleNode.setShadowMode(RenderQueue.ShadowMode.Cast);
@@ -220,6 +226,7 @@ public class CarAppState extends CharacterAppState {
     @Override
     protected void cleanupPlayer() {
         bulletAppState.getPhysicsSpace().remove(carControl);
+        rootNode.detachChild(vehicleNode);
     }
     
     @Override
@@ -241,39 +248,41 @@ public class CarAppState extends CharacterAppState {
     @Override
     public void onAction(String name, boolean isPressed, float tpf) {
         super.onAction(name, isPressed, tpf);
-        switch(name) {
-            case MAPPING_LEFT:
-                if(isPressed) steer++; else steer--;
-                break;
-            case MAPPING_RIGHT:
-                if(isPressed) steer--; else steer++;
-                break;
-            case MAPPING_UP:
-                if (isPressed) {
-                    accelerationValue += 2000;
-                }
-                else {
-                    accelerationValue -= 2000;
-                }
-                break;
-            case MAPPING_DOWN:
-                if (isPressed && carControl.getCurrentVehicleSpeedKmHour() >= 0) {
-                    carControl.brake(40f);
-                }
-                break;
-            case MAPPING_RESET:
-                if (isPressed) {
-                    carControl.setPhysicsLocation(spawnPoint);
-                    carControl.setPhysicsRotation(spawnRotation);
-                    carControl.setLinearVelocity(Vector3f.ZERO);
-                    carControl.setAngularVelocity(Vector3f.ZERO);
-                    carControl.resetSuspension();
-                }
-                break;
-            default: break;
+        if(this.isEnabled()) {
+            switch(name) {
+                case MAPPING_LEFT:
+                    if(isPressed) steer++; else steer--;
+                    break;
+                case MAPPING_RIGHT:
+                    if(isPressed) steer--; else steer++;
+                    break;
+                case MAPPING_UP:
+                    if (isPressed) {
+                        accelerationValue += 2000;
+                    }
+                    else {
+                        accelerationValue -= 2000;
+                    }
+                    break;
+                case MAPPING_DOWN:
+                    if (isPressed && carControl.getCurrentVehicleSpeedKmHour() >= 0) {
+                        carControl.brake(40f);
+                    }
+                    break;
+                case MAPPING_RESET:
+                    if (isPressed) {
+                        carControl.setPhysicsLocation(spawnPoint);
+                        carControl.setPhysicsRotation(spawnRotation);
+                        carControl.setLinearVelocity(Vector3f.ZERO);
+                        carControl.setAngularVelocity(Vector3f.ZERO);
+                        carControl.resetSuspension();
+                    }
+                    break;
+                default: break;
+            }
+            carControl.accelerate(accelerationValue * ((MAX_SPEED - carControl.getCurrentVehicleSpeedKmHour()) / MAX_SPEED));
+    //        System.out.println(carControl.getCurrentVehicleSpeedKmHour() + ", " + accelerationValue + ", " + (MAX_SPEED - carControl.getCurrentVehicleSpeedKmHour()));
         }
-        carControl.accelerate(accelerationValue * ((MAX_SPEED - carControl.getCurrentVehicleSpeedKmHour()) / MAX_SPEED));
-//        System.out.println(carControl.getCurrentVehicleSpeedKmHour() + ", " + accelerationValue + ", " + (MAX_SPEED - carControl.getCurrentVehicleSpeedKmHour()));
     }
 
     @Override

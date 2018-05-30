@@ -120,49 +120,49 @@ public class ChooseBuilder extends AbstractScreenBuilder {
                             }
                         });
 
-                        panel(new PanelBuilder("panel_center_right_down") {
-                            {
-                                childLayoutCenter();
-                                valignCenter();
-                                //backgroundColor("#88f8");
-                                height("25%");
-                                width("50%");
-
-                                control(new ButtonBuilder("Terrain", "terrain") {
-                                    {
-                                        alignCenter();
-                                        valignCenter();
-                                        height("50%");
-                                        width("50%");
-                                        visibleToMouse(true);
-                                        interactOnClick("playwithTerrain()");
-                                    }
-                                });
-
-                            }
-                        });
-                        
-                        panel(new PanelBuilder("panel_center_right_lowest") {
-                            {
-                                childLayoutCenter();
-                                valignCenter();
-                                //backgroundColor("#88f8");
-                                height("25%");
-                                width("50%");
-
-                                control(new ButtonBuilder("Traps", "traps") {
-                                    {
-                                        alignCenter();
-                                        valignCenter();
-                                        height("50%");
-                                        width("50%");
-                                        visibleToMouse(true);
-                                        interactOnClick("playwithTraps()");
-                                    }
-                                });
-
-                            }
-                        });
+//                        panel(new PanelBuilder("panel_center_right_down") {
+//                            {
+//                                childLayoutCenter();
+//                                valignCenter();
+//                                //backgroundColor("#88f8");
+//                                height("25%");
+//                                width("50%");
+//
+//                                control(new ButtonBuilder("Terrain", "terrain") {
+//                                    {
+//                                        alignCenter();
+//                                        valignCenter();
+//                                        height("50%");
+//                                        width("50%");
+//                                        visibleToMouse(true);
+//                                        interactOnClick("playwithTerrain()");
+//                                    }
+//                                });
+//
+//                            }
+//                        });
+//                        
+//                        panel(new PanelBuilder("panel_center_right_lowest") {
+//                            {
+//                                childLayoutCenter();
+//                                valignCenter();
+//                                //backgroundColor("#88f8");
+//                                height("25%");
+//                                width("50%");
+//
+//                                control(new ButtonBuilder("Traps", "traps") {
+//                                    {
+//                                        alignCenter();
+//                                        valignCenter();
+//                                        height("50%");
+//                                        width("50%");
+//                                        visibleToMouse(true);
+//                                        interactOnClick("playwithTraps()");
+//                                    }
+//                                });
+//
+//                            }
+//                        });
 
                     }
                 });

@@ -25,6 +25,7 @@ import com.jme3.light.AmbientLight;
 import com.jme3.material.Material;
 import com.jme3.math.ColorRGBA;
 import com.jme3.math.Ray;
+import com.jme3.math.Vector2f;
 import com.jme3.math.Vector3f;
 import com.jme3.renderer.Camera;
 import com.jme3.scene.CameraNode;
@@ -56,7 +57,7 @@ public class InitTestTrap extends AbstractInit {
         flyCam.setEnabled(false);
         worldAppState = new WorldAppState(bulletAppState);
         stateManager.attach(worldAppState);
-        trapPlaceAppState = new TrapPlaceAppState(bulletAppState, worldAppState);
+        trapPlaceAppState = new TrapPlaceAppState(bulletAppState, worldAppState, new Vector2f(0,0));
         stateManager.attach(trapPlaceAppState);
     }
 

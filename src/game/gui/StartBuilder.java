@@ -80,7 +80,7 @@ public class StartBuilder extends AbstractScreenBuilder {
                                 text("Raceted ist ein Racer, \n"
                                         + "bei dem es rein ums gewinnen geht! \n"
                                         + "Durch das Platzieren von Fallen kann man den Gegner den Weg zum Ziel erschweren\n"
-                                        + " und sich somit einen Vorteil gegenüber diese verschaffen.");
+                                        + " und sich somit einen Vorteil gegenueber diese verschaffen.");
                                 font("Interface/Fonts/ErasBoldITC.fnt");
                                 wrap(true);
                                 height("100%");

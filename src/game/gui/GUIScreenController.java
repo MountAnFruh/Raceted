@@ -6,6 +6,7 @@
 package game.gui;
 
 import com.jme3.app.SimpleApplication;
+import com.jme3.app.state.AppStateManager;
 import com.jme3.asset.AssetManager;
 import com.jme3.audio.AudioData;
 import com.jme3.audio.AudioNode;
@@ -16,6 +17,7 @@ import de.lessvoid.nifty.screen.Screen;
 import de.lessvoid.nifty.screen.ScreenController;
 import de.lessvoid.nifty.tools.Color;
 import game.entities.RockAppState;
+import game.main.appstates.GameAppState;
 import game.test.AbstractInit;
 import game.test.InitTestCar;
 import game.test.InitTestRock;
@@ -29,28 +31,27 @@ import java.util.List;
  */
 public class GUIScreenController implements ScreenController {
 
+    private final GameAppState.Level level = GameAppState.Level.LEVEL1;
+    private final Nifty nifty;
+    private final AssetManager assetManager;
+    private final AppStateManager stateManager;
+    private final GUIAppState guiAppState;
+    
+    private GameAppState gameAppState;
     private AudioNode audioSource;
-    private AssetManager asset;
-    private Nifty nifty;
     private SimpleApplication app;
-    private MainScreen mainScreen;
-    private AbstractInit tester;
-    private RockAppState rockapp;
     private InitTestTrap trapapp;
     public final Color bgColor = new Color(255, 16, 0, 50);
     private final String panelname = "panel_left_center_2";
 
-    public GUIScreenController(Nifty nifty, SimpleApplication app) {
+    public GUIScreenController(GUIAppState guiAppState, Nifty nifty, SimpleApplication app) {
+        this.guiAppState = guiAppState;
         this.nifty = nifty;
         this.app = app;
-        asset = app.getAssetManager();
-        audioSource = new AudioNode(asset, "Sounds/Effects/Select.ogg", AudioData.DataType.Buffer);
-
-        mainScreen = MainScreen.getTheInstance();
-    }
-
-    public GUIScreenController(Nifty nifty) {
-        this.nifty = nifty;
+        assetManager = app.getAssetManager();
+        stateManager = app.getStateManager();
+        
+        audioSource = new AudioNode(assetManager, "Sounds/Effects/Select.ogg", AudioData.DataType.Buffer);
     }
 
     @Override
@@ -73,7 +74,7 @@ public class GUIScreenController implements ScreenController {
     }
 
     public void startGame() {
-        mainScreen.goToScreen("chooser");
+        guiAppState.goToScreen(GUIAppState.CHARACTER_CHOOSER);
     }
 
     public void backtomain() {
@@ -84,32 +85,33 @@ public class GUIScreenController implements ScreenController {
 //        app.getRootNode().detachAllChildren();
 //        tester.close();
 //        mainScreen.goToScreen("start");
-        quitGame();
+//        quitGame();
+        guiAppState.goToScreen(GUIAppState.START_SCREEN);
     }
 
     public void backtohud() {
-        mainScreen.goToScreen("hud");
+        gameAppState.toggleHUD();
     }
 
     public void playwithCart() {
         audioSource.stop();
-        playwith("Cart");
+        playwith(GameAppState.Character.CAR);
     }
 
     public void playwithRock() {
         audioSource.stop();
-        playwith("Rock");
+        playwith(GameAppState.Character.ROCK);
     }
 
-    public void playwithTerrain() {
-        audioSource.stop();
-        playwith("Terrain");
-    }
+//    public void playwithTerrain() {
+//        audioSource.stop();
+//        playwith("Terrain");
+//    }
 
-    public void playwithTraps() {
-        audioSource.stop();
-        playwith("Traps");
-    }
+//    public void playwithTraps() {
+//        audioSource.stop();
+//        playwith("Traps");
+//    }
 
     public void trap1() {
         if (trapapp != null) {
@@ -158,52 +160,17 @@ public class GUIScreenController implements ScreenController {
         }
     }
 
-    public void playwith(String character) {
-        rockapp = null;
+    public void playwith(GameAppState.Character character) {
         trapapp = null;
         audioSource.stop();
-        switch (character) {
-            case "Cart":
-                System.out.println("testCar");
-                InitTestCar testCar = new InitTestCar(app);
-                tester = testCar;
-                mainScreen.goToScreen("hud");
-                mainScreen.setCurrentGame(testCar);
-                break;
-
-            case "Rock":
-                System.out.println("testRock");
-
-                InitTestRock testRock = new InitTestRock(app);
-                tester = testRock;
-                mainScreen.goToScreen("hud");
-                mainScreen.setCurrentGame(testRock);
-                rockapp = testRock.getAppState();
-                break;
-
-            case "Terrain":
-                System.out.println("testTerrain");
-
-                InitTestTerrain testTerrain = new InitTestTerrain(nifty, app);
-                tester = testTerrain;
-                mainScreen.goToScreen("hud");
-                mainScreen.setCurrentGame(testTerrain);
-                break;
-            case "Traps":
-                System.out.println("testTerrain");
-
-                trapapp = new InitTestTrap(app);
-                tester = trapapp;
-                mainScreen.goToScreen("trap_chooser");
-                mainScreen.setCurrentGame(trapapp);
-                break;
-        }
+        gameAppState = new GameAppState(guiAppState, character, level);
+        stateManager.attach(gameAppState);
     }
 
-    public void update(float tpf) {
-        if (tester != null) {
-            tester.update(tpf);
-        }
-    }
+//    public void update(float tpf) {
+//        if (tester != null) {
+//            tester.update(tpf);
+//        }
+//    }
 
 }

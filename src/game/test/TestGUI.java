@@ -9,7 +9,7 @@ import com.jme3.app.SimpleApplication;
 import com.jme3.audio.AudioNode;
 import com.jme3.renderer.RenderManager;
 import com.jme3.system.AppSettings;
-import game.gui.MainScreen;
+import game.gui.GUIAppState;
 import game.utils.ImageUtils;
 import java.awt.GraphicsDevice;
 import java.awt.GraphicsEnvironment;
@@ -20,7 +20,7 @@ import java.awt.GraphicsEnvironment;
  */
 public class TestGUI extends SimpleApplication {
 
-    private MainScreen startScreen;
+    private GUIAppState startScreen;
     private AudioNode audioSource;
 
     public static void main(String[] args) {
@@ -49,7 +49,7 @@ public class TestGUI extends SimpleApplication {
     }
 
     private void initAppStates() {
-        startScreen = MainScreen.getTheInstance();
+        startScreen = new GUIAppState();
         stateManager.attach(startScreen);
     }
 

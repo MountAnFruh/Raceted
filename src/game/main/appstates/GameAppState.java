@@ -27,6 +27,7 @@ import com.jme3.texture.Texture;
 import game.entities.CarAppState;
 import game.entities.CharacterAppState;
 import game.entities.RockAppState;
+import game.gui.GUIAppState;
 import game.utils.AudioPlayer;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
@@ -39,13 +40,16 @@ import java.util.List;
 public class GameAppState extends AbstractAppState implements ActionListener {
     
     private static final Trigger TRIGGER_MODE = new KeyTrigger(KeyInput.KEY_T);
+    protected static final Trigger TRIGGER_ESC = new KeyTrigger(KeyInput.KEY_ESCAPE);
     
     private static final String MAPPING_MODE = "Change_Mode";
+    private static final String MAPPING_ESC = "ESC_Menu";
     
     private static final int INITHP = 200;
     
     private final Character character;
     private final Level level;
+    private final GUIAppState guiAppState;
     
     private long startNanos;
     
@@ -65,11 +69,13 @@ public class GameAppState extends AbstractAppState implements ActionListener {
     private int currCheckpoint = 0;
     private int currRound = 1;
     
+    private boolean inputEnabled = true;
     private boolean terrainInitialized = false;
     private boolean started = false;
     private Mode currMode = null;
     
-    public GameAppState(Character character, Level level) {
+    public GameAppState(GUIAppState guiAppState, Character character, Level level) {
+        this.guiAppState = guiAppState;
         this.worldAppState = new WorldAppState(bulletAppState);
         this.character = character;
         this.level = level;
@@ -86,7 +92,7 @@ public class GameAppState extends AbstractAppState implements ActionListener {
         
         this.bulletAppState = new BulletAppState();
         this.worldAppState = new WorldAppState(bulletAppState);
-        this.trapPlaceAppState = new TrapPlaceAppState(bulletAppState, worldAppState);
+        //this.trapPlaceAppState = new TrapPlaceAppState(bulletAppState, worldAppState);
         this.audioPlayer = new AudioPlayer(assetManager);
         
         initInput();
@@ -97,7 +103,8 @@ public class GameAppState extends AbstractAppState implements ActionListener {
     
     protected void initInput() {
         inputManager.addMapping(MAPPING_MODE, TRIGGER_MODE);
-        inputManager.addListener(this, MAPPING_MODE);
+        inputManager.addMapping(MAPPING_ESC, TRIGGER_ESC);
+        inputManager.addListener(this, MAPPING_MODE, MAPPING_ESC);
     }
     
     private void loadLevel() {
@@ -195,13 +202,16 @@ public class GameAppState extends AbstractAppState implements ActionListener {
         currMode = mode;
         switch(mode) {
             case TRAPMODE:
+                guiAppState.goToScreen(GUIAppState.TRAP_PLACE_HUD);
                 stateManager.detach(trapPlaceAppState);
-                trapPlaceAppState = new TrapPlaceAppState(bulletAppState, worldAppState);
+                Vector3f position = characterAppState.getLocation();
+                trapPlaceAppState = new TrapPlaceAppState(bulletAppState, worldAppState, new Vector2f(position.x, position.z));
                 stateManager.attach(trapPlaceAppState);
                 stateManager.detach(characterAppState);
                 started = false;
                 break;
             case DRIVEMODE:
+                guiAppState.goToScreen(GUIAppState.GAME_HUD);
                 stateManager.detach(characterAppState);
                 switch(character) {
                     case ROCK:
@@ -217,6 +227,40 @@ public class GameAppState extends AbstractAppState implements ActionListener {
         }
     }
     
+    public void toggleHUD() {
+        String currentHUD = null;
+        if(currMode == Mode.TRAPMODE) {
+            currentHUD = GUIAppState.TRAP_PLACE_HUD;
+        } else if(currMode == Mode.DRIVEMODE) {
+            currentHUD = GUIAppState.GAME_HUD;
+        }
+        if(guiAppState.getCurrentScreenName().equals(GUIAppState.ESC_MENU)) {
+            switch(currMode) {
+                case TRAPMODE:
+                    trapPlaceAppState.setEnabled(true);
+                    break;
+                case DRIVEMODE:
+                    characterAppState.setEnabled(true);
+                    break;
+            }
+            inputEnabled = true;
+            bulletAppState.setEnabled(true);
+            guiAppState.goToScreen(currentHUD);
+        } else if(guiAppState.getCurrentScreenName().equals(currentHUD)) {
+            switch(currMode) {
+                case TRAPMODE:
+                    trapPlaceAppState.setEnabled(false);
+                    break;
+                case DRIVEMODE:
+                    characterAppState.setEnabled(false);
+                    break;
+            }
+            inputEnabled = false;
+            bulletAppState.setEnabled(false);
+            guiAppState.goToScreen(GUIAppState.ESC_MENU);
+        }
+    }
+    
     @Override
     public void cleanup() {
         super.cleanup();
@@ -225,12 +269,17 @@ public class GameAppState extends AbstractAppState implements ActionListener {
 
     @Override
     public void onAction(String name, boolean isPressed, float tpf) {
-        if(name.equals(MAPPING_MODE) && isPressed) {
-            if(currMode == Mode.DRIVEMODE) {
-                changeMode(Mode.TRAPMODE);
-            } else {
-                changeMode(Mode.DRIVEMODE);
+        if(inputEnabled) {
+            if(name.equals(MAPPING_MODE) && isPressed) {
+                if(currMode == Mode.DRIVEMODE) {
+                    changeMode(Mode.TRAPMODE);
+                } else {
+                    changeMode(Mode.DRIVEMODE);
+                }
             }
+        }
+        if(name.equals(MAPPING_ESC) && isPressed) {
+            this.toggleHUD();
         }
     }
     
