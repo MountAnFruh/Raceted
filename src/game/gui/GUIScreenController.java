@@ -5,6 +5,7 @@
  */
 package game.gui;
 
+import beans.PlayerInfo;
 import com.jme3.app.SimpleApplication;
 import com.jme3.app.state.AppStateManager;
 import com.jme3.asset.AssetManager;
@@ -13,6 +14,7 @@ import com.jme3.audio.AudioNode;
 import de.lessvoid.nifty.Nifty;
 import de.lessvoid.nifty.elements.Element;
 import de.lessvoid.nifty.elements.render.PanelRenderer;
+import de.lessvoid.nifty.elements.render.TextRenderer;
 import de.lessvoid.nifty.screen.Screen;
 import de.lessvoid.nifty.screen.ScreenController;
 import de.lessvoid.nifty.tools.Color;
@@ -23,6 +25,9 @@ import game.test.InitTestCar;
 import game.test.InitTestRock;
 import game.test.InitTestTerrain;
 import game.test.InitTestTrap;
+import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -32,10 +37,12 @@ import java.util.List;
 public class GUIScreenController implements ScreenController {
 
     private final GameAppState.Level level = GameAppState.Level.LEVEL1;
+    private final int playerCount = 1;
     private final Nifty nifty;
     private final AssetManager assetManager;
     private final AppStateManager stateManager;
     private final GUIAppState guiAppState;
+    private final List<PlayerInfo> playerInfos = new ArrayList<>();
     
     private GameAppState gameAppState;
     private AudioNode audioSource;
@@ -159,12 +166,32 @@ public class GUIScreenController implements ScreenController {
             e.getRenderer(PanelRenderer.class).setBackgroundColor(null);
         }
     }
+    
+    public void setTimeInGameHUD(LocalTime time) {
+        Element e = nifty.getScreen(GUIAppState.GAME_HUD).findElementById(GameHUDBuilder.TIME_TEXT);
+        e.getRenderer(TextRenderer.class).setText(time.format(DateTimeFormatter.ofPattern("mm:ss.SSS")) + "\n");
+    }
+    
+    public void setRoundInGameHUD(int round) {
+        Element e = nifty.getScreen(GUIAppState.GAME_HUD).findElementById(GameHUDBuilder.ROUND_TEXT);
+        e.getRenderer(TextRenderer.class).setText("Runde " + round + "\n");
+    }
+    
+    public void setPlaceInGameHUD(int place) {
+        Element e = nifty.getScreen(GUIAppState.GAME_HUD).findElementById(GameHUDBuilder.PLACE_TEXT);
+        e.getRenderer(TextRenderer.class).setText("Platz " + place + "\n");
+    }
 
     public void playwith(GameAppState.Character character) {
-        trapapp = null;
-        audioSource.stop();
-        gameAppState = new GameAppState(guiAppState, character, level);
-        stateManager.attach(gameAppState);
+        PlayerInfo playerInfo = new PlayerInfo();
+        playerInfo.setCharacter(character);
+        playerInfos.add(playerInfo);
+        if(playerInfos.size() >= playerCount) {
+            trapapp = null;
+            audioSource.stop();
+            gameAppState = new GameAppState(guiAppState, playerInfos, level);
+            stateManager.attach(gameAppState);
+        }
     }
 
 //    public void update(float tpf) {

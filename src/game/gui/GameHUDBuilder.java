@@ -18,6 +18,10 @@ import de.lessvoid.nifty.screen.ScreenController;
  */
 public class GameHUDBuilder extends AbstractScreenBuilder {
     
+    public static final String PLACE_TEXT = "place_text";
+    public static final String TIME_TEXT = "time_text";
+    public static final String ROUND_TEXT = "round_text";
+    
     public GameHUDBuilder(String string, SimpleApplication app, ScreenController controller) {
         super(string, app, controller);
     }
@@ -43,7 +47,7 @@ public class GameHUDBuilder extends AbstractScreenBuilder {
                                 height("15%");
                                 width("100%");
 
-                                text(new TextBuilder() {
+                                text(new TextBuilder(PLACE_TEXT) {
                                     {
                                         text("Platz 0\n");
                                         font("Interface/Fonts/ErasBoldITC.fnt");
@@ -54,7 +58,7 @@ public class GameHUDBuilder extends AbstractScreenBuilder {
                                     }
                                 });
 
-                                text(new TextBuilder() {
+                                text(new TextBuilder(TIME_TEXT) {
                                     {
                                         text("00:00:00\n");
                                         font("Interface/Fonts/ErasBoldITC.fnt");
@@ -83,7 +87,7 @@ public class GameHUDBuilder extends AbstractScreenBuilder {
                                 height("15%");
                                 width("100%");
 
-                                text(new TextBuilder() {
+                                text(new TextBuilder(ROUND_TEXT) {
                                     {
                                         text("Runde 0\n");
                                         font("Interface/Fonts/ErasBoldITC.fnt");

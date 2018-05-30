@@ -67,7 +67,7 @@ public class GUIAppState extends AbstractAppState {
         
         nifty.addScreen(TRAP_PLACE_HUD, new TrapPlaceHUDBuilder(TRAP_PLACE_HUD, app, controller).build(nifty));
 
-        goToScreen("start");
+        goToScreen(START_SCREEN);
     }
 
 //    @Override
@@ -100,6 +100,10 @@ public class GUIAppState extends AbstractAppState {
 
     public String getCurrentScreenName() {
         return currentScreen;
+    }
+
+    public GUIScreenController getController() {
+        return controller;
     }
 
     public void goToScreen(String screen) {

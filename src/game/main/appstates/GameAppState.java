@@ -5,6 +5,7 @@
  */
 package game.main.appstates;
 
+import beans.PlayerInfo;
 import com.jme3.app.Application;
 import com.jme3.app.SimpleApplication;
 import com.jme3.app.state.AbstractAppState;
@@ -24,6 +25,7 @@ import com.jme3.math.Vector2f;
 import com.jme3.math.Vector3f;
 import com.jme3.scene.Spatial;
 import com.jme3.texture.Texture;
+import com.sun.istack.internal.NotNull;
 import game.entities.CarAppState;
 import game.entities.CharacterAppState;
 import game.entities.RockAppState;
@@ -31,6 +33,9 @@ import game.gui.GUIAppState;
 import game.utils.AudioPlayer;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 /**
@@ -39,7 +44,7 @@ import java.util.List;
  */
 public class GameAppState extends AbstractAppState implements ActionListener {
     
-    private static final Trigger TRIGGER_MODE = new KeyTrigger(KeyInput.KEY_T);
+    protected static final Trigger TRIGGER_MODE = new KeyTrigger(KeyInput.KEY_T);
     protected static final Trigger TRIGGER_ESC = new KeyTrigger(KeyInput.KEY_ESCAPE);
     
     private static final String MAPPING_MODE = "Change_Mode";
@@ -47,10 +52,11 @@ public class GameAppState extends AbstractAppState implements ActionListener {
     
     private static final int INITHP = 200;
     
-    private final Character character;
+    private final List<PlayerInfo> playerInfos;
     private final Level level;
     private final GUIAppState guiAppState;
     
+    private PlayerInfo currentPlayer;
     private long startNanos;
     
     private BulletAppState bulletAppState;
@@ -74,10 +80,10 @@ public class GameAppState extends AbstractAppState implements ActionListener {
     private boolean started = false;
     private Mode currMode = null;
     
-    public GameAppState(GUIAppState guiAppState, Character character, Level level) {
+    public GameAppState(GUIAppState guiAppState, @NotNull List<PlayerInfo> playerInfos, Level level) {
+        this.playerInfos = playerInfos;
         this.guiAppState = guiAppState;
         this.worldAppState = new WorldAppState(bulletAppState);
-        this.character = character;
         this.level = level;
     }
     
@@ -97,6 +103,7 @@ public class GameAppState extends AbstractAppState implements ActionListener {
         
         initInput();
         
+        this.currentPlayer = playerInfos.get(0);
         stateManager.attach(bulletAppState);
         stateManager.attach(worldAppState);
     }
@@ -158,8 +165,18 @@ public class GameAppState extends AbstractAppState implements ActionListener {
             if(worldAppState.isInitialized() && characterAppState.isInitialized()) {
                 if(!started) {
                     startNanos = LocalTime.now().toNanoOfDay();
+                    currRound = 1;
                     started = true;
                 }
+                long checkpointNanos = LocalTime.now().toNanoOfDay() - startNanos;
+                LocalTime currTime = LocalTime.ofNanoOfDay(checkpointNanos);
+                guiAppState.getController().setTimeInGameHUD(currTime);
+                guiAppState.getController().setRoundInGameHUD(currRound);
+                List<PlayerInfo> ranking = new ArrayList<>(playerInfos);
+                Collections.sort(ranking, Comparator.comparing(PlayerInfo::getDrivenTime));
+                int index = ranking.indexOf(currentPlayer);
+                guiAppState.getController().setPlaceInGameHUD(index + 1);
+                
                 String value = worldAppState.insideCheckpointOrStart(characterAppState.getLocation());
                 if(value != null) {
                     String[] parts = value.split(";");
@@ -179,9 +196,7 @@ public class GameAppState extends AbstractAppState implements ActionListener {
                             } else {
                                 checkpointbb = checkpoints.get(currCheckpoint - 1);
                             }
-                            long checkpointNanos = LocalTime.now().toNanoOfDay() - startNanos;
-                            LocalTime chTime = LocalTime.ofNanoOfDay(checkpointNanos);
-                            System.out.println("TIME: " + chTime.format(DateTimeFormatter.ISO_TIME));
+                            System.out.println("TIME: " + currTime.format(DateTimeFormatter.ISO_TIME));
 
                             Vector3f spawnPoint = new Vector3f(checkpointbb.getCenter());
                             Vector2f spawnPoint2D = new Vector2f(spawnPoint.x, spawnPoint.z);
@@ -213,7 +228,7 @@ public class GameAppState extends AbstractAppState implements ActionListener {
             case DRIVEMODE:
                 guiAppState.goToScreen(GUIAppState.GAME_HUD);
                 stateManager.detach(characterAppState);
-                switch(character) {
+                switch(currentPlayer.getCharacter()) {
                     case ROCK:
                         characterAppState = new RockAppState(bulletAppState, INITHP, spawnPoint, spawnRotation, worldAppState.getTerrainNode());
                         break;
@@ -237,9 +252,11 @@ public class GameAppState extends AbstractAppState implements ActionListener {
         if(guiAppState.getCurrentScreenName().equals(GUIAppState.ESC_MENU)) {
             switch(currMode) {
                 case TRAPMODE:
+                    inputManager.setCursorVisible(true);
                     trapPlaceAppState.setEnabled(true);
                     break;
                 case DRIVEMODE:
+                    inputManager.setCursorVisible(false);
                     characterAppState.setEnabled(true);
                     break;
             }
@@ -257,6 +274,7 @@ public class GameAppState extends AbstractAppState implements ActionListener {
             }
             inputEnabled = false;
             bulletAppState.setEnabled(false);
+            inputManager.setCursorVisible(true);
             guiAppState.goToScreen(GUIAppState.ESC_MENU);
         }
     }
@@ -287,6 +305,14 @@ public class GameAppState extends AbstractAppState implements ActionListener {
     
     public enum Character { ROCK, CAR };
     
-    public enum Level { LEVEL1 };
+    public enum Level {
+        LEVEL1(1);
+        
+        private int roundCount = 1;
+        
+        private Level(int roundCount) {
+            this.roundCount = roundCount;
+        }
+    };
     
 }
