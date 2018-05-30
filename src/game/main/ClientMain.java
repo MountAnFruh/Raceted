@@ -27,10 +27,9 @@ public class ClientMain extends SimpleApplication {
         //GraphicsDevice device = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice();
         //settings.setFullscreen(device.isFullScreenSupported());
         
-        // DELETE AFTER TESTS
         settings.setFullscreen(true);
         settings.setResolution(1920, 1080);
-        //settings.setResolution(640, 480);
+//      settings.setResolution(640, 480);
         
         settings.setTitle("Raceted");
 

@@ -22,6 +22,7 @@ import com.jme3.scene.Node;
 import com.jme3.scene.shape.Sphere;
 import com.jme3.texture.Texture;
 import game.gui.GUIAppState;
+import game.main.appstates.WorldAppState;
 import game.test.DMGArt;
 
 /**
@@ -30,10 +31,13 @@ import game.test.DMGArt;
  */
 public class RockAppState extends CharacterAppState {
 
+    private static final int UPS_LIMITATION = 100;
     private static final float SPIKE_DMG_REDUCE = 3f;
     private static final float RADIUS = 3;
     
     private RigidBodyControl rockControl;
+    
+    private float deltaU = 0.0f;
 
     public RockAppState(BulletAppState bulletAppState, int maxHP, Vector3f spawnPoint, Quaternion spawnRotation, Node terrainNode) {
         this(null, bulletAppState, maxHP, spawnPoint, spawnRotation, terrainNode);
@@ -97,31 +101,53 @@ public class RockAppState extends CharacterAppState {
         rockControl.setGravity(GRAVITY.subtract(new Vector3f(0, 50f, 0)));
     }
 
+    private int ups = 0;
     @Override
     public void update(float tpf) {
         super.update(tpf);
-        float divisor = 80;
-        Vector3f speedVector = rockControl.getLinearVelocity();
-        Vector3f lookVector = new Vector3f(0, 0, 0);
-        if (left) {
-            lookVector.addLocal(cam.getLeft());                 /////////// LEFT  
-        }
-        if (right) {
-            lookVector.addLocal(cam.getLeft().negate());        /////////// RIGHT
-        }
-        if (forward) {
-            lookVector.addLocal(cam.getDirection());            /////////// UP
-        }
-        if (backward) {
-            lookVector.addLocal(cam.getDirection().negate());   /////////// DOWN 
-        }
-        lookVector = lookVector.normalize();
-        rockControl.applyImpulse(lookVector.divide(divisor).setY(0), new Vector3f(0, 2, 0));
-        if (jump) {
-            if (onGround && jumpCooldown <= 0) {
-                rockControl.applyImpulse(rockControl.getGravity().negate().divide(2), Vector3f.ZERO);
-                jumpCooldown = DEFAULT_JUMP_COOLDOWN;
+        deltaU += tpf * UPS_LIMITATION;
+        if(deltaU >= 1) {
+            float divisor = 4.0f;
+            Vector3f brakeChange = new Vector3f(), impulsVector;
+            Vector3f speedVector = rockControl.getLinearVelocity();
+            Vector3f lookVector = new Vector3f(0, 0, 0);
+            if (left) {
+                lookVector.addLocal(cam.getLeft());                 /////////// LEFT
             }
+            if (right) {
+                lookVector.addLocal(cam.getLeft().negate());        /////////// RIGHT
+            }
+            if (forward) {
+                lookVector.addLocal(cam.getDirection());            /////////// UP
+            }
+            if (backward) {
+                lookVector.addLocal(cam.getDirection().negate());   /////////// DOWN 
+            }
+            impulsVector = lookVector.normalize().divide(divisor);
+            if(speedVector.x != 0) {
+                if(speedVector.x < 0 && impulsVector.x > 0) {
+                    brakeChange.x = -speedVector.x / 600f;
+                } else if(speedVector.x > 0 && impulsVector.x < 0) {
+                    brakeChange.x = -speedVector.x / 600f;
+                }
+            }
+            if(speedVector.z != 0) {
+                if(speedVector.z < 0 && impulsVector.z > 0) {
+                    brakeChange.z = -speedVector.z / 600f;
+                } else if(speedVector.z > 0 && impulsVector.z < 0) {
+                    brakeChange.z = -speedVector.z / 600f;
+                }
+            }
+            rockControl.applyImpulse(impulsVector.add(brakeChange).setY(0), new Vector3f(0, 1, 0));
+            if (jump) {
+                if (onGround && jumpCooldown <= 0) {
+                    rockControl.applyImpulse(rockControl.getGravity().negate().divide(2), Vector3f.ZERO);
+                    jumpCooldown = DEFAULT_JUMP_COOLDOWN;
+                }
+            }
+            
+            deltaU--;
+            ups++;
         }
     }
 
