@@ -139,12 +139,6 @@ public class RockAppState extends CharacterAppState {
                 }
             }
             rockControl.applyImpulse(impulsVector.add(brakeChange).setY(0), new Vector3f(0, 1, 0));
-            if (jump) {
-                if (onGround && jumpCooldown <= 0) {
-                    rockControl.applyImpulse(rockControl.getGravity().negate().divide(2), Vector3f.ZERO);
-                    jumpCooldown = DEFAULT_JUMP_COOLDOWN;
-                }
-            }
             
             deltaU--;
             ups++;

@@ -9,13 +9,18 @@ import com.jme3.app.SimpleApplication;
 import de.lessvoid.nifty.builder.ImageBuilder;
 import de.lessvoid.nifty.builder.LayerBuilder;
 import de.lessvoid.nifty.builder.PanelBuilder;
+import de.lessvoid.nifty.builder.TextBuilder;
 import de.lessvoid.nifty.screen.ScreenController;
+import static game.gui.ESCMenuBuilder.PLAYER_TEXT;
+import static game.gui.GameHUDBuilder.PLAYER_TEXT;
 
 /**
  *
  * @author rober
  */
 public class TrapPlaceHUDBuilder extends AbstractScreenBuilder {
+    
+    public static final String PLAYER_TEXT = "player_text";
     
     public TrapPlaceHUDBuilder(String string, SimpleApplication app, ScreenController controller) {
         super(string, app, controller);
@@ -205,6 +210,67 @@ public class TrapPlaceHUDBuilder extends AbstractScreenBuilder {
 
                     }
                 });
+                
+                panel(new PanelBuilder("panel_right") {
+                    {
+                        childLayoutVertical();
+                        //backgroundColor("#00f8");
+                        height("100%");
+                        width("33%");
+
+                        panel(new PanelBuilder("panel_top_right") {
+                            {
+                                childLayoutCenter();
+                                //backgroundColor("#44f8");
+                                height("50%");
+                                width("100%");
+
+                                // add image
+                                image(new ImageBuilder() {
+                                    {
+                                        filename("Textures/Images/raceted_icon.png");
+                                        valignTop();
+                                        alignRight();
+                                    }
+                                });
+                                
+                                //Passende Position finden
+                                text(new TextBuilder(PLAYER_TEXT) {
+                                    {
+                                        text("Spieler 0\n");
+                                        font("Interface/Fonts/ErasBoldITC.fnt");
+                                        valignTop();
+                                        alignLeft();
+                                        height("50%");
+                                        width("30%");
+                                    }
+                                });
+
+                            }
+                        });
+
+                        panel(new PanelBuilder("panel_bottom_right") {
+                            {
+                                childLayoutCenter();
+                                //backgroundColor("#44f8");
+                                height("50%");
+                                width("100%");
+                                valignBottom();
+                                alignRight();
+
+                                // add image
+                                image(new ImageBuilder() {
+                                    {
+                                        filename("Textures/Images/raceted_icon.png");
+                                        valignBottom();
+                                        alignRight();
+                                    }
+                                });
+
+                            }
+                        });
+                    }
+                }); // panel added
             }
         });
 

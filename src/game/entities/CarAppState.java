@@ -231,14 +231,18 @@ public class CarAppState extends CharacterAppState {
     
     @Override
     public void update(float tpf) {
-        if (jump) {
-            if (/*onGround &&*/ jumpCooldown <= 0) {
-                carControl.applyImpulse(carControl.getGravity().negate().divide(2), Vector3f.ZERO);
-                jumpCooldown = DEFAULT_JUMP_COOLDOWN;
-            }
-        }
+        super.update(tpf);
+        steer = 0;
+        if(left) steer++;
+        if(right) steer--;
+        accelerationValue = 0;
+        if(forward) accelerationValue += 2000;
+        if(backward)
+            if(carControl.getCurrentVehicleSpeedKmHour() >= 0)
+                carControl.brake(40f);
         steeringValue = steer * 0.5f * FastMath.pow(((MAX_SPEED - carControl.getCurrentVehicleSpeedKmHour()) / MAX_SPEED) , 2);
         carControl.steer(steeringValue);
+        carControl.accelerate(accelerationValue * ((MAX_SPEED - carControl.getCurrentVehicleSpeedKmHour()) / MAX_SPEED));
     }
 
     public VehicleControl getControl() {
@@ -250,25 +254,6 @@ public class CarAppState extends CharacterAppState {
         super.onAction(name, isPressed, tpf);
         if(this.isEnabled()) {
             switch(name) {
-                case MAPPING_LEFT:
-                    if(isPressed) steer++; else steer--;
-                    break;
-                case MAPPING_RIGHT:
-                    if(isPressed) steer--; else steer++;
-                    break;
-                case MAPPING_UP:
-                    if (isPressed) {
-                        accelerationValue += 2000;
-                    }
-                    else {
-                        accelerationValue -= 2000;
-                    }
-                    break;
-                case MAPPING_DOWN:
-                    if (isPressed && carControl.getCurrentVehicleSpeedKmHour() >= 0) {
-                        carControl.brake(40f);
-                    }
-                    break;
                 case MAPPING_RESET:
                     if (isPressed) {
                         carControl.setPhysicsLocation(spawnPoint);
@@ -280,7 +265,6 @@ public class CarAppState extends CharacterAppState {
                     break;
                 default: break;
             }
-            carControl.accelerate(accelerationValue * ((MAX_SPEED - carControl.getCurrentVehicleSpeedKmHour()) / MAX_SPEED));
     //        System.out.println(carControl.getCurrentVehicleSpeedKmHour() + ", " + accelerationValue + ", " + (MAX_SPEED - carControl.getCurrentVehicleSpeedKmHour()));
         }
     }

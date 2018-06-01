@@ -36,8 +36,9 @@ import java.util.List;
  */
 public class GUIScreenController implements ScreenController {
 
-    private final GameAppState.Level level = GameAppState.Level.LEVEL1;
-    private final int playerCount = 1;
+    private static final GameAppState.Level LEVEL = GameAppState.Level.LEVEL1;
+    private static final int PLAYERCOUNT = 2;
+    
     private final Nifty nifty;
     private final AssetManager assetManager;
     private final AppStateManager stateManager;
@@ -47,7 +48,7 @@ public class GUIScreenController implements ScreenController {
     private GameAppState gameAppState;
     private AudioNode audioSource;
     private SimpleApplication app;
-    private InitTestTrap trapapp;
+    
     public final Color bgColor = new Color(255, 16, 0, 50);
     private final String panelname = "panel_left_center_2";
 
@@ -77,10 +78,12 @@ public class GUIScreenController implements ScreenController {
     }
 
     public void quitGame() {
+        setCurrentPlayerNumber(0);
         app.stop();
     }
 
     public void startGame() {
+        setCurrentPlayerNumber(playerInfos.size() + 1);
         guiAppState.goToScreen(GUIAppState.CHARACTER_CHOOSER);
     }
 
@@ -93,6 +96,9 @@ public class GUIScreenController implements ScreenController {
 //        tester.close();
 //        mainScreen.goToScreen("start");
 //        quitGame();
+        stateManager.detach(gameAppState);
+        gameAppState = null;
+        playerInfos.clear();
         guiAppState.goToScreen(GUIAppState.START_SCREEN);
     }
 
@@ -121,50 +127,44 @@ public class GUIScreenController implements ScreenController {
 //    }
 
     public void trap1() {
-        if (trapapp != null) {
-            trapapp.getTrapPlaceAppState().setTrap(1);
+        gameAppState.setTrap(1);
 
-            Element e = nifty.getScreen("trap_chooser").findElementById(panelname + "_1");
-            System.out.println(e.getId());
-            e.getRenderer(PanelRenderer.class).setBackgroundColor(bgColor);
+        Element e = nifty.getScreen("trap_chooser").findElementById(panelname + "_1");
+        System.out.println(e.getId());
+        e.getRenderer(PanelRenderer.class).setBackgroundColor(bgColor);
 
-            e = nifty.getScreen("trap_chooser").findElementById(panelname + "_3");
-            e.getRenderer(PanelRenderer.class).setBackgroundColor(null);
+        e = nifty.getScreen("trap_chooser").findElementById(panelname + "_3");
+        e.getRenderer(PanelRenderer.class).setBackgroundColor(null);
 
-            e = nifty.getScreen("trap_chooser").findElementById(panelname + "_2");
-            e.getRenderer(PanelRenderer.class).setBackgroundColor(null);
-        }
+        e = nifty.getScreen("trap_chooser").findElementById(panelname + "_2");
+        e.getRenderer(PanelRenderer.class).setBackgroundColor(null);
     }
 
     public void trap2() {
-        if (trapapp != null) {
-            trapapp.getTrapPlaceAppState().setTrap(2);
+        gameAppState.setTrap(2);
 
-            Element e = nifty.getScreen("trap_chooser").findElementById(panelname + "_2");
-            System.out.println(e.getId());
-            e.getRenderer(PanelRenderer.class).setBackgroundColor(bgColor);
+        Element e = nifty.getScreen("trap_chooser").findElementById(panelname + "_2");
+        System.out.println(e.getId());
+        e.getRenderer(PanelRenderer.class).setBackgroundColor(bgColor);
 
-            e = nifty.getScreen("trap_chooser").findElementById(panelname + "_1");
-            e.getRenderer(PanelRenderer.class).setBackgroundColor(null);
+        e = nifty.getScreen("trap_chooser").findElementById(panelname + "_1");
+        e.getRenderer(PanelRenderer.class).setBackgroundColor(null);
 
-            e = nifty.getScreen("trap_chooser").findElementById(panelname + "_3");
-            e.getRenderer(PanelRenderer.class).setBackgroundColor(null);
-        }
+        e = nifty.getScreen("trap_chooser").findElementById(panelname + "_3");
+        e.getRenderer(PanelRenderer.class).setBackgroundColor(null);
     }
 
     public void trap3() {
-        if (trapapp != null) {
-            trapapp.getTrapPlaceAppState().setTrap(3);
+        gameAppState.setTrap(3);
 
-            Element e = nifty.getScreen("trap_chooser").findElementById(panelname + "_3");
-            e.getRenderer(PanelRenderer.class).setBackgroundColor(bgColor);
+        Element e = nifty.getScreen("trap_chooser").findElementById(panelname + "_3");
+        e.getRenderer(PanelRenderer.class).setBackgroundColor(bgColor);
 
-            e = nifty.getScreen("trap_chooser").findElementById(panelname + "_1");
-            e.getRenderer(PanelRenderer.class).setBackgroundColor(null);
+        e = nifty.getScreen("trap_chooser").findElementById(panelname + "_1");
+        e.getRenderer(PanelRenderer.class).setBackgroundColor(null);
 
-            e = nifty.getScreen("trap_chooser").findElementById(panelname + "_2");
-            e.getRenderer(PanelRenderer.class).setBackgroundColor(null);
-        }
+        e = nifty.getScreen("trap_chooser").findElementById(panelname + "_2");
+        e.getRenderer(PanelRenderer.class).setBackgroundColor(null);
     }
     
     public void setTimeInGameHUD(LocalTime time) {
@@ -181,16 +181,29 @@ public class GUIScreenController implements ScreenController {
         Element e = nifty.getScreen(GUIAppState.GAME_HUD).findElementById(GameHUDBuilder.PLACE_TEXT);
         e.getRenderer(TextRenderer.class).setText("Platz " + place + "\n");
     }
+    
+    public void setCurrentPlayerNumber(int number) {
+        String text = "Spieler " + number + "\n";
+        Element e = nifty.getScreen(GUIAppState.ESC_MENU).findElementById(ESCMenuBuilder.PLAYER_TEXT);
+        if(e != null) e.getRenderer(TextRenderer.class).setText(text);
+        e = nifty.getScreen(GUIAppState.GAME_HUD).findElementById(GameHUDBuilder.PLAYER_TEXT);
+        if(e != null) e.getRenderer(TextRenderer.class).setText(text);
+        e = nifty.getScreen(GUIAppState.TRAP_PLACE_HUD).findElementById(TrapPlaceHUDBuilder.PLAYER_TEXT);
+        if(e != null) e.getRenderer(TextRenderer.class).setText(text);
+        e = nifty.getScreen(GUIAppState.CHARACTER_CHOOSER).findElementById(ChooseBuilder.PLAYER_TEXT);
+        if(e != null) e.getRenderer(TextRenderer.class).setText(text);
+    }
 
     public void playwith(GameAppState.Character character) {
         PlayerInfo playerInfo = new PlayerInfo();
         playerInfo.setCharacter(character);
         playerInfos.add(playerInfo);
-        if(playerInfos.size() >= playerCount) {
-            trapapp = null;
+        if(playerInfos.size() >= PLAYERCOUNT) {
             audioSource.stop();
-            gameAppState = new GameAppState(guiAppState, playerInfos, level);
+            gameAppState = new GameAppState(guiAppState, playerInfos, LEVEL);
             stateManager.attach(gameAppState);
+        } else {
+            setCurrentPlayerNumber(playerInfos.size() + 1);
         }
     }
 

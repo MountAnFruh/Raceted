@@ -16,7 +16,7 @@ public class PlayerInfo {
     
     private Character character;
     private int points = 0;
-    private LocalTime drivenTime = LocalTime.of(0, 0, 0, 0);
+    private LocalTime drivenTime = LocalTime.MAX;
     private boolean died = false;
  
     public PlayerInfo() {

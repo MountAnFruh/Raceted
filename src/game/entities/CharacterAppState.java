@@ -105,11 +105,11 @@ public abstract class CharacterAppState extends AbstractAppState implements Acti
         guiNode = simpleApp.getGuiNode();
         rootNode = simpleApp.getRootNode();
         
-        initInput();
-        
         initPlayer();
         
         initCamera();
+        
+        initInput();
     }
     
     protected void initInput() {
@@ -140,7 +140,7 @@ public abstract class CharacterAppState extends AbstractAppState implements Acti
     @Override
     public void update(float tpf) {
         //TODO: onGround fixen
-        onGround = terrainNode.collideWith(geometry.getWorldBound(), new CollisionResults()) != 0;
+        // onGround = terrainNode.collideWith(geometry.getWorldBound(), new CollisionResults()) != 0;
         if (explosion != null) {
             explosion.updateExplotion(tpf);
         }

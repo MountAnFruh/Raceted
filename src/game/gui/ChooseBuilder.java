@@ -6,19 +6,21 @@
 package game.gui;
 
 import com.jme3.app.SimpleApplication;
-import de.lessvoid.nifty.Nifty;
 import de.lessvoid.nifty.builder.ImageBuilder;
 import de.lessvoid.nifty.builder.LayerBuilder;
 import de.lessvoid.nifty.builder.PanelBuilder;
-import de.lessvoid.nifty.builder.ScreenBuilder;
+import de.lessvoid.nifty.builder.TextBuilder;
 import de.lessvoid.nifty.controls.button.builder.ButtonBuilder;
 import de.lessvoid.nifty.screen.ScreenController;
+import static game.gui.GameHUDBuilder.PLAYER_TEXT;
 
 /**
  *
  * @author Kevin
  */
 public class ChooseBuilder extends AbstractScreenBuilder {
+    
+    public static final String PLAYER_TEXT = "player_text";
 
     public ChooseBuilder(String string, SimpleApplication app, ScreenController controller) {
         super(string, app, controller);
@@ -74,6 +76,18 @@ public class ChooseBuilder extends AbstractScreenBuilder {
                         height("50%");
                         width("75%");
                         // add text
+                        
+                        //Passende Position finden
+                        text(new TextBuilder(PLAYER_TEXT) {
+                            {
+                                text("Spieler 0\n");
+                                font("Interface/Fonts/ErasBoldITC.fnt");
+                                valignTop();
+                                alignLeft();
+                                height("50%");
+                                width("30%");
+                            }
+                        });
 
                         panel(new PanelBuilder("panel_center_left") {
                             {
@@ -91,7 +105,6 @@ public class ChooseBuilder extends AbstractScreenBuilder {
                                         width("50%");
                                         visibleToMouse(true);
                                         interactOnClick("playwithCart()");
-
                                     }
                                 });
 

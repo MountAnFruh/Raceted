@@ -161,55 +161,85 @@ public class GameAppState extends AbstractAppState implements ActionListener {
             loadLevel();
             terrainInitialized = true;
         }
-        if(currMode == Mode.DRIVEMODE) {
-            if(worldAppState.isInitialized() && characterAppState.isInitialized()) {
-                if(!started) {
-                    startNanos = LocalTime.now().toNanoOfDay();
-                    currRound = 1;
-                    started = true;
-                }
-                long checkpointNanos = LocalTime.now().toNanoOfDay() - startNanos;
-                LocalTime currTime = LocalTime.ofNanoOfDay(checkpointNanos);
-                guiAppState.getController().setTimeInGameHUD(currTime);
-                guiAppState.getController().setRoundInGameHUD(currRound);
-                List<PlayerInfo> ranking = new ArrayList<>(playerInfos);
-                Collections.sort(ranking, Comparator.comparing(PlayerInfo::getDrivenTime));
-                int index = ranking.indexOf(currentPlayer);
-                guiAppState.getController().setPlaceInGameHUD(index + 1);
-                
-                String value = worldAppState.insideCheckpointOrStart(characterAppState.getLocation());
-                if(value != null) {
-                    String[] parts = value.split(";");
-                    String mapName = parts[0];
-                    int checkpoint = Integer.parseInt(parts[1]);
-                    List<BoundingBox> checkpoints = worldAppState.getCheckpoints(mapName);
-                    int checkpointCount = checkpoints.size() + 1;
-                    if(mapName.equals(level.name())) {
-                        int nextCheckpoint = (currCheckpoint + 1) % checkpointCount;
-                        if(checkpoint == nextCheckpoint) {
-                            currCheckpoint = nextCheckpoint;
-                            BoundingBox checkpointbb;
-                            if(currCheckpoint == 0) {
-                                currRound++;
-                                System.out.println("*** NEW ROUND: " + currRound);
-                                checkpointbb = worldAppState.getStart(mapName);
-                            } else {
-                                checkpointbb = checkpoints.get(currCheckpoint - 1);
+        if(worldAppState.isInitialized()) {
+            guiAppState.getController().setCurrentPlayerNumber(getCurrentPlayerNumber());
+            if(currMode == Mode.DRIVEMODE) {
+                if(characterAppState.isInitialized()) {
+                    if(!started) {
+                        startNanos = LocalTime.now().toNanoOfDay();
+                        currRound = 1;
+                        started = true;
+                    }
+                    long checkpointNanos = LocalTime.now().toNanoOfDay() - startNanos;
+                    LocalTime currTime = LocalTime.ofNanoOfDay(checkpointNanos);
+                    currentPlayer.setDrivenTime(currTime);
+                    guiAppState.getController().setTimeInGameHUD(currTime);
+                    guiAppState.getController().setRoundInGameHUD(currRound);
+                    List<PlayerInfo> ranking = new ArrayList<>(playerInfos);
+                    Collections.sort(ranking, Comparator.comparing(PlayerInfo::getDrivenTime));
+                    int index = ranking.indexOf(currentPlayer);
+                    guiAppState.getController().setPlaceInGameHUD(index + 1);
+
+                    String value = worldAppState.insideCheckpointOrStart(characterAppState.getLocation());
+                    if(value != null) {
+                        String[] parts = value.split(";");
+                        String mapName = parts[0];
+                        int checkpoint = Integer.parseInt(parts[1]);
+                        List<BoundingBox> checkpoints = worldAppState.getCheckpoints(mapName);
+                        int checkpointCount = checkpoints.size() + 1;
+                        if(mapName.equals(level.name())) {
+                            int nextCheckpoint = (currCheckpoint + 1) % checkpointCount;
+                            if(checkpoint == nextCheckpoint) {
+                                currCheckpoint = nextCheckpoint;
+                                BoundingBox checkpointbb;
+                                if(currCheckpoint == 0) {
+                                    currRound++;
+                                    System.out.println("*** NEW ROUND: " + currRound);
+                                    if(currRound >= level.getRoundCount()) {
+                                        changeNextPlayerOrMode();
+                                        return;
+                                    }
+                                    checkpointbb = worldAppState.getStart(mapName);
+                                } else {
+                                    checkpointbb = checkpoints.get(currCheckpoint - 1);
+                                }
+                                System.out.println("TIME: " + currTime.format(DateTimeFormatter.ISO_TIME));
+
+                                Vector3f spawnPoint = new Vector3f(checkpointbb.getCenter());
+                                Vector2f spawnPoint2D = new Vector2f(spawnPoint.x, spawnPoint.z);
+                                float height = worldAppState.getHeight(spawnPoint2D);
+                                spawnPoint.setY(height);
+                                characterAppState.setSpawnPoint(spawnPoint);
+                                characterAppState.setSpawnRotation(characterAppState.getRotation());
+
                             }
-                            System.out.println("TIME: " + currTime.format(DateTimeFormatter.ISO_TIME));
-
-                            Vector3f spawnPoint = new Vector3f(checkpointbb.getCenter());
-                            Vector2f spawnPoint2D = new Vector2f(spawnPoint.x, spawnPoint.z);
-                            float height = worldAppState.getHeight(spawnPoint2D);
-                            spawnPoint.setY(height);
-                            characterAppState.setSpawnPoint(spawnPoint);
-                            characterAppState.setSpawnRotation(characterAppState.getRotation());
-
                         }
                     }
                 }
+            } else {
+
             }
         }
+    }
+    
+    public void changeNextPlayerOrMode() {
+        int currPlayerIndex = getCurrentPlayerNumber() - 1;
+        
+        // NEXT PLAYER OR FIRST PLAYER AGAIN
+        PlayerInfo nextPlayer = playerInfos.get(currPlayerIndex + 1 >= playerInfos.size() ? 0 : currPlayerIndex + 1);
+        currentPlayer = nextPlayer;
+        
+        if(currPlayerIndex >= playerInfos.size() - 1) {
+            // NEXT MODE
+            if(currMode == Mode.DRIVEMODE) {
+                changeMode(Mode.TRAPMODE);
+            } else if(currMode == Mode.TRAPMODE) {
+                changeMode(Mode.DRIVEMODE);
+            }
+        } else {
+            changeMode(currMode);
+        }
+        started = false;
     }
     
     private void changeMode(Mode mode) {
@@ -240,6 +270,10 @@ public class GameAppState extends AbstractAppState implements ActionListener {
                 stateManager.detach(trapPlaceAppState);
                 break;
         }
+    }
+    
+    public void setTrap(int id) {
+        trapPlaceAppState.setTrap(id);
     }
     
     public void toggleHUD() {
@@ -300,6 +334,19 @@ public class GameAppState extends AbstractAppState implements ActionListener {
             this.toggleHUD();
         }
     }
+
+    public PlayerInfo getCurrentPlayer() {
+        return currentPlayer;
+    }
+    
+    public int getCurrentPlayerNumber() {
+        for(int i = 1;i <= playerInfos.size();i++) {
+            if(playerInfos.get(i-1) == currentPlayer) {
+                return i;
+            }
+        }
+        return -1;
+    }
     
     public enum Mode { TRAPMODE, DRIVEMODE};
     
@@ -312,6 +359,10 @@ public class GameAppState extends AbstractAppState implements ActionListener {
         
         private Level(int roundCount) {
             this.roundCount = roundCount;
+        }
+
+        public int getRoundCount() {
+            return roundCount;
         }
     };
     

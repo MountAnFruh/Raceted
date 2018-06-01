@@ -21,6 +21,7 @@ public class GameHUDBuilder extends AbstractScreenBuilder {
     public static final String PLACE_TEXT = "place_text";
     public static final String TIME_TEXT = "time_text";
     public static final String ROUND_TEXT = "round_text";
+    public static final String PLAYER_TEXT = "player_text";
     
     public GameHUDBuilder(String string, SimpleApplication app, ScreenController controller) {
         super(string, app, controller);
@@ -122,6 +123,18 @@ public class GameHUDBuilder extends AbstractScreenBuilder {
                                         filename("Textures/Images/raceted_icon.png");
                                         valignTop();
                                         alignRight();
+                                    }
+                                });
+                                
+                                //Passende Position finden
+                                text(new TextBuilder(PLAYER_TEXT) {
+                                    {
+                                        text("Spieler 0\n");
+                                        font("Interface/Fonts/ErasBoldITC.fnt");
+                                        valignTop();
+                                        alignLeft();
+                                        height("50%");
+                                        width("30%");
                                     }
                                 });
 
