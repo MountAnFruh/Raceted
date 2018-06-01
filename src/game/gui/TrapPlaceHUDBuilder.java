@@ -21,6 +21,8 @@ import static game.gui.GameHUDBuilder.PLAYER_TEXT;
 public class TrapPlaceHUDBuilder extends AbstractScreenBuilder {
     
     public static final String PLAYER_TEXT = "player_text";
+    public static final String PLACE_POINTS_TEXT = "place_points_text";
+    public static final String POINTS_TEXT = "points_text";
     
     public TrapPlaceHUDBuilder(String string, SimpleApplication app, ScreenController controller) {
         super(string, app, controller);
@@ -220,7 +222,8 @@ public class TrapPlaceHUDBuilder extends AbstractScreenBuilder {
 
                         panel(new PanelBuilder("panel_top_right") {
                             {
-                                childLayoutCenter();
+                                //childLayoutCenter();
+                                childLayoutVertical();
                                 //backgroundColor("#44f8");
                                 height("50%");
                                 width("100%");
@@ -238,6 +241,28 @@ public class TrapPlaceHUDBuilder extends AbstractScreenBuilder {
                                 text(new TextBuilder(PLAYER_TEXT) {
                                     {
                                         text("Spieler 0\n");
+                                        font("Interface/Fonts/ErasBoldITC.fnt");
+                                        valignTop();
+                                        alignLeft();
+                                        height("50%");
+                                        width("30%");
+                                    }
+                                });
+                                //Passende Position finden
+                                text(new TextBuilder(PLACE_POINTS_TEXT) {
+                                    {
+                                        text("Platz 0\n");
+                                        font("Interface/Fonts/ErasBoldITC.fnt");
+                                        valignTop();
+                                        alignLeft();
+                                        height("50%");
+                                        width("30%");
+                                    }
+                                });
+                                //Passende Position finden
+                                text(new TextBuilder(POINTS_TEXT) {
+                                    {
+                                        text("Punkte: 000000\n");
                                         font("Interface/Fonts/ErasBoldITC.fnt");
                                         valignTop();
                                         alignLeft();

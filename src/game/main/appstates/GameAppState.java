@@ -163,23 +163,36 @@ public class GameAppState extends AbstractAppState implements ActionListener {
         }
         if(worldAppState.isInitialized()) {
             guiAppState.getController().setCurrentPlayerNumber(getCurrentPlayerNumber());
+            guiAppState.getController().setPointsInGameHUDAndTrapPlaceHUD(currentPlayer.getPoints());
+            List<PlayerInfo> pointsRanking = new ArrayList<>(playerInfos);
+            Collections.sort(pointsRanking, Comparator.comparing(PlayerInfo::getPoints));
+            int pointsIndex = pointsRanking.indexOf(currentPlayer);
+            guiAppState.getController().setPlacePointsInGameHUDAndTrapPlaceHUD(pointsIndex + 1);
             if(currMode == Mode.DRIVEMODE) {
                 if(characterAppState.isInitialized()) {
                     if(!started) {
                         startNanos = LocalTime.now().toNanoOfDay();
                         currRound = 1;
+                        currCheckpoint = 0;
                         started = true;
                     }
                     long checkpointNanos = LocalTime.now().toNanoOfDay() - startNanos;
                     LocalTime currTime = LocalTime.ofNanoOfDay(checkpointNanos);
                     currentPlayer.setDrivenTime(currTime);
-                    guiAppState.getController().setTimeInGameHUD(currTime);
+                    guiAppState.getController().setTimeLevelInGameHUD(currTime);
                     guiAppState.getController().setRoundInGameHUD(currRound);
                     List<PlayerInfo> ranking = new ArrayList<>(playerInfos);
                     Collections.sort(ranking, Comparator.comparing(PlayerInfo::getDrivenTime));
                     int index = ranking.indexOf(currentPlayer);
-                    guiAppState.getController().setPlaceInGameHUD(index + 1);
+                    guiAppState.getController().setPlaceTimeInGameHUD(index + 1);
 
+                    if(worldAppState.outsideLevel(level.name(), characterAppState.getLocation())) {
+                        System.out.println("RACETED!"); // TODO: Irgendeinen Text am Screen anzeigen lassen
+                        currentPlayer.setDied(true);
+                        changeNextPlayerOrMode();
+                        return;
+                    }
+                    
                     String value = worldAppState.insideCheckpointOrStart(characterAppState.getLocation());
                     if(value != null) {
                         String[] parts = value.split(";");

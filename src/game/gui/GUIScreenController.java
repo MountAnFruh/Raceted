@@ -167,8 +167,8 @@ public class GUIScreenController implements ScreenController {
         e.getRenderer(PanelRenderer.class).setBackgroundColor(null);
     }
     
-    public void setTimeInGameHUD(LocalTime time) {
-        Element e = nifty.getScreen(GUIAppState.GAME_HUD).findElementById(GameHUDBuilder.TIME_TEXT);
+    public void setTimeLevelInGameHUD(LocalTime time) {
+        Element e = nifty.getScreen(GUIAppState.GAME_HUD).findElementById(GameHUDBuilder.TIME_LEVEL_TEXT);
         e.getRenderer(TextRenderer.class).setText(time.format(DateTimeFormatter.ofPattern("mm:ss.SSS")) + "\n");
     }
     
@@ -177,9 +177,23 @@ public class GUIScreenController implements ScreenController {
         e.getRenderer(TextRenderer.class).setText("Runde " + round + "\n");
     }
     
-    public void setPlaceInGameHUD(int place) {
-        Element e = nifty.getScreen(GUIAppState.GAME_HUD).findElementById(GameHUDBuilder.PLACE_TEXT);
+    public void setPlaceTimeInGameHUD(int place) {
+        Element e = nifty.getScreen(GUIAppState.GAME_HUD).findElementById(GameHUDBuilder.PLACE_TIME_TEXT);
         e.getRenderer(TextRenderer.class).setText("Platz " + place + "\n");
+    }
+    
+    public void setPlacePointsInGameHUDAndTrapPlaceHUD(int place) {
+        Element e = nifty.getScreen(GUIAppState.GAME_HUD).findElementById(GameHUDBuilder.PLACE_POINTS_TEXT);
+        e.getRenderer(TextRenderer.class).setText("Platz " + place + "\n");
+        e = nifty.getScreen(GUIAppState.TRAP_PLACE_HUD).findElementById(TrapPlaceHUDBuilder.PLACE_POINTS_TEXT);
+        e.getRenderer(TextRenderer.class).setText("Platz " + place + "\n");
+    }
+    
+    public void setPointsInGameHUDAndTrapPlaceHUD(int points) {
+        Element e = nifty.getScreen(GUIAppState.GAME_HUD).findElementById(GameHUDBuilder.POINTS_TEXT);
+        e.getRenderer(TextRenderer.class).setText("Punkte: " + String.format("%06d", points) + "\n");
+        e = nifty.getScreen(GUIAppState.TRAP_PLACE_HUD).findElementById(TrapPlaceHUDBuilder.POINTS_TEXT);
+        e.getRenderer(TextRenderer.class).setText("Punkte: " + String.format("%06d", points) + "\n");
     }
     
     public void setCurrentPlayerNumber(int number) {

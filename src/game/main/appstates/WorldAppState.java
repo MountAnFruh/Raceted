@@ -168,11 +168,6 @@ public class WorldAppState extends AbstractAppState {
         } catch (Exception e) {
             e.printStackTrace();
         }
-        
-        if(mappingText != null) {
-            Image mappingImg = mappingText.getImage();
-            loadMapping(name, moved, scale, mappingImg);
-        }
 
         /*
          * Here we create the actual terrain. The tiles will be 65x65, and the total size of the
@@ -199,6 +194,11 @@ public class WorldAppState extends AbstractAppState {
         terrain.setLocalScale(scale);
         setTranslation(name, moved);
         
+        if(mappingText != null) {
+            Image mappingImg = mappingText.getImage();
+            loadMapping(name, moved, scale, mappingImg);
+        }
+        
         if(bulletAppState != null) {
             landscapeControl = new RigidBodyControl(0.0f);
             terrain.addControl(landscapeControl);
@@ -209,6 +209,8 @@ public class WorldAppState extends AbstractAppState {
     private void loadMapping(String name, Vector3f moved, Vector3f scale, Image mappingImage) {
         Map<ColorRGBA,List<Vector3f>> boundCheckpoints = null;
         List<Vector3f> boundStart = null;
+        float minRouteHeight = Float.MAX_VALUE;
+        float outsideHeight = Float.MAX_VALUE;
         for(int i = 0;i < mappingImage.getWidth();i++) {
             for(int j = 0;j < mappingImage.getHeight();j++) {
                 ColorRGBA color = new ColorRGBA();
@@ -255,8 +257,24 @@ public class WorldAppState extends AbstractAppState {
                     if(coordinate.y > maxZ) maxZ = coordinate.y;
                     boundStart.get(0).set(new Vector3f(minX,minY,minZ));
                     boundStart.get(1).set(new Vector3f(maxX, maxY, maxZ));
-                } else {
-                    // TODO: Andere Markierungen hinzufügen
+                } else if(color.r == 1 && color.g == 1 && color.b == 0) {
+                    // Ist eine Strecken-Markierung
+                    TerrainQuad terrainQuad = (TerrainQuad) terrainNode.getChild(name);
+                    coordinate = coordinate.multLocal(new Vector2f(scale.x, scale.z));
+                    coordinate = coordinate.add(new Vector2f(moved.x, moved.z));
+                    float height = terrainQuad.getHeight(coordinate);
+                    if(height < minRouteHeight) {
+                        minRouteHeight = height;
+                    }
+                } else if(color.r == 1 && color.g == 0 && color.b == 0) {
+                    // Ist eine Outside-Strecken-Markierung
+                    TerrainQuad terrainQuad = (TerrainQuad) terrainNode.getChild(name);
+                    coordinate = coordinate.multLocal(new Vector2f(scale.x, scale.z));
+                    coordinate = coordinate.add(new Vector2f(moved.x, moved.z));
+                    float height = terrainQuad.getHeight(coordinate);
+                    if(height < outsideHeight) {
+                        outsideHeight = height;
+                    }
                 }
             }
         }
@@ -283,6 +301,8 @@ public class WorldAppState extends AbstractAppState {
             BoundingBox boundBox = new BoundingBox(min,max);
             mapData.setStart(boundBox);
         }
+        mapData.setMinRouteHeight(minRouteHeight);
+        mapData.setOutsideHeight(outsideHeight);
         mapDatas.put(name, mapData);
     }
     
@@ -327,6 +347,24 @@ public class WorldAppState extends AbstractAppState {
             }
         }
         return null;
+    }
+    
+    /**
+     * Gibt zurück, ob der Vektor außerhalb von dem Level ist.
+     * @param name Der Name vom Terrain
+     * @param location Position relativ zu (0,0,0)
+     * @return True wenn diese Position außerhalb vom Level ist
+     */
+    public boolean outsideLevel(String name, Vector3f location) {
+        MapData mapData = mapDatas.get(name);
+        if(mapData != null) {
+            float minRouteHeight = mapData.getMinRouteHeight();
+            float outsideHeight = mapData.getOutsideHeight();
+            float outside = minRouteHeight - (minRouteHeight - outsideHeight)/2;
+            System.out.println(location + " " + outside);
+            return location.getY() < outside;
+        }
+        throw new RuntimeException("Terrain \"" + name + "\" existiert noch nicht!");
     }
     
     /**

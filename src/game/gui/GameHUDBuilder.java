@@ -18,10 +18,12 @@ import de.lessvoid.nifty.screen.ScreenController;
  */
 public class GameHUDBuilder extends AbstractScreenBuilder {
     
-    public static final String PLACE_TEXT = "place_text";
-    public static final String TIME_TEXT = "time_text";
+    public static final String PLACE_TIME_TEXT = "place_time_text";
+    public static final String TIME_LEVEL_TEXT = "time_level_text";
     public static final String ROUND_TEXT = "round_text";
     public static final String PLAYER_TEXT = "player_text";
+    public static final String PLACE_POINTS_TEXT = "place_points_text";
+    public static final String POINTS_TEXT = "points_text";
     
     public GameHUDBuilder(String string, SimpleApplication app, ScreenController controller) {
         super(string, app, controller);
@@ -48,7 +50,7 @@ public class GameHUDBuilder extends AbstractScreenBuilder {
                                 height("15%");
                                 width("100%");
 
-                                text(new TextBuilder(PLACE_TEXT) {
+                                text(new TextBuilder(PLACE_TIME_TEXT) {
                                     {
                                         text("Platz 0\n");
                                         font("Interface/Fonts/ErasBoldITC.fnt");
@@ -59,7 +61,7 @@ public class GameHUDBuilder extends AbstractScreenBuilder {
                                     }
                                 });
 
-                                text(new TextBuilder(TIME_TEXT) {
+                                text(new TextBuilder(TIME_LEVEL_TEXT) {
                                     {
                                         text("00:00:00\n");
                                         font("Interface/Fonts/ErasBoldITC.fnt");
@@ -112,7 +114,8 @@ public class GameHUDBuilder extends AbstractScreenBuilder {
 
                         panel(new PanelBuilder("panel_top_right") {
                             {
-                                childLayoutCenter();
+                                //childLayoutCenter();
+                                childLayoutVertical();
                                 //backgroundColor("#44f8");
                                 height("50%");
                                 width("100%");
@@ -130,6 +133,28 @@ public class GameHUDBuilder extends AbstractScreenBuilder {
                                 text(new TextBuilder(PLAYER_TEXT) {
                                     {
                                         text("Spieler 0\n");
+                                        font("Interface/Fonts/ErasBoldITC.fnt");
+                                        valignTop();
+                                        alignLeft();
+                                        height("50%");
+                                        width("30%");
+                                    }
+                                });
+                                //Passende Position finden
+                                text(new TextBuilder(PLACE_POINTS_TEXT) {
+                                    {
+                                        text("Platz 0\n");
+                                        font("Interface/Fonts/ErasBoldITC.fnt");
+                                        valignTop();
+                                        alignLeft();
+                                        height("50%");
+                                        width("30%");
+                                    }
+                                });
+                                //Passende Position finden
+                                text(new TextBuilder(POINTS_TEXT) {
+                                    {
+                                        text("Punkte: 000000\n");
                                         font("Interface/Fonts/ErasBoldITC.fnt");
                                         valignTop();
                                         alignLeft();

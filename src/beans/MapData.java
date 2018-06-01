@@ -16,6 +16,9 @@ import java.util.List;
  */
 public class MapData {
     
+    private float minRouteHeight;
+    private float outsideHeight;
+    
     private List<BoundingBox> checkpoints;
     
     private BoundingBox start;
@@ -24,9 +27,11 @@ public class MapData {
         this.checkpoints = new ArrayList<>();
     }
 
-    public MapData(List<BoundingBox> checkpoints, BoundingBox start) {
+    public MapData(List<BoundingBox> checkpoints, BoundingBox start, float minRouteHeight, float outsideHeight) {
         this.checkpoints = checkpoints;
         this.start = start;
+        this.minRouteHeight = minRouteHeight;
+        this.outsideHeight = outsideHeight;
     }
 
     public List<BoundingBox> getCheckpoints() {
@@ -44,4 +49,21 @@ public class MapData {
     public void setStart(BoundingBox start) {
         this.start = start;
     }
+
+    public float getMinRouteHeight() {
+        return minRouteHeight;
+    }
+
+    public void setMinRouteHeight(float minRouteHeight) {
+        this.minRouteHeight = minRouteHeight;
+    }
+
+    public float getOutsideHeight() {
+        return outsideHeight;
+    }
+
+    public void setOutsideHeight(float outsideHeight) {
+        this.outsideHeight = outsideHeight;
+    }
+    
 }
