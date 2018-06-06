@@ -11,6 +11,8 @@ import de.lessvoid.nifty.builder.LayerBuilder;
 import de.lessvoid.nifty.builder.PanelBuilder;
 import de.lessvoid.nifty.builder.TextBuilder;
 import de.lessvoid.nifty.screen.ScreenController;
+import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
 
 /**
  *
@@ -24,6 +26,13 @@ public class GameHUDBuilder extends AbstractScreenBuilder {
     public static final String PLAYER_TEXT = "player_text";
     public static final String PLACE_POINTS_TEXT = "place_points_text";
     public static final String POINTS_TEXT = "points_text";
+    
+    public static final String PLACE_TIME_TEXT_FORMAT = "Platz %d\n";
+    public static final String TIME_LEVEL_TEXT_FORMAT_PRE = "Level-Zeit: ";
+    public static final String ROUND_TEXT_FORMAT = "Runde %d\n";
+    public static final String PLAYER_TEXT_FORMAT = "Spieler %d\n";
+    public static final String PLACE_POINTS_TEXT_FORMAT = "Platz %d\n";
+    public static final String POINTS_TEXT_FORMAT = "Punkte: %06d";
     
     public GameHUDBuilder(String string, SimpleApplication app, ScreenController controller) {
         super(string, app, controller);
@@ -52,7 +61,7 @@ public class GameHUDBuilder extends AbstractScreenBuilder {
 
                                 text(new TextBuilder(PLACE_TIME_TEXT) {
                                     {
-                                        text("Platz 0\n");
+                                        text(String.format(PLACE_TIME_TEXT_FORMAT, 0));
                                         font("Interface/Fonts/ErasBoldITC.fnt");
                                         valignTop();
                                         alignLeft();
@@ -63,7 +72,7 @@ public class GameHUDBuilder extends AbstractScreenBuilder {
 
                                 text(new TextBuilder(TIME_LEVEL_TEXT) {
                                     {
-                                        text("00:00:00\n");
+                                        text(TIME_LEVEL_TEXT_FORMAT_PRE + "00:00.000");
                                         font("Interface/Fonts/ErasBoldITC.fnt");
                                         valignTop();
                                         alignLeft();
@@ -92,7 +101,7 @@ public class GameHUDBuilder extends AbstractScreenBuilder {
 
                                 text(new TextBuilder(ROUND_TEXT) {
                                     {
-                                        text("Runde 0\n");
+                                        text(String.format(ROUND_TEXT_FORMAT, 0));
                                         font("Interface/Fonts/ErasBoldITC.fnt");
                                         valignTop();
                                         alignLeft();
@@ -132,7 +141,7 @@ public class GameHUDBuilder extends AbstractScreenBuilder {
                                 //Passende Position finden
                                 text(new TextBuilder(PLAYER_TEXT) {
                                     {
-                                        text("Spieler 0\n");
+                                        text(String.format(PLAYER_TEXT_FORMAT, 0));
                                         font("Interface/Fonts/ErasBoldITC.fnt");
                                         valignTop();
                                         alignLeft();
@@ -143,7 +152,7 @@ public class GameHUDBuilder extends AbstractScreenBuilder {
                                 //Passende Position finden
                                 text(new TextBuilder(PLACE_POINTS_TEXT) {
                                     {
-                                        text("Platz 0\n");
+                                        text(String.format(PLACE_POINTS_TEXT_FORMAT, 0));
                                         font("Interface/Fonts/ErasBoldITC.fnt");
                                         valignTop();
                                         alignLeft();
@@ -154,7 +163,7 @@ public class GameHUDBuilder extends AbstractScreenBuilder {
                                 //Passende Position finden
                                 text(new TextBuilder(POINTS_TEXT) {
                                     {
-                                        text("Punkte: 000000\n");
+                                        text(String.format(POINTS_TEXT_FORMAT, 0));
                                         font("Interface/Fonts/ErasBoldITC.fnt");
                                         valignTop();
                                         alignLeft();

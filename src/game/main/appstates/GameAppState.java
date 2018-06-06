@@ -263,7 +263,7 @@ public class GameAppState extends AbstractAppState implements ActionListener {
                 guiAppState.goToScreen(GUIAppState.TRAP_PLACE_HUD);
                 stateManager.detach(trapPlaceAppState);
                 Vector3f position = characterAppState.getLocation();
-                trapPlaceAppState = new TrapPlaceAppState(bulletAppState, worldAppState, new Vector2f(position.x, position.z));
+                trapPlaceAppState = new TrapPlaceAppState(bulletAppState, worldAppState, this, guiAppState, new Vector2f(position.x, position.z));
                 stateManager.attach(trapPlaceAppState);
                 stateManager.detach(characterAppState);
                 started = false;

@@ -18,13 +18,7 @@ import de.lessvoid.nifty.elements.render.TextRenderer;
 import de.lessvoid.nifty.screen.Screen;
 import de.lessvoid.nifty.screen.ScreenController;
 import de.lessvoid.nifty.tools.Color;
-import game.entities.RockAppState;
 import game.main.appstates.GameAppState;
-import game.test.AbstractInit;
-import game.test.InitTestCar;
-import game.test.InitTestRock;
-import game.test.InitTestTerrain;
-import game.test.InitTestTrap;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -169,43 +163,48 @@ public class GUIScreenController implements ScreenController {
     
     public void setTimeLevelInGameHUD(LocalTime time) {
         Element e = nifty.getScreen(GUIAppState.GAME_HUD).findElementById(GameHUDBuilder.TIME_LEVEL_TEXT);
-        e.getRenderer(TextRenderer.class).setText(time.format(DateTimeFormatter.ofPattern("mm:ss.SSS")) + "\n");
+        e.getRenderer(TextRenderer.class).setText(GameHUDBuilder.TIME_LEVEL_TEXT_FORMAT_PRE + DateTimeFormatter.ofPattern("mm:ss.SSS").format(time));
     }
     
     public void setRoundInGameHUD(int round) {
         Element e = nifty.getScreen(GUIAppState.GAME_HUD).findElementById(GameHUDBuilder.ROUND_TEXT);
-        e.getRenderer(TextRenderer.class).setText("Runde " + round + "\n");
+        e.getRenderer(TextRenderer.class).setText(String.format(GameHUDBuilder.ROUND_TEXT_FORMAT, round));
     }
     
     public void setPlaceTimeInGameHUD(int place) {
         Element e = nifty.getScreen(GUIAppState.GAME_HUD).findElementById(GameHUDBuilder.PLACE_TIME_TEXT);
-        e.getRenderer(TextRenderer.class).setText("Platz " + place + "\n");
+        e.getRenderer(TextRenderer.class).setText(String.format(GameHUDBuilder.PLACE_TIME_TEXT_FORMAT, place));
     }
     
     public void setPlacePointsInGameHUDAndTrapPlaceHUD(int place) {
         Element e = nifty.getScreen(GUIAppState.GAME_HUD).findElementById(GameHUDBuilder.PLACE_POINTS_TEXT);
-        e.getRenderer(TextRenderer.class).setText("Platz " + place + "\n");
+        e.getRenderer(TextRenderer.class).setText(String.format(GameHUDBuilder.PLACE_POINTS_TEXT_FORMAT, place));
         e = nifty.getScreen(GUIAppState.TRAP_PLACE_HUD).findElementById(TrapPlaceHUDBuilder.PLACE_POINTS_TEXT);
-        e.getRenderer(TextRenderer.class).setText("Platz " + place + "\n");
+        e.getRenderer(TextRenderer.class).setText(String.format(TrapPlaceHUDBuilder.PLACE_POINTS_TEXT_FORMAT, place));
     }
     
     public void setPointsInGameHUDAndTrapPlaceHUD(int points) {
         Element e = nifty.getScreen(GUIAppState.GAME_HUD).findElementById(GameHUDBuilder.POINTS_TEXT);
-        e.getRenderer(TextRenderer.class).setText("Punkte: " + String.format("%06d", points) + "\n");
+        e.getRenderer(TextRenderer.class).setText(String.format(GameHUDBuilder.POINTS_TEXT_FORMAT, points));
         e = nifty.getScreen(GUIAppState.TRAP_PLACE_HUD).findElementById(TrapPlaceHUDBuilder.POINTS_TEXT);
-        e.getRenderer(TextRenderer.class).setText("Punkte: " + String.format("%06d", points) + "\n");
+        e.getRenderer(TextRenderer.class).setText(String.format(TrapPlaceHUDBuilder.POINTS_TEXT_FORMAT, points));
+    }
+    
+    public void setTrapCountInTrapPlaceHUD(int trapCount, int maxTraps) {
+        Element e = nifty.getScreen(GUIAppState.TRAP_PLACE_HUD).findElementById(TrapPlaceHUDBuilder.TRAP_COUNT_TEXT);
+        e.getRenderer(TextRenderer.class).setText(String.format(TrapPlaceHUDBuilder.TRAP_COUNT_TEXT_FORMAT, trapCount, maxTraps));
     }
     
     public void setCurrentPlayerNumber(int number) {
         String text = "Spieler " + number + "\n";
         Element e = nifty.getScreen(GUIAppState.ESC_MENU).findElementById(ESCMenuBuilder.PLAYER_TEXT);
-        if(e != null) e.getRenderer(TextRenderer.class).setText(text);
+        if(e != null) e.getRenderer(TextRenderer.class).setText(String.format(ESCMenuBuilder.PLAYER_TEXT_FORMAT, number));
         e = nifty.getScreen(GUIAppState.GAME_HUD).findElementById(GameHUDBuilder.PLAYER_TEXT);
-        if(e != null) e.getRenderer(TextRenderer.class).setText(text);
+        if(e != null) e.getRenderer(TextRenderer.class).setText(String.format(GameHUDBuilder.PLAYER_TEXT_FORMAT, number));
         e = nifty.getScreen(GUIAppState.TRAP_PLACE_HUD).findElementById(TrapPlaceHUDBuilder.PLAYER_TEXT);
-        if(e != null) e.getRenderer(TextRenderer.class).setText(text);
+        if(e != null) e.getRenderer(TextRenderer.class).setText(String.format(TrapPlaceHUDBuilder.PLAYER_TEXT_FORMAT, number));
         e = nifty.getScreen(GUIAppState.CHARACTER_CHOOSER).findElementById(ChooseBuilder.PLAYER_TEXT);
-        if(e != null) e.getRenderer(TextRenderer.class).setText(text);
+        if(e != null) e.getRenderer(TextRenderer.class).setText(String.format(ChooseBuilder.PLAYER_TEXT_FORMAT, number));
     }
 
     public void playwith(GameAppState.Character character) {

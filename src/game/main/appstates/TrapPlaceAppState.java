@@ -38,6 +38,7 @@ import com.jme3.scene.Geometry;
 import com.jme3.scene.Node;
 import com.jme3.scene.Spatial;
 import com.jme3.scene.control.CameraControl;
+import game.gui.GUIAppState;
 import java.util.LinkedList;
 
 /**
@@ -77,9 +78,13 @@ public class TrapPlaceAppState extends AbstractAppState implements ActionListene
     private static final String MAPPING_CHOOSE_TRAP2 = "Place_Trap2";
     private static final String MAPPING_CHOOSE_TRAP3 = "Place_Trap3";
     private static final String MAPPING_DELETE_TRAP = "Delete_Trap";
+    
+    private static final int MAX_TRAPS = 10;
 
+    private final GUIAppState guiAppState;
     private final BulletAppState bulletAppState;
     private final WorldAppState worldAppState;
+    private final GameAppState gameAppState;
     private final Vector2f firstLookSpot;
 
     protected AssetManager assetManager;
@@ -91,6 +96,7 @@ public class TrapPlaceAppState extends AbstractAppState implements ActionListene
     protected Node guiNode;
 
     private int trap = 1;
+    private int trapCount = 0;
 
     private CameraNode camNode;
     private boolean isDragging;
@@ -103,9 +109,11 @@ public class TrapPlaceAppState extends AbstractAppState implements ActionListene
 
     private boolean deletemode = false;
 
-    public TrapPlaceAppState(BulletAppState bulletAppState, WorldAppState worldAppState, Vector2f firstLookSpot) {
+    public TrapPlaceAppState(BulletAppState bulletAppState, WorldAppState worldAppState, GameAppState gameAppState, GUIAppState guiAppState, Vector2f firstLookSpot) {
         this.bulletAppState = bulletAppState;
         this.worldAppState = worldAppState;
+        this.guiAppState = guiAppState;
+        this.gameAppState = gameAppState;
         this.firstLookSpot = firstLookSpot;
     }
 
@@ -198,7 +206,14 @@ public class TrapPlaceAppState extends AbstractAppState implements ActionListene
 
     @Override
     public void update(float tpf) {
-
+        if(guiAppState != null) {
+            guiAppState.getController().setTrapCountInTrapPlaceHUD(trapCount, MAX_TRAPS);
+        }
+        if(trapCount >= MAX_TRAPS) {
+            if(gameAppState != null) {
+                gameAppState.changeNextPlayerOrMode();
+            }
+        }
     }
 
     @Override
@@ -315,6 +330,7 @@ public class TrapPlaceAppState extends AbstractAppState implements ActionListene
                             if (teaGeom == Trap3) {
                                 settrap = (Spatial) assetManager.loadModel("Models/bushes.obj");
                             }
+                            trapCount++;
                             settrap.setMaterial(mat);
                             settrap.setCullHint(Geometry.CullHint.Never);
                             llplacedtraps.add(settrap);

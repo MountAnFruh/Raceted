@@ -21,6 +21,7 @@ import static game.gui.GameHUDBuilder.PLAYER_TEXT;
 public class ESCMenuBuilder extends AbstractScreenBuilder {
     
     public static final String PLAYER_TEXT = "player_text";
+    public static final String PLAYER_TEXT_FORMAT = "Spieler %d\n";
 
     public ESCMenuBuilder(String string, SimpleApplication app, ScreenController controller) {
         super(string, app, controller);
@@ -125,7 +126,7 @@ public class ESCMenuBuilder extends AbstractScreenBuilder {
                                 //Passende Position finden
                                 text(new TextBuilder(PLAYER_TEXT) {
                                     {
-                                        text("Spieler 0\n");
+                                        text(String.format(PLAYER_TEXT_FORMAT, 0));
                                         font("Interface/Fonts/ErasBoldITC.fnt");
                                         valignTop();
                                         alignLeft();
