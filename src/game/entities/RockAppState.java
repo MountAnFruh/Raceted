@@ -22,6 +22,7 @@ import com.jme3.scene.Node;
 import com.jme3.scene.shape.Sphere;
 import com.jme3.texture.Texture;
 import game.gui.GUIAppState;
+import game.main.appstates.GameAppState;
 import game.main.appstates.WorldAppState;
 import game.test.DMGArt;
 
@@ -39,12 +40,12 @@ public class RockAppState extends CharacterAppState {
     
     private float deltaU = 0.0f;
 
-    public RockAppState(BulletAppState bulletAppState, int maxHP, Vector3f spawnPoint, Quaternion spawnRotation, Node terrainNode) {
-        this(null, bulletAppState, maxHP, spawnPoint, spawnRotation, terrainNode);
+    public RockAppState(BulletAppState bulletAppState, GameAppState gameAppState, int maxHP, Vector3f spawnPoint, Quaternion spawnRotation, Node terrainNode) {
+        this(null, gameAppState, bulletAppState, maxHP, spawnPoint, spawnRotation, terrainNode);
     }
     
-    public RockAppState(GUIAppState guiAppState, BulletAppState bulletAppState, int maxHP, Vector3f spawnPoint, Quaternion spawnRotation, Node terrainNode) {
-        super(guiAppState, bulletAppState, maxHP, spawnPoint, spawnRotation, terrainNode);
+    public RockAppState(GUIAppState guiAppState, GameAppState gameAppState, BulletAppState bulletAppState, int maxHP, Vector3f spawnPoint, Quaternion spawnRotation, Node terrainNode) {
+        super(guiAppState, gameAppState, bulletAppState, maxHP, spawnPoint, spawnRotation, terrainNode);
     }
 
     @Override

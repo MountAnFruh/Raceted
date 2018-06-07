@@ -174,7 +174,7 @@ public class TestSoundAppState extends AbstractAppState implements ActionListene
     public void update(float tpf) {
 
         if (expl != null) {
-            expl.updateExplotion(tpf);
+            expl.updateExplosion(tpf);
         }
         onGround = terrain.collideWith(sphereGeo.getWorldBound(), new CollisionResults()) != 0;
         float divisor = 150;

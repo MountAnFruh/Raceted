@@ -21,9 +21,27 @@ import com.jme3.scene.Node;
  * @author rober
  */
 public class Explosion {
+    
+    private Node rootNode;
+    private Vector3f location;
+    private AssetManager assetManager;
+    private RenderManager renderManager;
+    
+    private float time = 0;
+    private int state = 0;
+    private Node explosionEffect = new Node("explosionFX");
+    private ParticleEmitter flame, flash, spark, roundspark, smoketrail, debris,
+                            shockwave;
 
-    public Explosion(Vector3f localtion, AssetManager assetManager, RenderManager renderManager, Node rootNode) {
-        this.localtion = localtion;
+
+    private static final int COUNT_FACTOR = 1;
+    private static final float COUNT_FACTOR_F = 1f;
+
+    private static final boolean POINT_SPRITE = true;
+    private static final ParticleMesh.Type EMITTER_TYPE = POINT_SPRITE ? ParticleMesh.Type.Point : ParticleMesh.Type.Triangle;
+
+    public Explosion(Vector3f location, AssetManager assetManager, RenderManager renderManager, Node rootNode) {
+        this.location = location;
         this.assetManager = assetManager;
         this.renderManager = renderManager;
         this.rootNode = rootNode;
@@ -38,16 +56,18 @@ public class Explosion {
         createSmokeTrail();
         createDebris();
         createShockwave();
-        explosionEffect.setLocalTranslation(localtion);
+        explosionEffect.setLocalTranslation(location);
         renderManager.preloadScene(explosionEffect);
         
         rootNode.attachChild(explosionEffect);
     }
     
-    public void updateExplotion(float tpf)
+    public void updateExplosion(float tpf)
     {
         float speed = 0.1f;
+        System.out.println("TPF: " + tpf);
         time += tpf / speed;
+        System.out.println("TIME: " + time);
         if (time > 1f && state == 0){
             flash.emitAllParticles();
             spark.emitAllParticles();
@@ -76,24 +96,6 @@ public class Explosion {
             shockwave.killAllParticles();
         }
     }
-    
-    private Node rootNode;
-    private Vector3f localtion;
-    private AssetManager assetManager;
-    private RenderManager renderManager;
-    
-    private float time = 0;
-    private int state = 0;
-    private Node explosionEffect = new Node("explosionFX");
-    private ParticleEmitter flame, flash, spark, roundspark, smoketrail, debris,
-                            shockwave;
-
-
-    private static final int COUNT_FACTOR = 1;
-    private static final float COUNT_FACTOR_F = 1f;
-
-    private static final boolean POINT_SPRITE = true;
-    private static final ParticleMesh.Type EMITTER_TYPE = POINT_SPRITE ? ParticleMesh.Type.Point : ParticleMesh.Type.Triangle;
     
     private void createFlame(){
         flame = new ParticleEmitter("Flame", EMITTER_TYPE, 32 * COUNT_FACTOR);

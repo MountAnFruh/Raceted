@@ -24,6 +24,7 @@ import com.jme3.scene.shape.Cylinder;
 import com.jme3.texture.Texture;
 import static game.entities.CharacterAppState.DEFAULT_JUMP_COOLDOWN;
 import game.gui.GUIAppState;
+import game.main.appstates.GameAppState;
 import game.test.DMGArt;
 
 /**
@@ -42,12 +43,12 @@ public class CarAppState extends CharacterAppState {
     private float steeringValue;
     private float accelerationValue;
     
-    public CarAppState(BulletAppState bulletAppState, int maxHP, Vector3f spawnPoint, Quaternion spawnRotation, Node terrainNode) {
-        this(null, bulletAppState, maxHP, spawnPoint, spawnRotation, terrainNode);
+    public CarAppState(BulletAppState bulletAppState, GameAppState gameAppState, int maxHP, Vector3f spawnPoint, Quaternion spawnRotation, Node terrainNode) {
+        this(null, gameAppState, bulletAppState, maxHP, spawnPoint, spawnRotation, terrainNode);
     }
 
-    public CarAppState(GUIAppState guiAppState, BulletAppState bulletAppState, int maxHP, Vector3f spawnPoint, Quaternion spawnRotation, Node terrainNode) {
-        super(guiAppState, bulletAppState, maxHP, spawnPoint, spawnRotation, terrainNode);
+    public CarAppState(GUIAppState guiAppState, GameAppState gameAppState, BulletAppState bulletAppState, int maxHP, Vector3f spawnPoint, Quaternion spawnRotation, Node terrainNode) {
+        super(guiAppState, gameAppState, bulletAppState, maxHP, spawnPoint, spawnRotation, terrainNode);
     }
     
     @Override
@@ -57,6 +58,25 @@ public class CarAppState extends CharacterAppState {
     
     @Override
     public void initCamera() {
+//        cam.setLocation(getLocation());
+//        cam.setRotation(getRotation());
+////        camNode = new CameraNode("CameraNode", cam);
+////        camNode.setControlDir(CameraControl.ControlDirection.SpatialToCamera);
+////        vehicleNode.attachChild(camNode);
+////        camNode.setLocalTranslation(0, 5, -15);
+//
+//        //Work in Progresser als af
+//        chaseCam = new ChaseCamera(cam, geometry, inputManager);
+//        chaseCam.setInvertVerticalAxis(true);
+//        chaseCam.setSmoothMotion(true);
+//        chaseCam.setTrailingEnabled(true);
+//        chaseCam.setMaxVerticalRotation(FastMath.PI / 16);
+//        chaseCam.setDefaultVerticalRotation(FastMath.PI / 16);
+//        chaseCam.setLookAtOffset(new Vector3f(0, 2, 0));
+//        chaseCam.setDefaultDistance(7);
+//        chaseCam.setTrailingSensitivity(10);
+//        chaseCam.setZoomSensitivity(1000);
+//        chaseCam.setEnabled(true);
         cam.setLocation(getLocation());
         cam.setRotation(getRotation());
 //        camNode = new CameraNode("CameraNode", cam);
@@ -66,16 +86,16 @@ public class CarAppState extends CharacterAppState {
 
         //Work in Progresser als af
         chaseCam = new ChaseCamera(cam, geometry, inputManager);
+        //chaseCam.setSmoothMotion(true);
+        //chaseCam.setTrailingEnabled(true);
         chaseCam.setInvertVerticalAxis(true);
-        chaseCam.setSmoothMotion(true);
-        chaseCam.setTrailingEnabled(true);
+        chaseCam.setLookAtOffset(new Vector3f(0, 2, 0));
+        chaseCam.setDefaultDistance(14);
+        chaseCam.setEnabled(true);
         chaseCam.setMaxVerticalRotation(FastMath.PI / 16);
         chaseCam.setDefaultVerticalRotation(FastMath.PI / 16);
-        chaseCam.setLookAtOffset(new Vector3f(0, 2, 0));
-        chaseCam.setDefaultDistance(7);
-        chaseCam.setTrailingSensitivity(10);
+        //chaseCam.setTrailingSensitivity(10);
         chaseCam.setZoomSensitivity(1000);
-        chaseCam.setEnabled(true);
     }
     
     @Override
@@ -238,18 +258,17 @@ public class CarAppState extends CharacterAppState {
         accelerationValue = 0;
         if(forward) accelerationValue += 2000;
         if(backward)
-            if(carControl.getCurrentVehicleSpeedKmHour() >= 0)
-            {
+            if(carControl.getCurrentVehicleSpeedKmHour() >= 0) {
                 carControl.brake(40f);
                 System.out.println("Brakes");
             }
-                
+        
             else if (carControl.getCurrentVehicleSpeedKmHour() < 0)
             {
                 accelerationValue -= 2000;
                 System.out.println("Decel");
             }
-                
+        
         steeringValue = steer * 0.5f * FastMath.pow(((MAX_SPEED - carControl.getCurrentVehicleSpeedKmHour()) / MAX_SPEED) , 2);
         carControl.steer(steeringValue);
         carControl.accelerate(accelerationValue * ((MAX_SPEED - carControl.getCurrentVehicleSpeedKmHour()) / MAX_SPEED));
