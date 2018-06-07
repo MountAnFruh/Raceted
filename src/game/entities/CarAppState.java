@@ -22,10 +22,9 @@ import com.jme3.scene.Geometry;
 import com.jme3.scene.Node;
 import com.jme3.scene.shape.Cylinder;
 import com.jme3.texture.Texture;
-import static game.entities.CharacterAppState.DEFAULT_JUMP_COOLDOWN;
 import game.gui.GUIAppState;
 import game.main.appstates.GameAppState;
-import game.test.DMGArt;
+import beans.DMGArt;
 
 /**
  *

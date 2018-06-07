@@ -24,7 +24,7 @@ import com.jme3.texture.Texture;
 import game.gui.GUIAppState;
 import game.main.appstates.GameAppState;
 import game.main.appstates.WorldAppState;
-import game.test.DMGArt;
+import beans.DMGArt;
 
 /**
  *

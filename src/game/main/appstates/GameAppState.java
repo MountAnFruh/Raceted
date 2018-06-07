@@ -30,7 +30,7 @@ import game.entities.CarAppState;
 import game.entities.CharacterAppState;
 import game.entities.RockAppState;
 import game.gui.GUIAppState;
-import game.test.DMGArt;
+import beans.DMGArt;
 import game.utils.AudioPlayer;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;

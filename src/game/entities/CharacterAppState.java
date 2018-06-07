@@ -27,8 +27,8 @@ import com.jme3.scene.Geometry;
 import com.jme3.scene.Node;
 import game.gui.GUIAppState;
 import game.main.appstates.GameAppState;
-import game.test.DMGArt;
-import game.test.Explosion;
+import beans.DMGArt;
+import sonst.Explosion;
 
 /**
  *
@@ -161,6 +161,7 @@ public abstract class CharacterAppState extends AbstractAppState implements Acti
                 explosion.updateExplosion(tpf);
             }
             if(timeDied > 2_000_000_000) {
+                explosion.stopExplode();
                 gameAppState.changeNextPlayerOrMode();
             }
         }

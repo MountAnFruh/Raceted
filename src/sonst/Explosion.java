@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package game.test;
+package sonst;
 
 import com.jme3.asset.AssetManager;
 import com.jme3.effect.ParticleEmitter;
@@ -60,6 +60,10 @@ public class Explosion {
         renderManager.preloadScene(explosionEffect);
         
         rootNode.attachChild(explosionEffect);
+    }
+    
+    public void stopExplode() {
+        rootNode.detachChild(explosionEffect);
     }
     
     public void updateExplosion(float tpf)

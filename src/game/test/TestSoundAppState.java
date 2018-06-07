@@ -5,6 +5,8 @@
  */
 package game.test;
 
+import sonst.Explosion;
+import beans.DMGArt;
 import com.jme3.app.Application;
 import com.jme3.app.state.AbstractAppState;
 import com.jme3.app.state.AppStateManager;
