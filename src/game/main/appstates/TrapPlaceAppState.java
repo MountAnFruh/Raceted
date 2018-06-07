@@ -146,6 +146,7 @@ public class TrapPlaceAppState extends AbstractAppState implements ActionListene
         Trap3 = assetManager.loadModel("Models/bushes.obj");
         Trap3.setMaterial(mat);
         Trap3.setCullHint(Geometry.CullHint.Never);
+        
         //mat.setColor("Color", new ColorRGBA(0.0f, 0.0f, 0.0f, 1.0f));
         teaGeom = Trap2;
         rootNode.attachChild(teaGeom);
@@ -269,31 +270,38 @@ public class TrapPlaceAppState extends AbstractAppState implements ActionListene
                 }
             }
             if (deletemode == true) {
-                Vector3f origin = cam.getWorldCoordinates(inputManager.getCursorPosition(), 0.0f);
-                Vector3f direction = cam.getWorldCoordinates(inputManager.getCursorPosition(), 0.3f);
-                direction.subtractLocal(origin).normalizeLocal();
+            Vector3f origin = cam.getWorldCoordinates(inputManager.getCursorPosition(), 0.0f);
+            Vector3f direction = cam.getWorldCoordinates(inputManager.getCursorPosition(), 0.3f);
+            direction.subtractLocal(origin).normalizeLocal();
 
-                Ray ray = new Ray(origin, direction);
-                CollisionResults results = new CollisionResults();
-                worldAppState.getTerrainNode().collideWith(ray, results);
-                if (results.size() > 0) {
-                    CollisionResult closest = results.getClosestCollision();
+            Ray ray = new Ray(origin, direction);
+            CollisionResults results = new CollisionResults();
+           // teaGeom.collideWith(ray, results);
+            //if (results.size() > 0) {
+                
+                //teaGeom.setLocalTranslation(closest.getContactPoint().add(0, 0, 0));
 
-                    teaGeom.setLocalTranslation(closest.getContactPoint().add(0, 0, 0));
-
-                    CollisionResults rs = new CollisionResults();
+                try
+                {
                     for (Spatial sp : llplacedtraps) {
-                        // sp.collideWith((Geometry)teaGeom,rs);
-                        bulletAppState.getPhysicsSpace().remove(sp.getControl(RigidBodyControl.class));
-                        sp.removeFromParent();
-    //                  if(rs.size()>0)
-    //                  {
-    //                      //teaGeom.move(100, 100, 100);
-    //                      //sp.removeFromParent();
-    //                      //llplacedtraps.remove(sp);
-    //                  }       
-                    }
-                    //----------------
+                    // sp.collideWith((Geometry)teaGeom,rs);
+//                    bulletAppState.getPhysicsSpace().remove(sp.getControl(RigidBodyControl.class));
+//                    sp.removeFromParent();
+                  sp.collideWith(ray, results);
+                  if(results.size()>0)
+                  {
+                      bulletAppState.getPhysicsSpace().remove(sp.getControl(RigidBodyControl.class));
+                      teaGeom.move(100, 100, 100);
+                      sp.removeFromParent();
+                      llplacedtraps.remove(sp);
+                      trapCount = llplacedtraps.size();
+                  }       
+                //}  
+                //----------------
+            }
+                }catch(Exception ex)
+                {
+                    System.out.println("der fehler schon wieder");
                 }
             } else {
                 if (name.equals(MAPPING_CAMERA_DRAG) || name.equals(MAPPING_CAMERA_DRAG2)) {
