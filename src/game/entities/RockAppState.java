@@ -98,10 +98,9 @@ public class RockAppState extends CharacterAppState {
         
         rockControl.setPhysicsLocation(spawnPoint);
         rockControl.setPhysicsRotation(spawnRotation);
-        rockControl.setGravity(GRAVITY.subtract(new Vector3f(0, 50f, 0)));
+        rockControl.setGravity(GRAVITY.subtract(new Vector3f(0, 25f, 0)));
     }
 
-    private int ups = 0;
     @Override
     public void update(float tpf) {
         super.update(tpf);
@@ -141,7 +140,6 @@ public class RockAppState extends CharacterAppState {
             rockControl.applyImpulse(impulsVector.add(brakeChange).setY(0), new Vector3f(0, 1, 0));
             
             deltaU--;
-            ups++;
         }
     }
 

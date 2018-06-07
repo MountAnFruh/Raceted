@@ -49,5 +49,9 @@ public class PlayerInfo {
     public int getPoints() {
         return points;
     }
+
+    public boolean isDied() {
+        return died;
+    }
     
 }

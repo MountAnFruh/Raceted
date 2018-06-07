@@ -79,6 +79,7 @@ public abstract class CharacterAppState extends AbstractAppState implements Acti
     protected float jumpCooldown = 0;
     protected Vector3f spawnPoint;
     protected Quaternion spawnRotation;
+    protected long timeDriven = 0;
     
     public CharacterAppState(GUIAppState guiAppState, BulletAppState bulletAppState, int maxHP, Vector3f spawnPoint, Quaternion spawnRotation, Node terrainNode) {
         this.guiAppState = guiAppState;
@@ -141,6 +142,7 @@ public abstract class CharacterAppState extends AbstractAppState implements Acti
     public void update(float tpf) {
         //TODO: onGround fixen
         // onGround = terrainNode.collideWith(geometry.getWorldBound(), new CollisionResults()) != 0;
+        timeDriven += tpf * 1_000_000_000;
         if (explosion != null) {
             explosion.updateExplotion(tpf);
         }
@@ -277,4 +279,9 @@ public abstract class CharacterAppState extends AbstractAppState implements Acti
     public Geometry getGeometry() {
         return geometry;
     }
+
+    public long getTimeDriven() {
+        return timeDriven;
+    }
+    
 }

@@ -96,7 +96,7 @@ public class CarAppState extends CharacterAppState {
 
         //Create a hull collision shape for the chassis
         CollisionShape vehicleHull = CollisionShapeFactory.createDynamicMeshShape(geometry);
-        
+        vehicleHull.setScale(new Vector3f(1f, 1f, 0.8f));
 
         //Create a vehicle control
         carControl = new VehicleControl(vehicleHull, 500);

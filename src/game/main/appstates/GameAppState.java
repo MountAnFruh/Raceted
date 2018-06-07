@@ -57,7 +57,6 @@ public class GameAppState extends AbstractAppState implements ActionListener {
     private final GUIAppState guiAppState;
     
     private PlayerInfo currentPlayer;
-    private long startNanos;
     
     private BulletAppState bulletAppState;
     private WorldAppState worldAppState;
@@ -97,6 +96,7 @@ public class GameAppState extends AbstractAppState implements ActionListener {
         this.stateManager = stateManager;
         
         this.bulletAppState = new BulletAppState();
+        //bulletAppState.setDebugEnabled(true);
         this.worldAppState = new WorldAppState(bulletAppState);
         //this.trapPlaceAppState = new TrapPlaceAppState(bulletAppState, worldAppState);
         this.audioPlayer = new AudioPlayer(assetManager);
@@ -171,18 +171,17 @@ public class GameAppState extends AbstractAppState implements ActionListener {
             if(currMode == Mode.DRIVEMODE) {
                 if(characterAppState.isInitialized()) {
                     if(!started) {
-                        startNanos = LocalTime.now().toNanoOfDay();
                         currRound = 1;
                         currCheckpoint = 0;
                         started = true;
                     }
-                    long checkpointNanos = LocalTime.now().toNanoOfDay() - startNanos;
+                    long checkpointNanos = characterAppState.getTimeDriven();
                     LocalTime currTime = LocalTime.ofNanoOfDay(checkpointNanos);
                     currentPlayer.setDrivenTime(currTime);
                     guiAppState.getController().setTimeLevelInGameHUD(currTime);
                     guiAppState.getController().setRoundInGameHUD(currRound);
                     List<PlayerInfo> ranking = new ArrayList<>(playerInfos);
-                    Collections.sort(ranking, Comparator.comparing(PlayerInfo::getDrivenTime));
+                    Collections.sort(ranking, Comparator.comparing(PlayerInfo::isDied).thenComparing(PlayerInfo::getDrivenTime));
                     int index = ranking.indexOf(currentPlayer);
                     guiAppState.getController().setPlaceTimeInGameHUD(index + 1);
 
