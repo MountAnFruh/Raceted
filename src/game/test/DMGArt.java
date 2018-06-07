@@ -12,5 +12,6 @@ package game.test;
 public enum DMGArt {
     SPIKE,
     BOUNCE,     ////////Reifen
-    GRUBE
+    GRUBE,
+    OUTSIDELEVEL
 }

@@ -26,6 +26,7 @@ import com.jme3.renderer.RenderManager;
 import com.jme3.scene.Geometry;
 import com.jme3.scene.Node;
 import game.gui.GUIAppState;
+import game.main.appstates.GameAppState;
 import game.test.DMGArt;
 import game.test.Explosion;
 
@@ -58,6 +59,7 @@ public abstract class CharacterAppState extends AbstractAppState implements Acti
     protected static final String MAPPING_DMG = "F";
     
     protected final GUIAppState guiAppState;
+    protected final GameAppState gameAppState;
     
     protected BulletAppState bulletAppState;
     protected AssetManager assetManager;
@@ -74,15 +76,17 @@ public abstract class CharacterAppState extends AbstractAppState implements Acti
     protected ChaseCamera chaseCam;
     
     protected boolean forward, left, backward, right, jump;
-    protected boolean onGround;
+    protected boolean onGround, dead;
     protected int maxHP, hp;
     protected float jumpCooldown = 0;
     protected Vector3f spawnPoint;
     protected Quaternion spawnRotation;
     protected long timeDriven = 0;
+    protected long timeDied = 0;
     
-    public CharacterAppState(GUIAppState guiAppState, BulletAppState bulletAppState, int maxHP, Vector3f spawnPoint, Quaternion spawnRotation, Node terrainNode) {
+    public CharacterAppState(GUIAppState guiAppState, GameAppState gameAppState, BulletAppState bulletAppState, int maxHP, Vector3f spawnPoint, Quaternion spawnRotation, Node terrainNode) {
         this.guiAppState = guiAppState;
+        this.gameAppState = gameAppState;
         this.maxHP = maxHP;
         this.hp = maxHP;
         setSpawnPoint(new Vector3f(spawnPoint));
@@ -142,16 +146,23 @@ public abstract class CharacterAppState extends AbstractAppState implements Acti
     public void update(float tpf) {
         //TODO: onGround fixen
         // onGround = terrainNode.collideWith(geometry.getWorldBound(), new CollisionResults()) != 0;
-        timeDriven += tpf * 1_000_000_000;
-        if (explosion != null) {
-            explosion.updateExplotion(tpf);
-        }
-        //TODO: implement behavior during runtime
-        if (jumpCooldown > 0) {
-            jumpCooldown -= tpf;
-        }
-        if(jumpCooldown < 0) {
-            jumpCooldown = 0;
+        if(hp > 0) {
+            timeDriven += tpf * 1_000_000_000;
+            //TODO: implement behavior during runtime
+            if (jumpCooldown > 0) {
+                jumpCooldown -= tpf;
+            }
+            if(jumpCooldown < 0) {
+                jumpCooldown = 0;
+            }
+        } else {
+            timeDied += tpf * 1_000_000_000;
+            if (explosion != null) {
+                explosion.updateExplosion(tpf);
+            }
+            if(timeDied > 2_000_000_000) {
+                gameAppState.changeNextPlayerOrMode();
+            }
         }
     }
     
@@ -215,27 +226,29 @@ public abstract class CharacterAppState extends AbstractAppState implements Acti
     
     // TODO: Fix Explosion working for Car
     public void onDeath() {
-        /**
-         * Explosion effect. Uses Texture from jme3-test-data library!
-         */
-//        ParticleEmitter debrisEffect = new ParticleEmitter("Debris", ParticleMesh.Type.Triangle, 10);
-//        Material debrisMat = new Material(assetManager, "Common/MatDefs/Misc/Particle.j3md");
-//        debrisMat.setTexture("Texture", assetManager.loadTexture("Effects/Explosion/Debris.png"));
-//        debrisEffect.setMaterial(debrisMat);
-//        debrisEffect.setImagesX(3);
-//        debrisEffect.setImagesY(3); // 3x3 texture animation
-//        debrisEffect.setRotateSpeed(4);
-//        debrisEffect.setSelectRandomImage(true);
-//        debrisEffect.getParticleInfluencer().setInitialVelocity(new Vector3f(0, 4, 0));
-//        debrisEffect.setStartColor(new ColorRGBA(1f, 1f, 1f, 1f));
-//        debrisEffect.setGravity(0f, 6f, 0f);
-//        debrisEffect.getParticleInfluencer().setVelocityVariation(.60f);
-//        rootNode.attachChild(debrisEffect);
-//        debrisEffect.emitAllParticles();
-        explosion = new Explosion(geometry.getWorldTranslation(), assetManager, renderManager, rootNode);
-        this.cleanupPlayer();
-        explosion.explode();
-        // noch zum hinzufügen
+        if(!dead) {
+            /**
+             * Explosion effect. Uses Texture from jme3-test-data library!
+             */
+    //        ParticleEmitter debrisEffect = new ParticleEmitter("Debris", ParticleMesh.Type.Triangle, 10);
+    //        Material debrisMat = new Material(assetManager, "Common/MatDefs/Misc/Particle.j3md");
+    //        debrisMat.setTexture("Texture", assetManager.loadTexture("Effects/Explosion/Debris.png"));
+    //        debrisEffect.setMaterial(debrisMat);
+    //        debrisEffect.setImagesX(3);
+    //        debrisEffect.setImagesY(3); // 3x3 texture animation
+    //        debrisEffect.setRotateSpeed(4);
+    //        debrisEffect.setSelectRandomImage(true);
+    //        debrisEffect.getParticleInfluencer().setInitialVelocity(new Vector3f(0, 4, 0));
+    //        debrisEffect.setStartColor(new ColorRGBA(1f, 1f, 1f, 1f));
+    //        debrisEffect.setGravity(0f, 6f, 0f);
+    //        debrisEffect.getParticleInfluencer().setVelocityVariation(.60f);
+    //        rootNode.attachChild(debrisEffect);
+    //        debrisEffect.emitAllParticles();
+            explosion = new Explosion(this.getLocation(), assetManager, renderManager, rootNode);
+            explosion.explode();
+            this.cleanupPlayer();
+            dead = true;
+        }
     }
 
     @Override
@@ -282,6 +295,10 @@ public abstract class CharacterAppState extends AbstractAppState implements Acti
 
     public long getTimeDriven() {
         return timeDriven;
+    }
+
+    public boolean isDead() {
+        return dead;
     }
     
 }

@@ -30,6 +30,7 @@ import game.entities.CarAppState;
 import game.entities.CharacterAppState;
 import game.entities.RockAppState;
 import game.gui.GUIAppState;
+import game.test.DMGArt;
 import game.utils.AudioPlayer;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
@@ -186,9 +187,11 @@ public class GameAppState extends AbstractAppState implements ActionListener {
                     guiAppState.getController().setPlaceTimeInGameHUD(index + 1);
 
                     if(worldAppState.outsideLevel(level.name(), characterAppState.getLocation())) {
-                        System.out.println("RACETED!"); // TODO: Irgendeinen Text am Screen anzeigen lassen
-                        currentPlayer.setDied(true);
-                        changeNextPlayerOrMode();
+                        if(!characterAppState.isDead()) {
+                            System.out.println("RACETED!"); // TODO: Irgendeinen Text am Screen anzeigen lassen
+                            currentPlayer.setDied(true);
+                            characterAppState.causeDmg(INITHP, DMGArt.GRUBE);
+                        }
                         return;
                     }
                     
@@ -272,10 +275,10 @@ public class GameAppState extends AbstractAppState implements ActionListener {
                 stateManager.detach(characterAppState);
                 switch(currentPlayer.getCharacter()) {
                     case ROCK:
-                        characterAppState = new RockAppState(bulletAppState, INITHP, spawnPoint, spawnRotation, worldAppState.getTerrainNode());
+                        characterAppState = new RockAppState(bulletAppState, this, INITHP, spawnPoint, spawnRotation, worldAppState.getTerrainNode());
                         break;
                     case CAR:
-                        characterAppState = new CarAppState(bulletAppState, INITHP, spawnPoint, spawnRotation, worldAppState.getTerrainNode());
+                        characterAppState = new CarAppState(bulletAppState, this, INITHP, spawnPoint, spawnRotation, worldAppState.getTerrainNode());
                         break;
                 }
                 stateManager.attach(characterAppState);
