@@ -239,7 +239,17 @@ public class CarAppState extends CharacterAppState {
         if(forward) accelerationValue += 2000;
         if(backward)
             if(carControl.getCurrentVehicleSpeedKmHour() >= 0)
+            {
                 carControl.brake(40f);
+                System.out.println("Brakes");
+            }
+                
+            else if (carControl.getCurrentVehicleSpeedKmHour() < 0)
+            {
+                accelerationValue -= 2000;
+                System.out.println("Decel");
+            }
+                
         steeringValue = steer * 0.5f * FastMath.pow(((MAX_SPEED - carControl.getCurrentVehicleSpeedKmHour()) / MAX_SPEED) , 2);
         carControl.steer(steeringValue);
         carControl.accelerate(accelerationValue * ((MAX_SPEED - carControl.getCurrentVehicleSpeedKmHour()) / MAX_SPEED));

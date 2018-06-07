@@ -361,7 +361,7 @@ public class WorldAppState extends AbstractAppState {
             float minRouteHeight = mapData.getMinRouteHeight();
             float outsideHeight = mapData.getOutsideHeight();
             float outside = minRouteHeight - (minRouteHeight - outsideHeight)/2;
-            System.out.println(location + " " + outside);
+//            System.out.println(location + " " + outside);
             return location.getY() < outside;
         }
         throw new RuntimeException("Terrain \"" + name + "\" existiert noch nicht!");
