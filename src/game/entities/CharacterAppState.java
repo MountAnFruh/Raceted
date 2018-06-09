@@ -28,6 +28,9 @@ import com.jme3.scene.Node;
 import game.gui.GUIAppState;
 import game.main.appstates.GameAppState;
 import beans.DMGArt;
+import com.jme3.scene.Spatial;
+import game.main.appstates.TrapPlaceAppState;
+import java.util.List;
 import sonst.Explosion;
 
 /**
@@ -47,7 +50,6 @@ public abstract class CharacterAppState extends AbstractAppState implements Acti
     protected static final Trigger TRIGGER_RIGHT = new KeyTrigger(KeyInput.KEY_D);
     protected static final Trigger TRIGGER_SPACE = new KeyTrigger(KeyInput.KEY_SPACE);
     protected static final Trigger TRIGGER_RESET = new KeyTrigger(KeyInput.KEY_RETURN);
-    protected static final Trigger TRIGGER_DMG = new KeyTrigger(KeyInput.KEY_F);
 
     // define mappings
     protected static final String MAPPING_LEFT = "Left";
@@ -56,7 +58,6 @@ public abstract class CharacterAppState extends AbstractAppState implements Acti
     protected static final String MAPPING_RIGHT = "Right";
     protected static final String MAPPING_SPACE = "Space";
     protected static final String MAPPING_RESET = "Reset";
-    protected static final String MAPPING_DMG = "F";
     
     protected final GUIAppState guiAppState;
     protected final GameAppState gameAppState;
@@ -121,14 +122,13 @@ public abstract class CharacterAppState extends AbstractAppState implements Acti
         if (inputManager.hasMapping(SimpleApplication.INPUT_MAPPING_EXIT)) {
             inputManager.deleteMapping(SimpleApplication.INPUT_MAPPING_EXIT);
         }
-        inputManager.addMapping(MAPPING_DMG, TRIGGER_DMG);
         inputManager.addMapping(MAPPING_LEFT, TRIGGER_LEFT);
         inputManager.addMapping(MAPPING_RIGHT, TRIGGER_RIGHT);
         inputManager.addMapping(MAPPING_UP, TRIGGER_UP);
         inputManager.addMapping(MAPPING_DOWN, TRIGGER_DOWN);
         inputManager.addMapping(MAPPING_SPACE, TRIGGER_SPACE);
         inputManager.addMapping(MAPPING_RESET, TRIGGER_RESET);
-        inputManager.addListener(this, MAPPING_DMG, MAPPING_LEFT, MAPPING_RIGHT, MAPPING_UP,
+        inputManager.addListener(this, MAPPING_LEFT, MAPPING_RIGHT, MAPPING_UP,
                 MAPPING_DOWN, MAPPING_SPACE, MAPPING_RESET);
     }
     
@@ -148,7 +148,6 @@ public abstract class CharacterAppState extends AbstractAppState implements Acti
         // onGround = terrainNode.collideWith(geometry.getWorldBound(), new CollisionResults()) != 0;
         if(hp > 0) {
             timeDriven += tpf * 1_000_000_000;
-            //TODO: implement behavior during runtime
             if (jumpCooldown > 0) {
                 jumpCooldown -= tpf;
             }
@@ -180,7 +179,6 @@ public abstract class CharacterAppState extends AbstractAppState implements Acti
     
     protected void cleanupInput() {
         inputManager.removeListener(this);
-        inputManager.deleteMapping(MAPPING_DMG);
         inputManager.deleteMapping(MAPPING_LEFT);
         inputManager.deleteMapping(MAPPING_RIGHT);
         inputManager.deleteMapping(MAPPING_UP);
@@ -215,7 +213,7 @@ public abstract class CharacterAppState extends AbstractAppState implements Acti
         }
     }
     
-    public abstract void causeDmg(int dmg, DMGArt art);
+    public abstract void causeDmg(double dmg, DMGArt art);
     
     public abstract Vector3f getLocation();
     
@@ -256,11 +254,6 @@ public abstract class CharacterAppState extends AbstractAppState implements Acti
     public void onAction(String name, boolean isPressed, float tpf) {
         if(this.isEnabled()) {
             switch (name) {
-                case MAPPING_DMG:
-                    if (isPressed) {
-                        causeDmg(20, DMGArt.GRUBE);
-                    }
-                    break;
                 case MAPPING_LEFT:
                     left = isPressed;
                     break;
@@ -300,6 +293,14 @@ public abstract class CharacterAppState extends AbstractAppState implements Acti
 
     public boolean isDead() {
         return dead;
+    }
+
+    public int getHP() {
+        return hp;
+    }
+
+    public int getMaxHP() {
+        return maxHP;
     }
     
 }

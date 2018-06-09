@@ -13,5 +13,7 @@ public enum DMGArt {
     SPIKE,
     BOUNCE,     ////////Reifen
     GRUBE,
+    TRAFFICCONE,
+    BUSHES,
     OUTSIDELEVEL
 }

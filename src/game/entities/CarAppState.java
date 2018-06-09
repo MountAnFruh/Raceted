@@ -25,6 +25,10 @@ import com.jme3.texture.Texture;
 import game.gui.GUIAppState;
 import game.main.appstates.GameAppState;
 import beans.DMGArt;
+import com.jme3.collision.CollisionResults;
+import com.jme3.scene.Spatial;
+import game.main.appstates.TrapPlaceAppState;
+import java.util.List;
 
 /**
  *
@@ -271,6 +275,32 @@ public class CarAppState extends CharacterAppState {
         steeringValue = steer * 0.5f * FastMath.pow(((MAX_SPEED - carControl.getCurrentVehicleSpeedKmHour()) / MAX_SPEED) , 2);
         carControl.steer(steeringValue);
         carControl.accelerate(accelerationValue * ((MAX_SPEED - carControl.getCurrentVehicleSpeedKmHour()) / MAX_SPEED));
+        
+        for (List<Spatial> spatials : gameAppState.getPlacedTraps().values()) {
+            for(Spatial spatial : spatials) {
+                if(geometry.collideWith(spatial.getWorldBound(), new CollisionResults()) > 0) {
+                    if(spatial.getUserData(TrapPlaceAppState.DMG_ART_KEY) == DMGArt.BUSHES.name()) {
+                        Vector3f oldVelocity = carControl.getLinearVelocity();
+                        float vx = carControl.getLinearVelocity().x;
+                        float vy = carControl.getLinearVelocity().y;
+                        float vz = carControl.getLinearVelocity().z;
+                        if(Math.abs(vx) > 10) {
+                            oldVelocity.setX(vx > 0 ? 10 : -10);
+                            carControl.setLinearVelocity(oldVelocity);
+                        }
+                        if(Math.abs(vy) > 10) {
+                            oldVelocity.setY(vy > 0 ? 10 : -10);
+                            carControl.setLinearVelocity(oldVelocity);
+                        }
+                        if(Math.abs(vz) > 10) {
+                            oldVelocity.setZ(vz > 0 ? 10 : -10);
+                            carControl.setLinearVelocity(oldVelocity);
+                        }
+                    }
+                }
+            }
+        }
+        
     }
 
     public VehicleControl getControl() {
@@ -298,13 +328,16 @@ public class CarAppState extends CharacterAppState {
     }
 
     @Override
-    public void causeDmg(int dmg, DMGArt art) {
+    public void causeDmg(double dmg, DMGArt art) {
         switch (art) {
             case SPIKE:
                 super.causeDmg((int)(dmg * SPIKE_DMG_GAIN));
                 break;
+            case BOUNCE: break;
+            case TRAFFICCONE: break;
+            case BUSHES: break;
             default:
-                super.causeDmg(dmg);
+                super.causeDmg((int)dmg);
                 break;
         }
     }

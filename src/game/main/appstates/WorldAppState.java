@@ -236,7 +236,7 @@ public class WorldAppState extends AbstractAppState {
                     if(coordinate.x > maxX) maxX = coordinate.x;
                     if(coordinate.y > maxZ) maxZ = coordinate.y;
                     minY = -1; maxY = Float.MAX_VALUE;
-                    boundCheckpoints.get(color).get(0).set(new Vector3f(minX,minY,minZ));
+                    boundCheckpoints.get(color).get(0).set(new Vector3f(minX, minY, minZ));
                     boundCheckpoints.get(color).get(1).set(new Vector3f(maxX, maxY, maxZ));
                 } else if(color.r == 0 && color.b == 0) {
                     // Ist eine Start-Ziel-Markierung

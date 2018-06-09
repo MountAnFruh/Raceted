@@ -5,11 +5,14 @@
  */
 package game.main.appstates;
 
+import beans.DMGArt;
+import beans.PlayerInfo;
 import com.jme3.app.Application;
 import com.jme3.app.SimpleApplication;
 import com.jme3.app.state.AbstractAppState;
 import com.jme3.app.state.AppStateManager;
 import com.jme3.asset.AssetManager;
+import com.jme3.bounding.BoundingBox;
 import com.jme3.bullet.BulletAppState;
 import com.jme3.bullet.collision.shapes.CollisionShape;
 import com.jme3.bullet.control.RigidBodyControl;
@@ -39,13 +42,17 @@ import com.jme3.scene.Node;
 import com.jme3.scene.Spatial;
 import com.jme3.scene.control.CameraControl;
 import game.gui.GUIAppState;
+import java.util.ArrayList;
 import java.util.LinkedList;
+import java.util.List;
 
 /**
  *
  * @author Robbo13
  */
 public class TrapPlaceAppState extends AbstractAppState implements ActionListener, AnalogListener {
+    
+    public static final String DMG_ART_KEY = "dmgArt";
 
     // define triggers
     private static final Trigger CAMERA_LEFT = new MouseAxisTrigger(MouseInput.AXIS_X, true);
@@ -105,7 +112,6 @@ public class TrapPlaceAppState extends AbstractAppState implements ActionListene
     private Spatial Trap2 = null;
     private Spatial Trap3 = null;
     private Spatial teaGeom = null;
-    private LinkedList<Spatial> llplacedtraps = new LinkedList<Spatial>();
 
     private boolean deletemode = false;
 
@@ -262,57 +268,58 @@ public class TrapPlaceAppState extends AbstractAppState implements ActionListene
     @Override
     public void onAction(String name, boolean isPressed, float tpf) {
         if(this.isEnabled()) {
-            if (name.equals(MAPPING_DELETE_TRAP)) {
-                if (deletemode == false) {
-                    deletemode = true;
+            if (name.equals(MAPPING_CAMERA_DRAG) || name.equals(MAPPING_CAMERA_DRAG2)) {
+                if (isPressed) {
+                    isDragging = true;
+                    inputManager.setCursorVisible(false);
                 } else {
-                    deletemode = false;
+                    isDragging = false;
+                    inputManager.setCursorVisible(true);
                 }
+            }
+            if (name.equals(MAPPING_DELETE_TRAP)) {
+                if(isPressed) {
+                    if (deletemode == false) {
+                        deletemode = true;
+                    } else {
+                        deletemode = false;
+                    }
+                }
+                return;
             }
             if (deletemode == true) {
-            Vector3f origin = cam.getWorldCoordinates(inputManager.getCursorPosition(), 0.0f);
-            Vector3f direction = cam.getWorldCoordinates(inputManager.getCursorPosition(), 0.3f);
-            direction.subtractLocal(origin).normalizeLocal();
+                if (name.equals(MAPPING_PLACE_TRAP) && isPressed) {
+                    Vector3f origin = cam.getWorldCoordinates(inputManager.getCursorPosition(), 0.0f);
+                    Vector3f direction = cam.getWorldCoordinates(inputManager.getCursorPosition(), 0.3f);
+                    direction.subtractLocal(origin).normalizeLocal();
 
-            Ray ray = new Ray(origin, direction);
-            CollisionResults results = new CollisionResults();
-           // teaGeom.collideWith(ray, results);
-            //if (results.size() > 0) {
-                
-                //teaGeom.setLocalTranslation(closest.getContactPoint().add(0, 0, 0));
+                    Ray ray = new Ray(origin, direction);
+                    // teaGeom.collideWith(ray, results);
+                    //if (results.size() > 0) {
 
-                try
-                {
-                    for (Spatial sp : llplacedtraps) {
-                    // sp.collideWith((Geometry)teaGeom,rs);
-//                    bulletAppState.getPhysicsSpace().remove(sp.getControl(RigidBodyControl.class));
-//                    sp.removeFromParent();
-                  sp.collideWith(ray, results);
-                  if(results.size()>0)
-                  {
-                      bulletAppState.getPhysicsSpace().remove(sp.getControl(RigidBodyControl.class));
-                      teaGeom.move(100, 100, 100);
-                      sp.removeFromParent();
-                      llplacedtraps.remove(sp);
-                      trapCount = llplacedtraps.size();
-                  }       
-                //}  
-                //----------------
-            }
-                }catch(Exception ex)
-                {
-                    System.out.println("der fehler schon wieder");
+                    //teaGeom.setLocalTranslation(closest.getContactPoint().add(0, 0, 0));
+
+                    for (PlayerInfo playerInfo : gameAppState.getPlacedTraps().keySet()) {
+                        List<Spatial> spatials = gameAppState.getPlacedTraps().get(playerInfo);
+                        for(Spatial sp : new ArrayList<>(spatials)) {
+            //              sp.collideWith((Geometry)teaGeom,rs);
+            //              bulletAppState.getPhysicsSpace().remove(sp.getControl(RigidBodyControl.class));
+            //              sp.removeFromParent();
+                            if(sp.collideWith(ray, new CollisionResults())>0)
+                            {
+                                bulletAppState.getPhysicsSpace().remove(sp.getControl(RigidBodyControl.class));
+                                teaGeom.move(100, 100, 100);
+                                sp.removeFromParent();
+                                gameAppState.getPlacedTraps().get(playerInfo).remove(sp);
+                                trapCount++;
+                            }       
+                            //}  
+                            //----------------
+                        }
+                    }
                 }
             } else {
-                if (name.equals(MAPPING_CAMERA_DRAG) || name.equals(MAPPING_CAMERA_DRAG2)) {
-                    if (isPressed) {
-                        isDragging = true;
-                        inputManager.setCursorVisible(false);
-                    } else {
-                        isDragging = false;
-                        inputManager.setCursorVisible(true);
-                    }
-                } else if (name.equals(MAPPING_PLACE_TRAP)) {
+                if (name.equals(MAPPING_PLACE_TRAP)) {
                     if (isPressed) {
                         Vector3f origin = cam.getWorldCoordinates(inputManager.getCursorPosition(), 0.0f);
                         Vector3f direction = cam.getWorldCoordinates(inputManager.getCursorPosition(), 0.3f);
@@ -322,33 +329,42 @@ public class TrapPlaceAppState extends AbstractAppState implements ActionListene
                         CollisionResults results = new CollisionResults();
                         worldAppState.getTerrainNode().collideWith(ray, results);
                         if (results.size() > 0) {
-                            Spatial settrap = null;
-                            Material mat = new Material(assetManager, "Common/MatDefs/Misc/ShowNormals.j3md");
-                            //mat.setColor("Color", ColorRGBA.White);
-                            //mat.getAdditionalRenderState().setLineWidth(1);
-                            //mat.setColor("Diffuse", new ColorRGBA(1, 1, 1, 0.5f));
-                            //mat.setBoolean("UseMaterialColors", true);
-                            //mat.setColor("m_Color", new ColorRGBA(0, 1, 0, 0.5f));
-                            if (teaGeom == Trap1) {
-                                settrap = (Spatial) assetManager.loadModel("Models/pylon.obj");
+                            CollisionResult result = results.getClosestCollision();
+                            BoundingBox start = worldAppState.getStart(gameAppState.getLevel().name());
+                            if(!start.intersects(result.getContactPoint())) {
+                                Spatial settrap = null;
+                                Material mat = new Material(assetManager, "Common/MatDefs/Misc/ShowNormals.j3md");
+                                //mat.setColor("Color", ColorRGBA.White);
+                                //mat.getAdditionalRenderState().setLineWidth(1);
+                                //mat.setColor("Diffuse", new ColorRGBA(1, 1, 1, 0.5f));
+                                //mat.setBoolean("UseMaterialColors", true);
+                                //mat.setColor("m_Color", new ColorRGBA(0, 1, 0, 0.5f));
+                                if (teaGeom == Trap1) {
+                                    settrap = (Spatial) assetManager.loadModel("Models/pylon.obj");
+                                    settrap.setUserData(DMG_ART_KEY, DMGArt.TRAFFICCONE.name());
+                                }
+                                if (teaGeom == Trap2) {
+                                    settrap = (Spatial) assetManager.loadModel("Models/Stachel.obj");
+                                    settrap.setUserData(DMG_ART_KEY, DMGArt.SPIKE.name());
+                                }
+                                if (teaGeom == Trap3) {
+                                    settrap = (Spatial) assetManager.loadModel("Models/bushes.obj");
+                                    settrap.setUserData(DMG_ART_KEY, DMGArt.BUSHES.name());
+                                }
+                                trapCount++;
+                                settrap.setMaterial(mat);
+                                settrap.setCullHint(Geometry.CullHint.Never);
+                                gameAppState.getPlacedTraps().get(gameAppState.getCurrentPlayer()).add(settrap);
+                                CollisionResult closest = results.getClosestCollision();
+                                settrap.setLocalTranslation(closest.getContactPoint().add(0, 0, 0));
+                                CollisionShape collShape = CollisionShapeFactory.createDynamicMeshShape(settrap);
+                                RigidBodyControl trapControl = new RigidBodyControl(collShape, 0);
+                                settrap.addControl(trapControl);
+                                if (teaGeom != Trap3) {
+                                    bulletAppState.getPhysicsSpace().add(trapControl);
+                                }
+                                rootNode.attachChild(settrap);
                             }
-                            if (teaGeom == Trap2) {
-                                settrap = (Spatial) assetManager.loadModel("Models/Stachel.obj");
-                            }
-                            if (teaGeom == Trap3) {
-                                settrap = (Spatial) assetManager.loadModel("Models/bushes.obj");
-                            }
-                            trapCount++;
-                            settrap.setMaterial(mat);
-                            settrap.setCullHint(Geometry.CullHint.Never);
-                            llplacedtraps.add(settrap);
-                            CollisionResult closest = results.getClosestCollision();
-                            settrap.setLocalTranslation(closest.getContactPoint().add(0, 0, 0));
-                            CollisionShape collShape = CollisionShapeFactory.createDynamicMeshShape(settrap);
-                            RigidBodyControl trapControl = new RigidBodyControl(collShape, 0);
-                            settrap.addControl(trapControl);
-                            bulletAppState.getPhysicsSpace().add(trapControl);
-                            rootNode.attachChild(settrap);
                         }
                     }
                 }
@@ -398,7 +414,7 @@ public class TrapPlaceAppState extends AbstractAppState implements ActionListene
                     rootNode.attachChild(teaGeom);
                     break;
             }
-            if (deletemode == false) {
+            //if (deletemode == false) {
                 Vector3f origin = cam.getWorldCoordinates(inputManager.getCursorPosition(), 0.0f);
                 Vector3f direction = cam.getWorldCoordinates(inputManager.getCursorPosition(), 0.3f);
                 direction.subtractLocal(origin).normalizeLocal();
@@ -412,7 +428,7 @@ public class TrapPlaceAppState extends AbstractAppState implements ActionListene
                     teaGeom.setLocalTranslation(closest.getContactPoint().add(0, 0, 0));
                     //----------------
                 }
-            }
+            //}
         }
     }
 

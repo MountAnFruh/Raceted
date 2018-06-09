@@ -19,6 +19,7 @@ import de.lessvoid.nifty.screen.Screen;
 import de.lessvoid.nifty.screen.ScreenController;
 import de.lessvoid.nifty.tools.Color;
 import game.main.appstates.GameAppState;
+import game.utils.AudioPlayer;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -40,20 +41,19 @@ public class GUIScreenController implements ScreenController {
     private final List<PlayerInfo> playerInfos = new ArrayList<>();
     
     private GameAppState gameAppState;
-    private AudioNode audioSource;
+    private AudioPlayer audioPlayer;
     private SimpleApplication app;
     
     public final Color bgColor = new Color(255, 16, 0, 50);
     private final String panelname = "panel_left_center_2";
 
-    public GUIScreenController(GUIAppState guiAppState, Nifty nifty, SimpleApplication app) {
+    public GUIScreenController(GUIAppState guiAppState, AudioPlayer audioPlayer, Nifty nifty, SimpleApplication app) {
         this.guiAppState = guiAppState;
         this.nifty = nifty;
+        this.audioPlayer = audioPlayer;
         this.app = app;
         assetManager = app.getAssetManager();
         stateManager = app.getStateManager();
-        
-        audioSource = new AudioNode(assetManager, "Sounds/Effects/Select.ogg", AudioData.DataType.Buffer);
     }
 
     @Override
@@ -101,12 +101,10 @@ public class GUIScreenController implements ScreenController {
     }
 
     public void playwithCart() {
-        audioSource.stop();
         playwith(GameAppState.Character.CAR);
     }
 
     public void playwithRock() {
-        audioSource.stop();
         playwith(GameAppState.Character.ROCK);
     }
 
@@ -195,6 +193,11 @@ public class GUIScreenController implements ScreenController {
         e.getRenderer(TextRenderer.class).setText(String.format(TrapPlaceHUDBuilder.TRAP_COUNT_TEXT_FORMAT, trapCount, maxTraps));
     }
     
+    public void setHPInGameHUD(int hp, int maxHp) {
+        Element e = nifty.getScreen(GUIAppState.GAME_HUD).findElementById(GameHUDBuilder.HP_TEXT);
+        e.getRenderer(TextRenderer.class).setText(String.format(GameHUDBuilder.HP_TEXT_FORMAT, hp, maxHp));
+    }
+    
     public void setCurrentPlayerNumber(int number) {
         String text = "Spieler " + number + "\n";
         Element e = nifty.getScreen(GUIAppState.ESC_MENU).findElementById(ESCMenuBuilder.PLAYER_TEXT);
@@ -212,8 +215,8 @@ public class GUIScreenController implements ScreenController {
         playerInfo.setCharacter(character);
         playerInfos.add(playerInfo);
         if(playerInfos.size() >= PLAYERCOUNT) {
-            audioSource.stop();
-            gameAppState = new GameAppState(guiAppState, playerInfos, LEVEL);
+            audioPlayer.stopMusic();
+            gameAppState = new GameAppState(guiAppState, audioPlayer, playerInfos, LEVEL);
             stateManager.attach(gameAppState);
         } else {
             setCurrentPlayerNumber(playerInfos.size() + 1);

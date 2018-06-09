@@ -26,13 +26,15 @@ public class GameHUDBuilder extends AbstractScreenBuilder {
     public static final String PLAYER_TEXT = "player_text";
     public static final String PLACE_POINTS_TEXT = "place_points_text";
     public static final String POINTS_TEXT = "points_text";
+    public static final String HP_TEXT = "hp_text";
     
     public static final String PLACE_TIME_TEXT_FORMAT = "Platz %d\n";
     public static final String TIME_LEVEL_TEXT_FORMAT_PRE = "Level-Zeit: ";
     public static final String ROUND_TEXT_FORMAT = "Runde %d\n";
     public static final String PLAYER_TEXT_FORMAT = "Spieler %d\n";
     public static final String PLACE_POINTS_TEXT_FORMAT = "Platz %d\n";
-    public static final String POINTS_TEXT_FORMAT = "Punkte: %06d";
+    public static final String POINTS_TEXT_FORMAT = "Punkte: %06d\n";
+    public static final String HP_TEXT_FORMAT = "HP: %05d/%05d\n";
     
     public GameHUDBuilder(String string, SimpleApplication app, ScreenController controller) {
         super(string, app, controller);
@@ -153,6 +155,17 @@ public class GameHUDBuilder extends AbstractScreenBuilder {
                                 text(new TextBuilder(PLACE_POINTS_TEXT) {
                                     {
                                         text(String.format(PLACE_POINTS_TEXT_FORMAT, 0));
+                                        font("Interface/Fonts/ErasBoldITC.fnt");
+                                        valignTop();
+                                        alignLeft();
+                                        height("50%");
+                                        width("30%");
+                                    }
+                                });
+                                //Passende Position finden
+                                text(new TextBuilder(HP_TEXT) {
+                                    {
+                                        text(String.format(HP_TEXT_FORMAT, 0, 0));
                                         font("Interface/Fonts/ErasBoldITC.fnt");
                                         valignTop();
                                         alignLeft();

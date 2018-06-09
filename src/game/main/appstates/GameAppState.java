@@ -31,13 +31,16 @@ import game.entities.CharacterAppState;
 import game.entities.RockAppState;
 import game.gui.GUIAppState;
 import beans.DMGArt;
+import com.jme3.collision.CollisionResults;
 import game.utils.AudioPlayer;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  *
@@ -51,8 +54,10 @@ public class GameAppState extends AbstractAppState implements ActionListener {
     private static final String MAPPING_MODE = "Change_Mode";
     private static final String MAPPING_ESC = "ESC_Menu";
     
-    private static final int INITHP = 200;
+    private static final int INITHP = 10_000;
+    private static final int BASICDMG = 100;
     
+    private final Map<PlayerInfo, List<Spatial>> placedTraps = new HashMap<>();
     private final List<PlayerInfo> playerInfos;
     private final Level level;
     private final GUIAppState guiAppState;
@@ -80,8 +85,12 @@ public class GameAppState extends AbstractAppState implements ActionListener {
     private boolean started = false;
     private Mode currMode = null;
     
-    public GameAppState(GUIAppState guiAppState, @NotNull List<PlayerInfo> playerInfos, Level level) {
+    public GameAppState(GUIAppState guiAppState, AudioPlayer audioPlayer, @NotNull List<PlayerInfo> playerInfos, Level level) {
         this.playerInfos = playerInfos;
+        this.audioPlayer = audioPlayer;
+        for(PlayerInfo playerInfo : playerInfos) {
+            placedTraps.put(playerInfo, new ArrayList<>());
+        }
         this.guiAppState = guiAppState;
         this.worldAppState = new WorldAppState(bulletAppState);
         this.level = level;
@@ -179,18 +188,30 @@ public class GameAppState extends AbstractAppState implements ActionListener {
                     long checkpointNanos = characterAppState.getTimeDriven();
                     LocalTime currTime = LocalTime.ofNanoOfDay(checkpointNanos);
                     currentPlayer.setDrivenTime(currTime);
+                    guiAppState.getController().setHPInGameHUD(characterAppState.getHP(),
+                            characterAppState.getMaxHP());
                     guiAppState.getController().setTimeLevelInGameHUD(currTime);
                     guiAppState.getController().setRoundInGameHUD(currRound);
                     List<PlayerInfo> ranking = new ArrayList<>(playerInfos);
                     Collections.sort(ranking, Comparator.comparing(PlayerInfo::isDied).thenComparing(PlayerInfo::getDrivenTime));
                     int index = ranking.indexOf(currentPlayer);
                     guiAppState.getController().setPlaceTimeInGameHUD(index + 1);
+                    
+                    for (List<Spatial> spatials : placedTraps.values()) {
+                        for(Spatial spatial : spatials) {
+                            if(characterAppState.getGeometry().collideWith(spatial.getWorldBound(), new CollisionResults()) > 0) {
+                                String text = spatial.getUserData(TrapPlaceAppState.DMG_ART_KEY);
+                                DMGArt art = DMGArt.valueOf(text);
+                                characterAppState.causeDmg(BASICDMG, art);
+                            }
+                        }
+                    }
 
                     if(worldAppState.outsideLevel(level.name(), characterAppState.getLocation())) {
                         if(!characterAppState.isDead()) {
                             System.out.println("RACETED!"); // TODO: Irgendeinen Text am Screen anzeigen lassen
                             currentPlayer.setDied(true);
-                            characterAppState.causeDmg(INITHP, DMGArt.GRUBE);
+                            characterAppState.causeDmg(INITHP, DMGArt.OUTSIDELEVEL);
                         }
                         return;
                     }
@@ -249,12 +270,48 @@ public class GameAppState extends AbstractAppState implements ActionListener {
             if(currMode == Mode.DRIVEMODE) {
                 changeMode(Mode.TRAPMODE);
             } else if(currMode == Mode.TRAPMODE) {
+                calculatePoints();
                 changeMode(Mode.DRIVEMODE);
             }
         } else {
             changeMode(currMode);
         }
         started = false;
+    }
+    
+    private void calculatePoints() {
+        boolean everyBodyDied = true;
+        boolean everyBodyLived = true;
+        for(PlayerInfo playerInfo : playerInfos) {
+            if(playerInfo.isDied()) {
+                everyBodyLived = false;
+            } else {
+                everyBodyDied = false;
+            }
+        }
+        if(everyBodyDied) return;
+        if(everyBodyLived) return;
+//        LocalTime minTime = LocalTime.MAX;
+//        for(PlayerInfo playerInfo : playerInfos) {
+//            if(!playerInfo.isDied()) {
+//                if(playerInfo.getDrivenTime().isBefore(minTime)) {
+//                    minTime = playerInfo.getDrivenTime();
+//                }
+//            } else {
+//                minTime = LocalTime.of(0, 0, 0, 0);
+//            }
+//        }
+        for(PlayerInfo playerInfo : playerInfos) {
+            List<PlayerInfo> ranking = new ArrayList<>(playerInfos);
+            Collections.sort(ranking, Comparator.comparing(PlayerInfo::isDied).thenComparing(PlayerInfo::getDrivenTime));
+            int placed_time = ranking.indexOf(playerInfo);
+            if(!playerInfo.isDied()) {
+//                LocalTime time = playerInfo.getDrivenTime();
+//                int subWithMin = time.getSecond() - minTime.getSecond();
+//                playerInfo.setPoints(playerInfo.getPoints() + placed_time * subWithMin);
+                playerInfo.setPoints(playerInfo.getPoints() + (playerInfos.size() - placed_time));
+            }
+        }
     }
     
     private void changeMode(Mode mode) {
@@ -352,6 +409,14 @@ public class GameAppState extends AbstractAppState implements ActionListener {
 
     public PlayerInfo getCurrentPlayer() {
         return currentPlayer;
+    }
+
+    public Map<PlayerInfo,List<Spatial>> getPlacedTraps() {
+        return placedTraps;
+    }
+
+    public Level getLevel() {
+        return level;
     }
     
     public int getCurrentPlayerNumber() {

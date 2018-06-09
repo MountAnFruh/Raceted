@@ -12,6 +12,7 @@ import com.jme3.app.state.AppStateManager;
 import com.jme3.niftygui.NiftyJmeDisplay;
 import de.lessvoid.nifty.Nifty;
 import game.test.AbstractInit;
+import game.utils.AudioPlayer;
 
 /**
  *
@@ -25,6 +26,7 @@ public class GUIAppState extends AbstractAppState {
     public static final String ESC_MENU = "esc_menu";
     public static final String CHARACTER_CHOOSER = "chooser";
     
+    private AudioPlayer audioPlayer;
     private Nifty nifty;
     private SimpleApplication app;
     private GUIScreenController controller;
@@ -38,6 +40,9 @@ public class GUIAppState extends AbstractAppState {
         
 //        audioSource = new AudioNode(asset, "Sounds/Musics/Main.ogg", AudioData.DataType.Buffer);
 //        audioSource.play();
+
+        this.audioPlayer = new AudioPlayer(appl.getAssetManager());
+        audioPlayer.playMusic("Sounds/Musics/Main.ogg", true, 0.2f);
 
         niftyDisplay = NiftyJmeDisplay.newNiftyJmeDisplay(
                 app.getAssetManager(),
@@ -53,7 +58,7 @@ public class GUIAppState extends AbstractAppState {
         nifty.loadStyleFile("nifty-default-styles.xml");
         nifty.loadControlFile("nifty-default-controls.xml");
 
-        controller = new GUIScreenController(this, nifty, app);
+        controller = new GUIScreenController(this, audioPlayer, nifty, app);
 
         nifty.addScreen(START_SCREEN, new StartBuilder(START_SCREEN, app, controller).build(nifty));
 

@@ -23,8 +23,11 @@ import com.jme3.scene.shape.Sphere;
 import com.jme3.texture.Texture;
 import game.gui.GUIAppState;
 import game.main.appstates.GameAppState;
-import game.main.appstates.WorldAppState;
 import beans.DMGArt;
+import com.jme3.collision.CollisionResults;
+import com.jme3.scene.Spatial;
+import game.main.appstates.TrapPlaceAppState;
+import java.util.List;
 
 /**
  *
@@ -140,6 +143,31 @@ public class RockAppState extends CharacterAppState {
             }
             rockControl.applyImpulse(impulsVector.add(brakeChange).setY(0), new Vector3f(0, 1, 0));
             
+            for (List<Spatial> spatials : gameAppState.getPlacedTraps().values()) {
+                for(Spatial spatial : spatials) {
+                    if(geometry.collideWith(spatial.getWorldBound(), new CollisionResults()) > 0) {
+                        if(spatial.getUserData(TrapPlaceAppState.DMG_ART_KEY) == DMGArt.BUSHES.name()) {
+                            Vector3f oldVelocity = rockControl.getLinearVelocity();
+                            float vx = rockControl.getLinearVelocity().x;
+                            float vy = rockControl.getLinearVelocity().y;
+                            float vz = rockControl.getLinearVelocity().z;
+                            if(Math.abs(vx) > 10) {
+                                oldVelocity.setX(vx > 0 ? 10 : -10);
+                                rockControl.setLinearVelocity(oldVelocity);
+                            }
+                            if(Math.abs(vy) > 10) {
+                                oldVelocity.setY(vy > 0 ? 10 : -10);
+                                rockControl.setLinearVelocity(oldVelocity);
+                            }
+                            if(Math.abs(vz) > 10) {
+                                oldVelocity.setZ(vz > 0 ? 10 : -10);
+                                rockControl.setLinearVelocity(oldVelocity);
+                            }
+                        }
+                    }
+                }
+            }
+            
             deltaU--;
         }
     }
@@ -161,13 +189,16 @@ public class RockAppState extends CharacterAppState {
     }
 
     @Override
-    public void causeDmg(int dmg, DMGArt art) {
+    public void causeDmg(double dmg, DMGArt art) {
         switch (art) {
             case SPIKE:
                 super.causeDmg((int)(dmg / SPIKE_DMG_REDUCE));
                 break;
+            case BOUNCE: break;
+            case TRAFFICCONE: break;
+            case BUSHES: break;
             default:
-                super.causeDmg(dmg);
+                super.causeDmg((int)dmg);
                 break;
         }
     }

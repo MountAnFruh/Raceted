@@ -26,7 +26,7 @@ public class TrapPlaceHUDBuilder extends AbstractScreenBuilder {
     public static final String PLAYER_TEXT_FORMAT = "Spieler %d\n";
     public static final String PLACE_POINTS_TEXT_FORMAT = "Platz %d\n";
     public static final String POINTS_TEXT_FORMAT = "Punkte: %06d";
-    public static final String TRAP_COUNT_TEXT_FORMAT = "%02d / %02d Fallen";
+    public static final String TRAP_COUNT_TEXT_FORMAT = "%02d / %02d Fallenpunkte";
     
     public TrapPlaceHUDBuilder(String string, SimpleApplication app, ScreenController controller) {
         super(string, app, controller);
