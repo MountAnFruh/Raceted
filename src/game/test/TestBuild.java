@@ -38,7 +38,7 @@ import com.jme3.texture.Texture;
 
 /**
  *
- * @author Robbo13
+ * @author Andreas Fruhwirt
  */
 public class TestBuild extends SimpleApplication implements AnalogListener, ActionListener {
 

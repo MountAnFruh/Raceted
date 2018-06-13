@@ -12,7 +12,7 @@ import java.util.List;
 
 /**
  *
- * @author Andreas
+ * @author Andreas Fruhwirt
  */
 public class MapData {
     

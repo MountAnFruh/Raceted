@@ -16,7 +16,7 @@ import java.time.format.DateTimeFormatter;
 
 /**
  *
- * @author Kevin
+ * @author Kevin Albrich
  */
 public class GameHUDBuilder extends AbstractScreenBuilder {
 

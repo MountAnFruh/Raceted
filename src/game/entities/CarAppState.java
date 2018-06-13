@@ -25,6 +25,7 @@ import com.jme3.texture.Texture;
 import game.gui.GUIAppState;
 import game.main.appstates.GameAppState;
 import beans.DMGArt;
+import beans.PlayerInfo;
 import com.jme3.collision.CollisionResults;
 import com.jme3.scene.Spatial;
 import game.main.appstates.TrapPlaceAppState;
@@ -32,7 +33,7 @@ import java.util.List;
 
 /**
  *
- * @author Robbo13
+ * @author Florian Rottmann
  */
 public class CarAppState extends CharacterAppState {
     
@@ -46,12 +47,16 @@ public class CarAppState extends CharacterAppState {
     private float steeringValue;
     private float accelerationValue;
     
-    public CarAppState(BulletAppState bulletAppState, GameAppState gameAppState, int maxHP, Vector3f spawnPoint, Quaternion spawnRotation, Node terrainNode) {
-        this(null, gameAppState, bulletAppState, maxHP, spawnPoint, spawnRotation, terrainNode);
+    public CarAppState(BulletAppState bulletAppState, GameAppState gameAppState,
+            int maxHP, Vector3f spawnPoint, Quaternion spawnRotation,
+            Node terrainNode, PlayerInfo playerInfo) {
+        this(null, gameAppState, bulletAppState, maxHP, spawnPoint, spawnRotation, terrainNode, playerInfo);
     }
 
-    public CarAppState(GUIAppState guiAppState, GameAppState gameAppState, BulletAppState bulletAppState, int maxHP, Vector3f spawnPoint, Quaternion spawnRotation, Node terrainNode) {
-        super(guiAppState, gameAppState, bulletAppState, maxHP, spawnPoint, spawnRotation, terrainNode);
+    public CarAppState(GUIAppState guiAppState, GameAppState gameAppState,
+            BulletAppState bulletAppState, int maxHP, Vector3f spawnPoint,
+            Quaternion spawnRotation, Node terrainNode, PlayerInfo playerInfo) {
+        super(guiAppState, gameAppState, bulletAppState, maxHP, spawnPoint, spawnRotation, terrainNode, playerInfo);
     }
     
     @Override

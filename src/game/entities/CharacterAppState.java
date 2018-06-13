@@ -28,6 +28,7 @@ import com.jme3.scene.Node;
 import game.gui.GUIAppState;
 import game.main.appstates.GameAppState;
 import beans.DMGArt;
+import beans.PlayerInfo;
 import com.jme3.scene.Spatial;
 import game.main.appstates.TrapPlaceAppState;
 import java.util.List;
@@ -35,7 +36,7 @@ import sonst.Explosion;
 
 /**
  *
- * @author Robbo13
+ * @author Andreas Fruhwirt
  */
 public abstract class CharacterAppState extends AbstractAppState implements ActionListener {
     
@@ -61,6 +62,7 @@ public abstract class CharacterAppState extends AbstractAppState implements Acti
     
     protected final GUIAppState guiAppState;
     protected final GameAppState gameAppState;
+    protected final PlayerInfo playerInfo;
     
     protected BulletAppState bulletAppState;
     protected AssetManager assetManager;
@@ -85,11 +87,14 @@ public abstract class CharacterAppState extends AbstractAppState implements Acti
     protected long timeDriven = 0;
     protected long timeDied = 0;
     
-    public CharacterAppState(GUIAppState guiAppState, GameAppState gameAppState, BulletAppState bulletAppState, int maxHP, Vector3f spawnPoint, Quaternion spawnRotation, Node terrainNode) {
+    public CharacterAppState(GUIAppState guiAppState, GameAppState gameAppState,
+            BulletAppState bulletAppState, int maxHP, Vector3f spawnPoint,
+            Quaternion spawnRotation, Node terrainNode, PlayerInfo playerInfo) {
         this.guiAppState = guiAppState;
         this.gameAppState = gameAppState;
         this.maxHP = maxHP;
         this.hp = maxHP;
+        this.playerInfo = playerInfo;
         setSpawnPoint(new Vector3f(spawnPoint));
         setSpawnRotation(new Quaternion(spawnRotation));
         this.terrainNode = terrainNode;
@@ -223,7 +228,6 @@ public abstract class CharacterAppState extends AbstractAppState implements Acti
     
     public abstract void setRotation(Quaternion rotation);
     
-    // TODO: Fix Explosion working for Car
     public void onDeath() {
         if(!dead) {
             /**
@@ -247,6 +251,9 @@ public abstract class CharacterAppState extends AbstractAppState implements Acti
             explosion.explode();
             this.cleanupPlayer();
             dead = true;
+            if(playerInfo != null) {
+                playerInfo.setDied(true);
+            }
         }
     }
 

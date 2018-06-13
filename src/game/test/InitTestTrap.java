@@ -37,7 +37,7 @@ import java.util.LinkedList;
 
 /**
  *
- * @author rober
+ * @author Robert Schmölzer
  */
 public class InitTestTrap extends AbstractInit {
 

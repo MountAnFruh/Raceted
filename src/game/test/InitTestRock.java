@@ -17,7 +17,7 @@ import game.entities.RockAppState;
 
 /**
  *
- * @author rober
+ * @author Robert Schmölzer
  */
 public class InitTestRock extends AbstractInit {
 
@@ -32,7 +32,7 @@ public class InitTestRock extends AbstractInit {
         initSky();
         initTerrain();
 
-        rockAppState = new RockAppState(bulletAppState, null, 100, new Vector3f(0,50,0), new Quaternion(), (Node)terrain);
+        rockAppState = new RockAppState(bulletAppState, null, 100, new Vector3f(0,50,0), new Quaternion(), (Node)terrain, null);
         stateManager.attach(rockAppState);
     }
 

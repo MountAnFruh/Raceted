@@ -16,7 +16,7 @@ import java.awt.GraphicsEnvironment;
 
 /**
  *
- * @author Robbo13
+ * @author Andreas Fruhwirt
  */
 public class TestGUI extends SimpleApplication {
 

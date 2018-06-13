@@ -11,7 +11,7 @@ import com.jme3.system.JmeContext;
 
 /** 
  *
- * @author Robbo13
+ * @author Andreas Fruhwirt
  */
 public class TestRock extends SimpleApplication {
     

@@ -7,7 +7,7 @@ package beans;
 
 /**
  *
- * @author rober
+ * @author Robert Schmölzer
  */
 public enum DMGArt {
     SPIKE,

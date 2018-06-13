@@ -20,7 +20,7 @@ import de.lessvoid.nifty.screen.ScreenController;
 
 /**
  *
- * @author Kevin
+ * @author Kevin Albrich
  */
 public class HUDTerrainTextBuilder extends AbstractScreenBuilder {
 

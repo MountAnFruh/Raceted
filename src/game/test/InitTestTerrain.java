@@ -25,7 +25,7 @@ import game.main.appstates.WorldAppState;
 
 /**
  *
- * @author rober
+ * @author Robert Schmölzer
  */
 public class InitTestTerrain extends AbstractInit implements ActionListener {
 
@@ -82,7 +82,7 @@ public class InitTestTerrain extends AbstractInit implements ActionListener {
         initHUD();
         initInput();
         
-        carAppState = new CarAppState(bulletAppState, null, 100, new Vector3f(0,100,0), new Quaternion(), (Node)terrain);
+        carAppState = new CarAppState(bulletAppState, null, 100, new Vector3f(0,100,0), new Quaternion(), (Node)terrain, null);
         stateManager.attach(carAppState);
 
         flyCam.setEnabled(false);

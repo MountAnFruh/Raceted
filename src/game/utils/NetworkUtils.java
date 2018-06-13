@@ -7,7 +7,7 @@ package game.utils;
 
 /**
  *
- * @author Robbo13
+ * @author Andreas Fruhwirt
  */
 public class NetworkUtils {
     

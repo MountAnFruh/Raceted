@@ -16,7 +16,7 @@ import com.jme3.scene.Spatial;
 
 /**
  *
- * @author rober
+ * @author Robert Schmölzer
  */
 public abstract class AbstractInit {
 

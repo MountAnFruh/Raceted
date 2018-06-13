@@ -10,7 +10,7 @@ import java.time.LocalTime;
 
 /**
  *
- * @author Robbo13
+ * @author Andreas Fruhwirt
  */
 public class PlayerInfo {
     

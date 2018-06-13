@@ -48,7 +48,7 @@ import java.util.List;
 
 /**
  *
- * @author Robbo13
+ * @author Philipp Auer, Stefan Atzlinger
  */
 public class TrapPlaceAppState extends AbstractAppState implements ActionListener, AnalogListener {
     
@@ -150,6 +150,7 @@ public class TrapPlaceAppState extends AbstractAppState implements ActionListene
         Trap2.setMaterial(mat);
         Trap2.setCullHint(Geometry.CullHint.Never);
         Trap3 = assetManager.loadModel("Models/bushes.obj");
+        Trap3.setLocalScale(3.0f);
         Trap3.setMaterial(mat);
         Trap3.setCullHint(Geometry.CullHint.Never);
         
@@ -349,6 +350,7 @@ public class TrapPlaceAppState extends AbstractAppState implements ActionListene
                                 }
                                 if (teaGeom == Trap3) {
                                     settrap = (Spatial) assetManager.loadModel("Models/bushes.obj");
+                                    settrap.setLocalScale(3.0f);
                                     settrap.setUserData(DMG_ART_KEY, DMGArt.BUSHES.name());
                                 }
                                 trapCount++;

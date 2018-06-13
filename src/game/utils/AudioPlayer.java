@@ -13,7 +13,7 @@ import java.util.HashMap;
 
 /**
  *
- * @author Kevin
+ * @author Kevin Albrich
  */
 public class AudioPlayer {
 

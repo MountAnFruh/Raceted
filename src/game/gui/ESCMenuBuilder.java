@@ -16,7 +16,7 @@ import static game.gui.GameHUDBuilder.PLAYER_TEXT;
 
 /**
  *
- * @author rober
+ * @author Robert Schmölzer
  */
 public class ESCMenuBuilder extends AbstractScreenBuilder {
     

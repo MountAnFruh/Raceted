@@ -38,7 +38,7 @@ import game.utils.AudioPlayer;
 
 /**
  *
- * @author Kevin
+ * @author Kevin Albrich
  */
 public class TestSoundAppState extends AbstractAppState implements ActionListener {
 
