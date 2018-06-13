@@ -103,7 +103,7 @@ public class HUDBuilder extends AbstractScreenBuilder {
                         childLayoutVertical();
                         //backgroundColor("#00f8");
                         height("100%");
-                        width("33%");
+                        width("50%");
 
                         panel(new PanelBuilder("panel_top_right") {
                             {
@@ -111,6 +111,8 @@ public class HUDBuilder extends AbstractScreenBuilder {
                                 //backgroundColor("#44f8");
                                 height("50%");
                                 width("100%");
+                                valignBottom();
+                                alignRight();
 
                                 // add image
                                 image(new ImageBuilder() {
@@ -124,26 +126,6 @@ public class HUDBuilder extends AbstractScreenBuilder {
                             }
                         });
 
-                        panel(new PanelBuilder("panel_bottom_right") {
-                            {
-                                childLayoutCenter();
-                                //backgroundColor("#44f8");
-                                height("50%");
-                                width("100%");
-                                valignBottom();
-                                alignRight();
-
-                                // add image
-                                image(new ImageBuilder() {
-                                    {
-                                        filename("Textures/Images/raceted_icon.png");
-                                        valignBottom();
-                                        alignRight();
-                                    }
-                                });
-
-                            }
-                        });
                     }
                 }); // panel added
             }
