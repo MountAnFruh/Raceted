@@ -24,6 +24,7 @@ import com.jme3.texture.Texture;
 import game.gui.GUIAppState;
 import game.main.appstates.GameAppState;
 import beans.DMGArt;
+import beans.PlayerInfo;
 import com.jme3.collision.CollisionResults;
 import com.jme3.scene.Spatial;
 import game.main.appstates.TrapPlaceAppState;
@@ -43,12 +44,16 @@ public class RockAppState extends CharacterAppState {
     
     private float deltaU = 0.0f;
 
-    public RockAppState(BulletAppState bulletAppState, GameAppState gameAppState, int maxHP, Vector3f spawnPoint, Quaternion spawnRotation, Node terrainNode) {
-        this(null, gameAppState, bulletAppState, maxHP, spawnPoint, spawnRotation, terrainNode);
+    public RockAppState(BulletAppState bulletAppState, GameAppState gameAppState,
+            int maxHP, Vector3f spawnPoint, Quaternion spawnRotation,
+            Node terrainNode, PlayerInfo playerInfo) {
+        this(null, gameAppState, bulletAppState, maxHP, spawnPoint, spawnRotation, terrainNode, playerInfo);
     }
     
-    public RockAppState(GUIAppState guiAppState, GameAppState gameAppState, BulletAppState bulletAppState, int maxHP, Vector3f spawnPoint, Quaternion spawnRotation, Node terrainNode) {
-        super(guiAppState, gameAppState, bulletAppState, maxHP, spawnPoint, spawnRotation, terrainNode);
+    public RockAppState(GUIAppState guiAppState, GameAppState gameAppState,
+            BulletAppState bulletAppState, int maxHP, Vector3f spawnPoint,
+            Quaternion spawnRotation, Node terrainNode, PlayerInfo playerInfo) {
+        super(guiAppState, gameAppState, bulletAppState, maxHP, spawnPoint, spawnRotation, terrainNode, playerInfo);
     }
 
     @Override

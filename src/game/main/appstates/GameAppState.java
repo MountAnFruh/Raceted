@@ -32,6 +32,7 @@ import game.entities.RockAppState;
 import game.gui.GUIAppState;
 import beans.DMGArt;
 import com.jme3.collision.CollisionResults;
+import com.jme3.input.FlyByCamera;
 import game.utils.AudioPlayer;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
@@ -103,6 +104,8 @@ public class GameAppState extends AbstractAppState implements ActionListener {
         simpleApp.getFlyByCamera().setEnabled(false);
         this.assetManager = simpleApp.getAssetManager();
         this.inputManager = simpleApp.getInputManager();
+        inputManager.setCursorVisible(false);
+        
         this.stateManager = stateManager;
         
         this.bulletAppState = new BulletAppState();
@@ -210,7 +213,6 @@ public class GameAppState extends AbstractAppState implements ActionListener {
                     if(worldAppState.outsideLevel(level.name(), characterAppState.getLocation())) {
                         if(!characterAppState.isDead()) {
                             System.out.println("RACETED!"); // TODO: Irgendeinen Text am Screen anzeigen lassen
-                            currentPlayer.setDied(true);
                             characterAppState.causeDmg(INITHP, DMGArt.OUTSIDELEVEL);
                         }
                         return;
@@ -268,9 +270,9 @@ public class GameAppState extends AbstractAppState implements ActionListener {
         if(currPlayerIndex >= playerInfos.size() - 1) {
             // NEXT MODE
             if(currMode == Mode.DRIVEMODE) {
+                calculatePoints();
                 changeMode(Mode.TRAPMODE);
             } else if(currMode == Mode.TRAPMODE) {
-                calculatePoints();
                 changeMode(Mode.DRIVEMODE);
             }
         } else {
@@ -332,10 +334,10 @@ public class GameAppState extends AbstractAppState implements ActionListener {
                 stateManager.detach(characterAppState);
                 switch(currentPlayer.getCharacter()) {
                     case ROCK:
-                        characterAppState = new RockAppState(bulletAppState, this, INITHP, spawnPoint, spawnRotation, worldAppState.getTerrainNode());
+                        characterAppState = new RockAppState(bulletAppState, this, INITHP, spawnPoint, spawnRotation, worldAppState.getTerrainNode(), currentPlayer);
                         break;
                     case CAR:
-                        characterAppState = new CarAppState(bulletAppState, this, INITHP, spawnPoint, spawnRotation, worldAppState.getTerrainNode());
+                        characterAppState = new CarAppState(bulletAppState, this, INITHP, spawnPoint, spawnRotation, worldAppState.getTerrainNode(), currentPlayer);
                         break;
                 }
                 stateManager.attach(characterAppState);

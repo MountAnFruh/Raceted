@@ -121,41 +121,41 @@ public class GUIScreenController implements ScreenController {
     public void trap1() {
         gameAppState.setTrap(1);
 
-        Element e = nifty.getScreen("trap_chooser").findElementById(panelname + "_1");
+        Element e = nifty.getScreen(GUIAppState.TRAP_PLACE_HUD).findElementById(panelname + "_1");
         System.out.println(e.getId());
         e.getRenderer(PanelRenderer.class).setBackgroundColor(bgColor);
 
-        e = nifty.getScreen("trap_chooser").findElementById(panelname + "_3");
+        e = nifty.getScreen(GUIAppState.TRAP_PLACE_HUD).findElementById(panelname + "_3");
         e.getRenderer(PanelRenderer.class).setBackgroundColor(null);
 
-        e = nifty.getScreen("trap_chooser").findElementById(panelname + "_2");
+        e = nifty.getScreen(GUIAppState.TRAP_PLACE_HUD).findElementById(panelname + "_2");
         e.getRenderer(PanelRenderer.class).setBackgroundColor(null);
     }
 
     public void trap2() {
         gameAppState.setTrap(2);
 
-        Element e = nifty.getScreen("trap_chooser").findElementById(panelname + "_2");
+        Element e = nifty.getScreen(GUIAppState.TRAP_PLACE_HUD).findElementById(panelname + "_2");
         System.out.println(e.getId());
         e.getRenderer(PanelRenderer.class).setBackgroundColor(bgColor);
 
-        e = nifty.getScreen("trap_chooser").findElementById(panelname + "_1");
+        e = nifty.getScreen(GUIAppState.TRAP_PLACE_HUD).findElementById(panelname + "_1");
         e.getRenderer(PanelRenderer.class).setBackgroundColor(null);
 
-        e = nifty.getScreen("trap_chooser").findElementById(panelname + "_3");
+        e = nifty.getScreen(GUIAppState.TRAP_PLACE_HUD).findElementById(panelname + "_3");
         e.getRenderer(PanelRenderer.class).setBackgroundColor(null);
     }
 
     public void trap3() {
         gameAppState.setTrap(3);
 
-        Element e = nifty.getScreen("trap_chooser").findElementById(panelname + "_3");
+        Element e = nifty.getScreen(GUIAppState.TRAP_PLACE_HUD).findElementById(panelname + "_3");
         e.getRenderer(PanelRenderer.class).setBackgroundColor(bgColor);
 
-        e = nifty.getScreen("trap_chooser").findElementById(panelname + "_1");
+        e = nifty.getScreen(GUIAppState.TRAP_PLACE_HUD).findElementById(panelname + "_1");
         e.getRenderer(PanelRenderer.class).setBackgroundColor(null);
 
-        e = nifty.getScreen("trap_chooser").findElementById(panelname + "_2");
+        e = nifty.getScreen(GUIAppState.TRAP_PLACE_HUD).findElementById(panelname + "_2");
         e.getRenderer(PanelRenderer.class).setBackgroundColor(null);
     }
     
@@ -199,7 +199,6 @@ public class GUIScreenController implements ScreenController {
     }
     
     public void setCurrentPlayerNumber(int number) {
-        String text = "Spieler " + number + "\n";
         Element e = nifty.getScreen(GUIAppState.ESC_MENU).findElementById(ESCMenuBuilder.PLAYER_TEXT);
         if(e != null) e.getRenderer(TextRenderer.class).setText(String.format(ESCMenuBuilder.PLAYER_TEXT_FORMAT, number));
         e = nifty.getScreen(GUIAppState.GAME_HUD).findElementById(GameHUDBuilder.PLAYER_TEXT);
