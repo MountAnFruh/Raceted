@@ -47,23 +47,23 @@ import java.util.Map;
  * @author Robbo13
  */
 public class GameAppState extends AbstractAppState implements ActionListener {
-    
+
     protected static final Trigger TRIGGER_MODE = new KeyTrigger(KeyInput.KEY_T);
     protected static final Trigger TRIGGER_ESC = new KeyTrigger(KeyInput.KEY_ESCAPE);
-    
+
     private static final String MAPPING_MODE = "Change_Mode";
     private static final String MAPPING_ESC = "ESC_Menu";
-    
+
     private static final int INITHP = 10_000;
     private static final int BASICDMG = 100;
-    
+
     private final Map<PlayerInfo, List<Spatial>> placedTraps = new HashMap<>();
     private final List<PlayerInfo> playerInfos;
     private final Level level;
     private final GUIAppState guiAppState;
-    
+
     private PlayerInfo currentPlayer;
-    
+
     private BulletAppState bulletAppState;
     private WorldAppState worldAppState;
     private AudioPlayer audioPlayer;
@@ -71,31 +71,31 @@ public class GameAppState extends AbstractAppState implements ActionListener {
     private TrapPlaceAppState trapPlaceAppState;
     private AssetManager assetManager;
     private InputManager inputManager;
-    
+
     private AppStateManager stateManager;
-    
+
     private Quaternion spawnRotation;
     private Vector3f spawnPoint;
-    
+
     private int currCheckpoint = 0;
     private int currRound = 1;
-    
+
     private boolean inputEnabled = true;
     private boolean terrainInitialized = false;
     private boolean started = false;
     private Mode currMode = null;
-    
+
     public GameAppState(GUIAppState guiAppState, AudioPlayer audioPlayer, @NotNull List<PlayerInfo> playerInfos, Level level) {
         this.playerInfos = playerInfos;
         this.audioPlayer = audioPlayer;
-        for(PlayerInfo playerInfo : playerInfos) {
+        for (PlayerInfo playerInfo : playerInfos) {
             placedTraps.put(playerInfo, new ArrayList<>());
         }
         this.guiAppState = guiAppState;
         this.worldAppState = new WorldAppState(bulletAppState);
         this.level = level;
     }
-    
+
     @Override
     public void initialize(AppStateManager stateManager, Application app) {
         super.initialize(stateManager, app);
@@ -104,39 +104,39 @@ public class GameAppState extends AbstractAppState implements ActionListener {
         this.assetManager = simpleApp.getAssetManager();
         this.inputManager = simpleApp.getInputManager();
         this.stateManager = stateManager;
-        
+
         this.bulletAppState = new BulletAppState();
         //bulletAppState.setDebugEnabled(true);
         this.worldAppState = new WorldAppState(bulletAppState);
         //this.trapPlaceAppState = new TrapPlaceAppState(bulletAppState, worldAppState);
         this.audioPlayer = new AudioPlayer(assetManager);
-        
+
         initInput();
-        
+
         this.currentPlayer = playerInfos.get(0);
         stateManager.attach(bulletAppState);
         stateManager.attach(worldAppState);
     }
-    
+
     protected void initInput() {
         inputManager.addMapping(MAPPING_MODE, TRIGGER_MODE);
         inputManager.addMapping(MAPPING_ESC, TRIGGER_ESC);
         inputManager.addListener(this, MAPPING_MODE, MAPPING_ESC);
     }
-    
+
     private void loadLevel() {
         AmbientLight ambientLight = new AmbientLight();
         ambientLight.setColor(ColorRGBA.White);
         worldAppState.addLight(ambientLight);
-        
+
         Spatial sky = assetManager.loadModel("Scenes/Sky.j3o");
         worldAppState.setSky(sky);
-        
+
         Texture alphaMap, heightMap, mappingMap;
         Texture[] textures = new Texture[3];
-        float[] scales = { 64f, 64f, 64f };
+        float[] scales = {64f, 64f, 64f};
         spawnRotation = new Quaternion();
-        switch(level) {
+        switch (level) {
             case LEVEL1:
                 alphaMap = assetManager.loadTexture("Textures/Maps/firstalphamap.png");
                 heightMap = assetManager.loadTexture("Textures/Maps/firstheightmap.png");
@@ -147,40 +147,42 @@ public class GameAppState extends AbstractAppState implements ActionListener {
                 spawnRotation.fromAngles(0, (float) Math.toRadians(180), 0);
                 break;
             default:
-                alphaMap = null; heightMap = null; mappingMap = null;
+                alphaMap = null;
+                heightMap = null;
+                mappingMap = null;
                 break;
         }
         String name = level.name();
-        worldAppState.loadTerrain(name, alphaMap, heightMap, mappingMap, Vector3f.ZERO, new Vector3f(1.2f,0.1f,1.2f));
-        for(int i = 1;i <= 3;i++) {
-            worldAppState.setTexture(level.name(),i,textures[i-1],scales[i-1]);
+        worldAppState.loadTerrain(name, alphaMap, heightMap, mappingMap, Vector3f.ZERO, new Vector3f(1.2f, 0.1f, 1.2f));
+        for (int i = 1; i <= 3; i++) {
+            worldAppState.setTexture(level.name(), i, textures[i - 1], scales[i - 1]);
         }
         BoundingBox startBox = worldAppState.getStart(name);
         spawnPoint = new Vector3f(startBox.getCenter());
         Vector2f spawnPoint2D = new Vector2f(spawnPoint.x, spawnPoint.z);
         float height = worldAppState.getHeight(spawnPoint2D);
         spawnPoint.setY(height);
-        
+
         changeMode(Mode.DRIVEMODE);
     }
-    
+
     @Override
     public void update(float tpf) {
         // Initialisiere Terrain wenn alles bereit ist.
-        if(worldAppState.isInitialized() && !terrainInitialized) {
+        if (worldAppState.isInitialized() && !terrainInitialized) {
             loadLevel();
             terrainInitialized = true;
         }
-        if(worldAppState.isInitialized()) {
+        if (worldAppState.isInitialized()) {
             guiAppState.getController().setCurrentPlayerNumber(getCurrentPlayerNumber());
             guiAppState.getController().setPointsInGameHUDAndTrapPlaceHUD(currentPlayer.getPoints());
             List<PlayerInfo> pointsRanking = new ArrayList<>(playerInfos);
             Collections.sort(pointsRanking, Comparator.comparing(PlayerInfo::getPoints));
             int pointsIndex = pointsRanking.indexOf(currentPlayer);
-            guiAppState.getController().setPlacePointsInGameHUDAndTrapPlaceHUD(pointsIndex + 1);
-            if(currMode == Mode.DRIVEMODE) {
-                if(characterAppState.isInitialized()) {
-                    if(!started) {
+//            guiAppState.getController().setPlacePointsInGameHUDAndTrapPlaceHUD(pointsIndex + 1);
+            if (currMode == Mode.DRIVEMODE) {
+                if (characterAppState.isInitialized()) {
+                    if (!started) {
                         currRound = 1;
                         currCheckpoint = 0;
                         started = true;
@@ -196,10 +198,10 @@ public class GameAppState extends AbstractAppState implements ActionListener {
                     Collections.sort(ranking, Comparator.comparing(PlayerInfo::isDied).thenComparing(PlayerInfo::getDrivenTime));
                     int index = ranking.indexOf(currentPlayer);
                     guiAppState.getController().setPlaceTimeInGameHUD(index + 1);
-                    
+
                     for (List<Spatial> spatials : placedTraps.values()) {
-                        for(Spatial spatial : spatials) {
-                            if(characterAppState.getGeometry().collideWith(spatial.getWorldBound(), new CollisionResults()) > 0) {
+                        for (Spatial spatial : spatials) {
+                            if (characterAppState.getGeometry().collideWith(spatial.getWorldBound(), new CollisionResults()) > 0) {
                                 String text = spatial.getUserData(TrapPlaceAppState.DMG_ART_KEY);
                                 DMGArt art = DMGArt.valueOf(text);
                                 characterAppState.causeDmg(BASICDMG, art);
@@ -207,31 +209,31 @@ public class GameAppState extends AbstractAppState implements ActionListener {
                         }
                     }
 
-                    if(worldAppState.outsideLevel(level.name(), characterAppState.getLocation())) {
-                        if(!characterAppState.isDead()) {
+                    if (worldAppState.outsideLevel(level.name(), characterAppState.getLocation())) {
+                        if (!characterAppState.isDead()) {
                             System.out.println("RACETED!"); // TODO: Irgendeinen Text am Screen anzeigen lassen
                             currentPlayer.setDied(true);
                             characterAppState.causeDmg(INITHP, DMGArt.OUTSIDELEVEL);
                         }
                         return;
                     }
-                    
+
                     String value = worldAppState.insideCheckpointOrStart(characterAppState.getLocation());
-                    if(value != null) {
+                    if (value != null) {
                         String[] parts = value.split(";");
                         String mapName = parts[0];
                         int checkpoint = Integer.parseInt(parts[1]);
                         List<BoundingBox> checkpoints = worldAppState.getCheckpoints(mapName);
                         int checkpointCount = checkpoints.size() + 1;
-                        if(mapName.equals(level.name())) {
+                        if (mapName.equals(level.name())) {
                             int nextCheckpoint = (currCheckpoint + 1) % checkpointCount;
-                            if(checkpoint == nextCheckpoint) {
+                            if (checkpoint == nextCheckpoint) {
                                 currCheckpoint = nextCheckpoint;
                                 BoundingBox checkpointbb;
-                                if(currCheckpoint == 0) {
+                                if (currCheckpoint == 0) {
                                     currRound++;
                                     System.out.println("*** NEW ROUND: " + currRound);
-                                    if(currRound >= level.getRoundCount()) {
+                                    if (currRound >= level.getRoundCount()) {
                                         changeNextPlayerOrMode();
                                         return;
                                     }
@@ -257,19 +259,19 @@ public class GameAppState extends AbstractAppState implements ActionListener {
             }
         }
     }
-    
+
     public void changeNextPlayerOrMode() {
         int currPlayerIndex = getCurrentPlayerNumber() - 1;
-        
+
         // NEXT PLAYER OR FIRST PLAYER AGAIN
         PlayerInfo nextPlayer = playerInfos.get(currPlayerIndex + 1 >= playerInfos.size() ? 0 : currPlayerIndex + 1);
         currentPlayer = nextPlayer;
-        
-        if(currPlayerIndex >= playerInfos.size() - 1) {
+
+        if (currPlayerIndex >= playerInfos.size() - 1) {
             // NEXT MODE
-            if(currMode == Mode.DRIVEMODE) {
+            if (currMode == Mode.DRIVEMODE) {
                 changeMode(Mode.TRAPMODE);
-            } else if(currMode == Mode.TRAPMODE) {
+            } else if (currMode == Mode.TRAPMODE) {
                 calculatePoints();
                 changeMode(Mode.DRIVEMODE);
             }
@@ -278,19 +280,23 @@ public class GameAppState extends AbstractAppState implements ActionListener {
         }
         started = false;
     }
-    
+
     private void calculatePoints() {
         boolean everyBodyDied = true;
         boolean everyBodyLived = true;
-        for(PlayerInfo playerInfo : playerInfos) {
-            if(playerInfo.isDied()) {
+        for (PlayerInfo playerInfo : playerInfos) {
+            if (playerInfo.isDied()) {
                 everyBodyLived = false;
             } else {
                 everyBodyDied = false;
             }
         }
-        if(everyBodyDied) return;
-        if(everyBodyLived) return;
+        if (everyBodyDied) {
+            return;
+        }
+        if (everyBodyLived) {
+            return;
+        }
 //        LocalTime minTime = LocalTime.MAX;
 //        for(PlayerInfo playerInfo : playerInfos) {
 //            if(!playerInfo.isDied()) {
@@ -301,11 +307,11 @@ public class GameAppState extends AbstractAppState implements ActionListener {
 //                minTime = LocalTime.of(0, 0, 0, 0);
 //            }
 //        }
-        for(PlayerInfo playerInfo : playerInfos) {
+        for (PlayerInfo playerInfo : playerInfos) {
             List<PlayerInfo> ranking = new ArrayList<>(playerInfos);
             Collections.sort(ranking, Comparator.comparing(PlayerInfo::isDied).thenComparing(PlayerInfo::getDrivenTime));
             int placed_time = ranking.indexOf(playerInfo);
-            if(!playerInfo.isDied()) {
+            if (!playerInfo.isDied()) {
 //                LocalTime time = playerInfo.getDrivenTime();
 //                int subWithMin = time.getSecond() - minTime.getSecond();
 //                playerInfo.setPoints(playerInfo.getPoints() + placed_time * subWithMin);
@@ -313,11 +319,11 @@ public class GameAppState extends AbstractAppState implements ActionListener {
             }
         }
     }
-    
+
     private void changeMode(Mode mode) {
         System.out.println("Activated " + mode);
         currMode = mode;
-        switch(mode) {
+        switch (mode) {
             case TRAPMODE:
                 guiAppState.goToScreen(GUIAppState.TRAP_PLACE_HUD);
                 stateManager.detach(trapPlaceAppState);
@@ -330,7 +336,7 @@ public class GameAppState extends AbstractAppState implements ActionListener {
             case DRIVEMODE:
                 guiAppState.goToScreen(GUIAppState.GAME_HUD);
                 stateManager.detach(characterAppState);
-                switch(currentPlayer.getCharacter()) {
+                switch (currentPlayer.getCharacter()) {
                     case ROCK:
                         characterAppState = new RockAppState(bulletAppState, this, INITHP, spawnPoint, spawnRotation, worldAppState.getTerrainNode());
                         break;
@@ -343,20 +349,20 @@ public class GameAppState extends AbstractAppState implements ActionListener {
                 break;
         }
     }
-    
+
     public void setTrap(int id) {
         trapPlaceAppState.setTrap(id);
     }
-    
+
     public void toggleHUD() {
         String currentHUD = null;
-        if(currMode == Mode.TRAPMODE) {
+        if (currMode == Mode.TRAPMODE) {
             currentHUD = GUIAppState.TRAP_PLACE_HUD;
-        } else if(currMode == Mode.DRIVEMODE) {
+        } else if (currMode == Mode.DRIVEMODE) {
             currentHUD = GUIAppState.GAME_HUD;
         }
-        if(guiAppState.getCurrentScreenName().equals(GUIAppState.ESC_MENU)) {
-            switch(currMode) {
+        if (guiAppState.getCurrentScreenName().equals(GUIAppState.ESC_MENU)) {
+            switch (currMode) {
                 case TRAPMODE:
                     inputManager.setCursorVisible(true);
                     trapPlaceAppState.setEnabled(true);
@@ -369,8 +375,8 @@ public class GameAppState extends AbstractAppState implements ActionListener {
             inputEnabled = true;
             bulletAppState.setEnabled(true);
             guiAppState.goToScreen(currentHUD);
-        } else if(guiAppState.getCurrentScreenName().equals(currentHUD)) {
-            switch(currMode) {
+        } else if (guiAppState.getCurrentScreenName().equals(currentHUD)) {
+            switch (currMode) {
                 case TRAPMODE:
                     trapPlaceAppState.setEnabled(false);
                     break;
@@ -384,7 +390,7 @@ public class GameAppState extends AbstractAppState implements ActionListener {
             guiAppState.goToScreen(GUIAppState.ESC_MENU);
         }
     }
-    
+
     @Override
     public void cleanup() {
         super.cleanup();
@@ -393,16 +399,16 @@ public class GameAppState extends AbstractAppState implements ActionListener {
 
     @Override
     public void onAction(String name, boolean isPressed, float tpf) {
-        if(inputEnabled) {
-            if(name.equals(MAPPING_MODE) && isPressed) {
-                if(currMode == Mode.DRIVEMODE) {
+        if (inputEnabled) {
+            if (name.equals(MAPPING_MODE) && isPressed) {
+                if (currMode == Mode.DRIVEMODE) {
                     changeMode(Mode.TRAPMODE);
                 } else {
                     changeMode(Mode.DRIVEMODE);
                 }
             }
         }
-        if(name.equals(MAPPING_ESC) && isPressed) {
+        if (name.equals(MAPPING_ESC) && isPressed) {
             this.toggleHUD();
         }
     }
@@ -411,32 +417,36 @@ public class GameAppState extends AbstractAppState implements ActionListener {
         return currentPlayer;
     }
 
-    public Map<PlayerInfo,List<Spatial>> getPlacedTraps() {
+    public Map<PlayerInfo, List<Spatial>> getPlacedTraps() {
         return placedTraps;
     }
 
     public Level getLevel() {
         return level;
     }
-    
+
     public int getCurrentPlayerNumber() {
-        for(int i = 1;i <= playerInfos.size();i++) {
-            if(playerInfos.get(i-1) == currentPlayer) {
+        for (int i = 1; i <= playerInfos.size(); i++) {
+            if (playerInfos.get(i - 1) == currentPlayer) {
                 return i;
             }
         }
         return -1;
     }
-    
-    public enum Mode { TRAPMODE, DRIVEMODE};
-    
-    public enum Character { ROCK, CAR };
-    
+
+    public enum Mode {
+        TRAPMODE, DRIVEMODE
+    };
+
+    public enum Character {
+        ROCK, CAR
+    };
+
     public enum Level {
         LEVEL1(1);
-        
+
         private int roundCount = 1;
-        
+
         private Level(int roundCount) {
             this.roundCount = roundCount;
         }
@@ -445,5 +455,5 @@ public class GameAppState extends AbstractAppState implements ActionListener {
             return roundCount;
         }
     };
-    
+
 }

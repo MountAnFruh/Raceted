@@ -19,7 +19,7 @@ import java.time.format.DateTimeFormatter;
  * @author Kevin
  */
 public class GameHUDBuilder extends AbstractScreenBuilder {
-    
+
     public static final String PLACE_TIME_TEXT = "place_time_text";
     public static final String TIME_LEVEL_TEXT = "time_level_text";
     public static final String ROUND_TEXT = "round_text";
@@ -27,7 +27,7 @@ public class GameHUDBuilder extends AbstractScreenBuilder {
     public static final String PLACE_POINTS_TEXT = "place_points_text";
     public static final String POINTS_TEXT = "points_text";
     public static final String HP_TEXT = "hp_text";
-    
+
     public static final String PLACE_TIME_TEXT_FORMAT = "Platz %d\n";
     public static final String TIME_LEVEL_TEXT_FORMAT_PRE = "Level-Zeit: ";
     public static final String ROUND_TEXT_FORMAT = "Runde %d\n";
@@ -35,7 +35,7 @@ public class GameHUDBuilder extends AbstractScreenBuilder {
     public static final String PLACE_POINTS_TEXT_FORMAT = "Platz %d\n";
     public static final String POINTS_TEXT_FORMAT = "Punkte: %06d\n";
     public static final String HP_TEXT_FORMAT = "HP: %05d/%05d\n";
-    
+
     public GameHUDBuilder(String string, SimpleApplication app, ScreenController controller) {
         super(string, app, controller);
     }
@@ -51,24 +51,25 @@ public class GameHUDBuilder extends AbstractScreenBuilder {
                 panel(new PanelBuilder("panel_left") {
                     {
                         childLayoutVertical();
-                        //backgroundColor("#00f8");
+                        //    backgroundColor("#00f8");
                         height("100%");
-                        width("33%");
+                        width("50%");
 
                         panel(new PanelBuilder("panel_top_left") {
                             {
-                                childLayoutCenter();
-                                height("15%");
+                                childLayoutVertical();
+                                backgroundColor("#00a8");
+                                height("50%");
                                 width("100%");
-
-                                text(new TextBuilder(PLACE_TIME_TEXT) {
+                                valignTop();
+                                text(new TextBuilder(ROUND_TEXT) {
                                     {
-                                        text(String.format(PLACE_TIME_TEXT_FORMAT, 0));
+                                        text(String.format(ROUND_TEXT_FORMAT, 0));
                                         font("Interface/Fonts/ErasBoldITC.fnt");
-                                        valignTop();
+                                        valignCenter();
                                         alignLeft();
-                                        height("50%");
-                                        width("30%");
+                                        height("10%");
+                                        width("40%");
                                     }
                                 });
 
@@ -76,119 +77,73 @@ public class GameHUDBuilder extends AbstractScreenBuilder {
                                     {
                                         text(TIME_LEVEL_TEXT_FORMAT_PRE + "00:00.000");
                                         font("Interface/Fonts/ErasBoldITC.fnt");
-                                        valignTop();
+                                        valignCenter();
                                         alignLeft();
-                                        height("70%");
-                                        width("30%");
+                                        height("10%");
+                                        width("60%");
                                     }
                                 });
 
                             }
                         });
-                    }
-                });
 
-                panel(new PanelBuilder("panel_mid") {
-                    {
-                        childLayoutVertical();
-                        //backgroundColor("#00f8");
-                        height("100%");
-                        width("33%");
-
-                        panel(new PanelBuilder("panel_top_mid") {
+                        panel(new PanelBuilder("panel_bottom_left") {
                             {
-                                childLayoutCenter();
-                                height("15%");
-                                width("100%");
-
-                                text(new TextBuilder(ROUND_TEXT) {
-                                    {
-                                        text(String.format(ROUND_TEXT_FORMAT, 0));
-                                        font("Interface/Fonts/ErasBoldITC.fnt");
-                                        valignTop();
-                                        alignLeft();
-                                        height("50%");
-                                        width("100%");
-                                    }
-                                });
-
-                            }
-                        });
-                    }
-                });
-                panel(new PanelBuilder("panel_right") {
-                    {
-                        childLayoutVertical();
-                        //backgroundColor("#00f8");
-                        height("100%");
-                        width("33%");
-
-                        panel(new PanelBuilder("panel_top_right") {
-                            {
-                                //childLayoutCenter();
                                 childLayoutVertical();
-                                //backgroundColor("#44f8");
+                                backgroundColor("#00b8");
                                 height("50%");
                                 width("100%");
+                                valignBottom();
 
-                                // add image
-                                image(new ImageBuilder() {
+                                text(new TextBuilder() {
                                     {
-                                        filename("Textures/Images/raceted_icon.png");
-                                        valignTop();
-                                        alignRight();
+                                        valignBottom();
+                                        alignLeft();
+                                        height("80%");
+                                        width("50%");
                                     }
                                 });
-                                
-                                //Passende Position finden
-                                text(new TextBuilder(PLAYER_TEXT) {
+
+                                text(new TextBuilder(PLACE_TIME_TEXT) {
                                     {
-                                        text(String.format(PLAYER_TEXT_FORMAT, 0));
+                                        text(String.format(PLACE_TIME_TEXT_FORMAT, 0));
                                         font("Interface/Fonts/ErasBoldITC.fnt");
-                                        valignTop();
+                                        valignBottom();
                                         alignLeft();
-                                        height("50%");
+                                        height("10%");
                                         width("30%");
                                     }
-                                });
-                                //Passende Position finden
-                                text(new TextBuilder(PLACE_POINTS_TEXT) {
-                                    {
-                                        text(String.format(PLACE_POINTS_TEXT_FORMAT, 0));
-                                        font("Interface/Fonts/ErasBoldITC.fnt");
-                                        valignTop();
-                                        alignLeft();
-                                        height("50%");
-                                        width("30%");
-                                    }
-                                });
-                                //Passende Position finden
-                                text(new TextBuilder(HP_TEXT) {
-                                    {
-                                        text(String.format(HP_TEXT_FORMAT, 0, 0));
-                                        font("Interface/Fonts/ErasBoldITC.fnt");
-                                        valignTop();
-                                        alignLeft();
-                                        height("50%");
-                                        width("30%");
-                                    }
-                                });
-                                //Passende Position finden
-                                text(new TextBuilder(POINTS_TEXT) {
+                                }
+                                );
+
+                                text(
+                                        new TextBuilder(POINTS_TEXT) {
                                     {
                                         text(String.format(POINTS_TEXT_FORMAT, 0));
                                         font("Interface/Fonts/ErasBoldITC.fnt");
-                                        valignTop();
+                                        valignBottom();
                                         alignLeft();
-                                        height("50%");
-                                        width("30%");
+                                        height("10%");
+                                        width("50%");
                                     }
-                                });
+                                }
+                                );
 
                             }
                         });
+                    }
 
-                        panel(new PanelBuilder("panel_bottom_right") {
+                });
+
+                panel(
+                        new PanelBuilder("panel_right") {
+                    {
+                        childLayoutVertical();
+                        //backgroundColor("#00f8");
+                        height("100%");
+                        width("50%");
+
+                        panel(new PanelBuilder("panel_top_right") {
                             {
                                 childLayoutCenter();
                                 //backgroundColor("#44f8");
@@ -201,17 +156,61 @@ public class GameHUDBuilder extends AbstractScreenBuilder {
                                 image(new ImageBuilder() {
                                     {
                                         filename("Textures/Images/raceted_icon.png");
-                                        valignBottom();
+                                        valignTop();
                                         alignRight();
                                     }
                                 });
 
                             }
                         });
+
+                        panel(new PanelBuilder("panel_bottom_right") {
+                            {
+                                childLayoutVertical();
+                                //backgroundColor("#44f8");
+                                height("50%");
+                                width("50%");
+                                valignTop();
+                                alignRight();
+                            
+                                text(new TextBuilder() {
+                                    {
+                                  
+                                        valignCenter();
+                                        alignRight();
+                                        height("80%");
+                                        width("50%");
+                                    }
+                                });
+                                //Passende Position finden
+                                text(new TextBuilder(PLAYER_TEXT) {
+                                    {
+                                        text(String.format(PLAYER_TEXT_FORMAT, 0, 0));
+                                        font("Interface/Fonts/ErasBoldITC.fnt");
+                                        valignCenter();
+                                        alignRight();
+                                        height("10%");
+                                        width("50%");
+                                    }
+                                });
+                                //Passende Position finden
+                                text(new TextBuilder(HP_TEXT) {
+                                    {
+                                        text(String.format(HP_TEXT_FORMAT, 0, 0));
+                                        font("Interface/Fonts/ErasBoldITC.fnt");
+                                        valignTop();
+                                        alignRight();
+                                        height("10%");
+                                        width("70%");
+                                    }
+                                });
+                            }
+                        });
                     }
-                }); // panel added
+                }
+                ); // panel added
             }
         });
     }
-    
+
 }

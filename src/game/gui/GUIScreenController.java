@@ -174,12 +174,12 @@ public class GUIScreenController implements ScreenController {
         e.getRenderer(TextRenderer.class).setText(String.format(GameHUDBuilder.PLACE_TIME_TEXT_FORMAT, place));
     }
     
-    public void setPlacePointsInGameHUDAndTrapPlaceHUD(int place) {
-        Element e = nifty.getScreen(GUIAppState.GAME_HUD).findElementById(GameHUDBuilder.PLACE_POINTS_TEXT);
-        e.getRenderer(TextRenderer.class).setText(String.format(GameHUDBuilder.PLACE_POINTS_TEXT_FORMAT, place));
-        e = nifty.getScreen(GUIAppState.TRAP_PLACE_HUD).findElementById(TrapPlaceHUDBuilder.PLACE_POINTS_TEXT);
-        e.getRenderer(TextRenderer.class).setText(String.format(TrapPlaceHUDBuilder.PLACE_POINTS_TEXT_FORMAT, place));
-    }
+//    public void setPlacePointsInGameHUDAndTrapPlaceHUD(int place) {
+//        Element e = nifty.getScreen(GUIAppState.GAME_HUD).findElementById(GameHUDBuilder.PLACE_POINTS_TEXT);
+//        e.getRenderer(TextRenderer.class).setText(String.format(GameHUDBuilder.PLACE_POINTS_TEXT_FORMAT, place));
+//        e = nifty.getScreen(GUIAppState.TRAP_PLACE_HUD).findElementById(TrapPlaceHUDBuilder.PLACE_POINTS_TEXT);
+//        e.getRenderer(TextRenderer.class).setText(String.format(TrapPlaceHUDBuilder.PLACE_POINTS_TEXT_FORMAT, place));
+//    }
     
     public void setPointsInGameHUDAndTrapPlaceHUD(int points) {
         Element e = nifty.getScreen(GUIAppState.GAME_HUD).findElementById(GameHUDBuilder.POINTS_TEXT);
