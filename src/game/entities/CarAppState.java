@@ -109,12 +109,12 @@ public class CarAppState extends CharacterAppState {
     @Override
     protected void initPlayer() {
         Material mat = new Material(assetManager, "Common/MatDefs/Misc/Unshaded.j3md");
-        Texture tex = assetManager.loadTexture("Textures/chassis.png");
+        Texture tex = assetManager.loadTexture("Textures/chassis2.png");
 //        mat.getAdditionalRenderState().setWireframe(true);
         mat.setTexture("ColorMap", tex);
         
         vehicleNode = new Node("vehicleNode");
-        geometry = (Geometry) assetManager.loadModel("Models/geruestedit1.obj");
+        geometry = (Geometry) assetManager.loadModel("Models/chassis.obj");
         geometry.setCullHint(Geometry.CullHint.Never);
         geometry.setMaterial(mat);
         vehicleNode.attachChild(geometry);
