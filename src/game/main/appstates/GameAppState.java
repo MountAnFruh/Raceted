@@ -156,7 +156,7 @@ public class GameAppState extends AbstractAppState implements ActionListener {
                 break;
         }
         String name = level.name();
-        worldAppState.loadTerrain(name, alphaMap, heightMap, mappingMap, Vector3f.ZERO, new Vector3f(1.2f, 0.1f, 1.2f));
+        worldAppState.loadTerrain(name, alphaMap, heightMap, mappingMap, Vector3f.ZERO, new Vector3f(0.8f, 0.1f, 0.8f));
         for (int i = 1; i <= 3; i++) {
             worldAppState.setTexture(level.name(), i, textures[i - 1], scales[i - 1]);
         }
