@@ -27,7 +27,7 @@ import java.util.List;
 
 /**
  *
- * @author rober
+ * @author Robert Schmölzer
  */
 public class GUIScreenController implements ScreenController {
 

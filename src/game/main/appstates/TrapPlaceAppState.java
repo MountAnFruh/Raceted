@@ -48,7 +48,7 @@ import java.util.List;
 
 /**
  *
- * @author Robbo13
+ * @author Philipp Auer, Stefan Atzlinger
  */
 public class TrapPlaceAppState extends AbstractAppState implements ActionListener, AnalogListener {
     

@@ -16,7 +16,7 @@ import static game.gui.GameHUDBuilder.PLAYER_TEXT;
 
 /**
  *
- * @author Kevin
+ * @author Kevin Albrich
  */
 public class ChooseBuilder extends AbstractScreenBuilder {
     

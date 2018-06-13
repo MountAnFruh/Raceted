@@ -17,7 +17,7 @@ import game.entities.CarAppState;
 
 /**
  *
- * @author rober
+ * @author Robert Schmölzer
  */
 public class InitTestCar extends AbstractInit {
 

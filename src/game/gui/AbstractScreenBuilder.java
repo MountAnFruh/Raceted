@@ -12,7 +12,7 @@ import de.lessvoid.nifty.screen.ScreenController;
 
 /**
  *
- * @author rober
+ * @author Robert Schmölzer
  */
 public abstract class AbstractScreenBuilder extends ScreenBuilder{
 

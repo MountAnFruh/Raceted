@@ -14,7 +14,7 @@ import game.utils.ImageUtils;
 
 /**
  *
- * @author Robbo13
+ * @author Andreas Fruhwirt
  */
 public class ClientMain extends SimpleApplication {
     

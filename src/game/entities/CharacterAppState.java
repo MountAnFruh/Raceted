@@ -36,7 +36,7 @@ import sonst.Explosion;
 
 /**
  *
- * @author Robbo13
+ * @author Andreas Fruhwirt
  */
 public abstract class CharacterAppState extends AbstractAppState implements ActionListener {
     

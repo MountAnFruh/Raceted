@@ -15,7 +15,7 @@ import de.lessvoid.nifty.tools.Color;
 
 /**
  *
- * @author rober
+ * @author Robert Schmölzer
  */
 public class FallenAuswahlHUDBuilder extends AbstractScreenBuilder {
 

@@ -15,7 +15,7 @@ import java.util.Arrays;
 
 /**
  *
- * @author Robbo13
+ * @author Andreas Fruhwirt
  */
 public class ImageUtils {
     

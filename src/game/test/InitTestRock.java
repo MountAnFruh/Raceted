@@ -17,7 +17,7 @@ import game.entities.RockAppState;
 
 /**
  *
- * @author rober
+ * @author Robert Schmölzer
  */
 public class InitTestRock extends AbstractInit {
 

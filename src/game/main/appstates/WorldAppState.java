@@ -40,7 +40,7 @@ import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 /**
  *
- * @author Andreas
+ * @author Andreas Fruhwirt
  */
 public class WorldAppState extends AbstractAppState {
     

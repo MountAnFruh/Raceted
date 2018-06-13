@@ -26,7 +26,7 @@ import game.main.appstates.WorldAppState;
 
 /**
  *
- * @author Robbo13
+ * @author Andreas Fruhwirt
  */
 public class TestTerrain extends SimpleApplication implements ActionListener {
     

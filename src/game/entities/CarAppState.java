@@ -33,7 +33,7 @@ import java.util.List;
 
 /**
  *
- * @author Robbo13
+ * @author Florian Rottmann
  */
 public class CarAppState extends CharacterAppState {
     

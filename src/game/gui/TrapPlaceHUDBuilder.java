@@ -14,7 +14,7 @@ import de.lessvoid.nifty.screen.ScreenController;
 
 /**
  *
- * @author rober
+ * @author Robert Schmölzer
  */
 public class TrapPlaceHUDBuilder extends AbstractScreenBuilder {
     

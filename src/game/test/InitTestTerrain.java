@@ -25,7 +25,7 @@ import game.main.appstates.WorldAppState;
 
 /**
  *
- * @author rober
+ * @author Robert Schmölzer
  */
 public class InitTestTerrain extends AbstractInit implements ActionListener {
 

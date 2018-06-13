@@ -45,7 +45,7 @@ import java.util.Map;
 
 /**
  *
- * @author Robbo13
+ * @author Andreas Fruhwirt
  */
 public class GameAppState extends AbstractAppState implements ActionListener {
     

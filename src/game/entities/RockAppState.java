@@ -32,7 +32,7 @@ import java.util.List;
 
 /**
  *
- * @author Robbo13
+ * @author Andreas Fruhwirt
  */
 public class RockAppState extends CharacterAppState {
 

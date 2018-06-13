@@ -18,7 +18,7 @@ import com.jme3.scene.Node;
 
 /**
  *
- * @author rober
+ * @author Robert Schmölzer
  */
 public class Explosion {
     

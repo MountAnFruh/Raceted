@@ -16,7 +16,7 @@ import game.utils.AudioPlayer;
 
 /**
  *
- * @author Robbo13
+ * @author Robert Schmölzer
  */
 public class GUIAppState extends AbstractAppState {
 

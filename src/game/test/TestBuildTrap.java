@@ -10,7 +10,7 @@ import com.jme3.renderer.RenderManager;
 
 /**
  * 
- * @author Robbo13
+ * @author Andreas Fruhwirt
  */
 public class TestBuildTrap extends SimpleApplication {
 
