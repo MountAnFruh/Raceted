@@ -58,7 +58,7 @@ public class GameHUDBuilder extends AbstractScreenBuilder {
                         panel(new PanelBuilder("panel_top_left") {
                             {
                                 childLayoutVertical();
-                                backgroundColor("#00a8");
+                               // backgroundColor("#00a8");
                                 height("50%");
                                 width("100%");
                                 valignTop();
@@ -90,7 +90,7 @@ public class GameHUDBuilder extends AbstractScreenBuilder {
                         panel(new PanelBuilder("panel_bottom_left") {
                             {
                                 childLayoutVertical();
-                                backgroundColor("#00b8");
+                              //  backgroundColor("#00b8");
                                 height("50%");
                                 width("100%");
                                 valignBottom();
