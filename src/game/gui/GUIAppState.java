@@ -42,7 +42,7 @@ public class GUIAppState extends AbstractAppState {
 //        audioSource.play();
 
         this.audioPlayer = new AudioPlayer(appl.getAssetManager());
-        audioPlayer.playMusic("Sounds/Musics/Main.ogg", true, 0.2f);
+        audioPlayer.playMusic("Sounds/Musics/Menu.ogg", true, 0.2f);
 
         niftyDisplay = NiftyJmeDisplay.newNiftyJmeDisplay(
                 app.getAssetManager(),

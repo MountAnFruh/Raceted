@@ -90,6 +90,8 @@ public class GUIScreenController implements ScreenController {
 //        tester.close();
 //        mainScreen.goToScreen("start");
 //        quitGame();
+        audioPlayer.stopMusic();
+        audioPlayer.playMusic("Sounds/Musics/Menu.ogg", true, 0.2f);
         stateManager.detach(gameAppState);
         gameAppState = null;
         playerInfos.clear();
@@ -215,6 +217,7 @@ public class GUIScreenController implements ScreenController {
         playerInfos.add(playerInfo);
         if(playerInfos.size() >= PLAYERCOUNT) {
             audioPlayer.stopMusic();
+            audioPlayer.playMusic("Sounds/Musics/Main.ogg", true, 0.2f);
             gameAppState = new GameAppState(guiAppState, audioPlayer, playerInfos, LEVEL);
             stateManager.attach(gameAppState);
         } else {
