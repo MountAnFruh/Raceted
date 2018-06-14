@@ -146,7 +146,7 @@ public class TrapPlaceAppState extends AbstractAppState implements ActionListene
         Trap1 = assetManager.loadModel("Models/pylon.obj");
         Trap1.setMaterial(mat);
         Trap1.setCullHint(Geometry.CullHint.Never);
-        Trap2 = assetManager.loadModel("Models/Stachel.obj");
+        Trap2 = assetManager.loadModel("Models/stachel3x3.obj");
         Trap2.setMaterial(mat);
         Trap2.setCullHint(Geometry.CullHint.Never);
         Trap3 = assetManager.loadModel("Models/bushes.obj");
@@ -345,7 +345,7 @@ public class TrapPlaceAppState extends AbstractAppState implements ActionListene
                                     settrap.setUserData(DMG_ART_KEY, DMGArt.TRAFFICCONE.name());
                                 }
                                 if (teaGeom == Trap2) {
-                                    settrap = (Spatial) assetManager.loadModel("Models/Stachel.obj");
+                                    settrap = (Spatial) assetManager.loadModel("Models/stachel3x3.obj");
                                     settrap.setUserData(DMG_ART_KEY, DMGArt.SPIKE.name());
                                 }
                                 if (teaGeom == Trap3) {
