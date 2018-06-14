@@ -133,7 +133,7 @@ public class TrapPlaceHUDBuilder extends AbstractScreenBuilder {
                                 valignTop();
                                 text(new TextBuilder(ROUND_TEXT) {
                                     {
-                                        text(String.format(ROUND_TEXT_FORMAT, 0));
+                                        text(String.format("Bauphase", 0));
                                         font("Interface/Fonts/ErasBoldITC.fnt");
                                         valignCenter();
                                         alignLeft();
@@ -250,7 +250,7 @@ public class TrapPlaceHUDBuilder extends AbstractScreenBuilder {
 
                                         image(new ImageBuilder("falle2") {
                                             {
-                                                filename("Textures/Images/pylon_klein.png");
+                                                filename("Textures/Images/spike.png");
                                                 alignCenter();
                                                 valignCenter();
                                                 height("100%");
@@ -261,7 +261,7 @@ public class TrapPlaceHUDBuilder extends AbstractScreenBuilder {
 
                                         image(new ImageBuilder("falle3") {
                                             {
-                                                filename("Textures/Images/pylon_klein.png");
+                                                filename("Textures/Images/bush.png");
                                                 alignCenter();
                                                 valignCenter();
                                                 height("100%");
@@ -343,7 +343,7 @@ public class TrapPlaceHUDBuilder extends AbstractScreenBuilder {
                                         valignTop();
                                         alignRight();
                                         height("10%");
-                                        width("70%");
+                                        width("60%");
                                     }
                                 });
                             }

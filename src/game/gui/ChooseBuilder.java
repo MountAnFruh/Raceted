@@ -98,7 +98,7 @@ public class ChooseBuilder extends AbstractScreenBuilder {
                                 height("25%");
                                 width("50%");
 
-                                control(new ButtonBuilder("Cart", "cart") {
+                                control(new ButtonBuilder("Cart", "Kart") {
                                     {
                                         alignCenter();
                                         valignCenter();
@@ -120,7 +120,7 @@ public class ChooseBuilder extends AbstractScreenBuilder {
                                 height("25%");
                                 width("50%");
 
-                                control(new ButtonBuilder("Rock", "rock") {
+                                control(new ButtonBuilder("Rock", "Stein") {
                                     {
                                         alignCenter();
                                         valignCenter();
@@ -190,7 +190,7 @@ public class ChooseBuilder extends AbstractScreenBuilder {
                         width("75%");
 
                         // add text
-                        control(new ButtonBuilder("BackButton", "back") {
+                        control(new ButtonBuilder("BackButton", "Zurück") {
                             {
                                 alignCenter();
                                 valignCenter();

@@ -107,7 +107,7 @@ public class StartBuilder extends AbstractScreenBuilder {
                                 height("50%");
                                 width("50%");
                               
-                                control(new ButtonBuilder("StartButton", "Start") {
+                                control(new ButtonBuilder("StartButton", "Spielen") {
                                     {
 
                                         alignCenter();
@@ -129,7 +129,7 @@ public class StartBuilder extends AbstractScreenBuilder {
                                 height("50%");
                                 width("50%");
                              
-                                control(new ButtonBuilder("QuitButton", "quit") {
+                                control(new ButtonBuilder("QuitButton", "Beenden") {
                                     {
 
                                         alignCenter();
