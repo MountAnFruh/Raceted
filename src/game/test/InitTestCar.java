@@ -31,7 +31,7 @@ public class InitTestCar extends AbstractInit {
         initSky();
         initTerrain();
 
-        carAppState = new CarAppState(bulletAppState, null, 100, new Vector3f(0, 20, 0), new Quaternion(),   (Node)terrain, null);
+        carAppState = new CarAppState(bulletAppState, null, 100, new Vector3f(0, 20, 0), new Quaternion(),   (Node)terrain, null, null);
         stateManager.attach(carAppState);
     }
 

@@ -29,6 +29,7 @@ import beans.PlayerInfo;
 import com.jme3.collision.CollisionResults;
 import com.jme3.scene.Spatial;
 import game.main.appstates.TrapPlaceAppState;
+import game.utils.AudioPlayer;
 import java.util.List;
 
 /**
@@ -49,14 +50,15 @@ public class CarAppState extends CharacterAppState {
     
     public CarAppState(BulletAppState bulletAppState, GameAppState gameAppState,
             int maxHP, Vector3f spawnPoint, Quaternion spawnRotation,
-            Node terrainNode, PlayerInfo playerInfo) {
-        this(null, gameAppState, bulletAppState, maxHP, spawnPoint, spawnRotation, terrainNode, playerInfo);
+            Node terrainNode, PlayerInfo playerInfo, AudioPlayer audioPlayer) {
+        this(null, gameAppState, bulletAppState, maxHP, spawnPoint, spawnRotation, terrainNode, playerInfo, audioPlayer);
     }
 
     public CarAppState(GUIAppState guiAppState, GameAppState gameAppState,
             BulletAppState bulletAppState, int maxHP, Vector3f spawnPoint,
-            Quaternion spawnRotation, Node terrainNode, PlayerInfo playerInfo) {
-        super(guiAppState, gameAppState, bulletAppState, maxHP, spawnPoint, spawnRotation, terrainNode, playerInfo);
+            Quaternion spawnRotation, Node terrainNode, PlayerInfo playerInfo,
+            AudioPlayer audioPlayer) {
+        super(guiAppState, gameAppState, bulletAppState, maxHP, spawnPoint, spawnRotation, terrainNode, playerInfo, audioPlayer);
     }
     
     @Override

@@ -31,6 +31,7 @@ import beans.DMGArt;
 import beans.PlayerInfo;
 import com.jme3.scene.Spatial;
 import game.main.appstates.TrapPlaceAppState;
+import game.utils.AudioPlayer;
 import java.util.List;
 import sonst.Explosion;
 
@@ -63,6 +64,7 @@ public abstract class CharacterAppState extends AbstractAppState implements Acti
     protected final GUIAppState guiAppState;
     protected final GameAppState gameAppState;
     protected final PlayerInfo playerInfo;
+    protected final AudioPlayer audioPlayer;
     
     protected BulletAppState bulletAppState;
     protected AssetManager assetManager;
@@ -86,15 +88,18 @@ public abstract class CharacterAppState extends AbstractAppState implements Acti
     protected Quaternion spawnRotation;
     protected long timeDriven = 0;
     protected long timeDied = 0;
+    protected float timeExplosionPlayed = 0;
     
     public CharacterAppState(GUIAppState guiAppState, GameAppState gameAppState,
             BulletAppState bulletAppState, int maxHP, Vector3f spawnPoint,
-            Quaternion spawnRotation, Node terrainNode, PlayerInfo playerInfo) {
+            Quaternion spawnRotation, Node terrainNode, PlayerInfo playerInfo,
+            AudioPlayer audioPlayer) {
         this.guiAppState = guiAppState;
         this.gameAppState = gameAppState;
         this.maxHP = maxHP;
         this.hp = maxHP;
         this.playerInfo = playerInfo;
+        this.audioPlayer = audioPlayer;
         setSpawnPoint(new Vector3f(spawnPoint));
         setSpawnRotation(new Quaternion(spawnRotation));
         this.terrainNode = terrainNode;
@@ -151,6 +156,15 @@ public abstract class CharacterAppState extends AbstractAppState implements Acti
     public void update(float tpf) {
         //TODO: onGround fixen
         // onGround = terrainNode.collideWith(geometry.getWorldBound(), new CollisionResults()) != 0;
+        if(audioPlayer != null) {
+            if(audioPlayer.isSoundPlaying("explosion")) {
+                timeExplosionPlayed += tpf;
+                if(timeExplosionPlayed > 2.0f) {
+                    audioPlayer.stopSound("explosion");
+                    audioPlayer.stopSound("raceted");
+                }
+            }
+        }
         if(hp > 0) {
             timeDriven += tpf * 1_000_000_000;
             if (jumpCooldown > 0) {
@@ -251,6 +265,11 @@ public abstract class CharacterAppState extends AbstractAppState implements Acti
             explosion.explode();
             this.cleanupPlayer();
             dead = true;
+            if(audioPlayer != null) {
+                timeExplosionPlayed = 0.0f;
+                audioPlayer.playSound("explosion", "Sounds/Effects/Explosion.ogg", false, 0.2f);
+                audioPlayer.playSound("raceted", "Sounds/Effects/Raceted.ogg", false, 2f);
+            }
             if(playerInfo != null) {
                 playerInfo.setDied(true);
             }

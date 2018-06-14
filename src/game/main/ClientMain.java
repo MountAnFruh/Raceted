@@ -29,6 +29,8 @@ public class ClientMain extends SimpleApplication {
         
         settings.setFullscreen(true);
         settings.setResolution(1920, 1080);
+        settings.setFrameRate(60);
+        settings.setVSync(true);
 //      settings.setResolution(640, 480);
         
         settings.setTitle("Raceted");

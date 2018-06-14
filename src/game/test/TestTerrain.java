@@ -87,7 +87,7 @@ public class TestTerrain extends SimpleApplication implements ActionListener {
         initHUD();
         initInput();
         
-        carAppState = new CarAppState(bulletAppState, null, 100, carSpawnPoint, new Quaternion(), worldAppState.getTerrainNode(), null);
+        carAppState = new CarAppState(bulletAppState, null, 100, carSpawnPoint, new Quaternion(), worldAppState.getTerrainNode(), null, null);
         stateManager.attach(carAppState);
         
         flyCam.setEnabled(false);

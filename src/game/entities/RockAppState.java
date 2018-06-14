@@ -28,6 +28,7 @@ import beans.PlayerInfo;
 import com.jme3.collision.CollisionResults;
 import com.jme3.scene.Spatial;
 import game.main.appstates.TrapPlaceAppState;
+import game.utils.AudioPlayer;
 import java.util.List;
 
 /**
@@ -46,14 +47,15 @@ public class RockAppState extends CharacterAppState {
 
     public RockAppState(BulletAppState bulletAppState, GameAppState gameAppState,
             int maxHP, Vector3f spawnPoint, Quaternion spawnRotation,
-            Node terrainNode, PlayerInfo playerInfo) {
-        this(null, gameAppState, bulletAppState, maxHP, spawnPoint, spawnRotation, terrainNode, playerInfo);
+            Node terrainNode, PlayerInfo playerInfo, AudioPlayer audioPlayer) {
+        this(null, gameAppState, bulletAppState, maxHP, spawnPoint, spawnRotation, terrainNode, playerInfo, audioPlayer);
     }
     
     public RockAppState(GUIAppState guiAppState, GameAppState gameAppState,
             BulletAppState bulletAppState, int maxHP, Vector3f spawnPoint,
-            Quaternion spawnRotation, Node terrainNode, PlayerInfo playerInfo) {
-        super(guiAppState, gameAppState, bulletAppState, maxHP, spawnPoint, spawnRotation, terrainNode, playerInfo);
+            Quaternion spawnRotation, Node terrainNode, PlayerInfo playerInfo,
+            AudioPlayer audioPlayer) {
+        super(guiAppState, gameAppState, bulletAppState, maxHP, spawnPoint, spawnRotation, terrainNode, playerInfo, audioPlayer);
     }
 
     @Override
@@ -114,7 +116,7 @@ public class RockAppState extends CharacterAppState {
     public void update(float tpf) {
         super.update(tpf);
         deltaU += tpf * UPS_LIMITATION;
-        if(deltaU >= 1) {
+        while(deltaU >= 1) {
             float divisor = 4.0f;
             Vector3f brakeChange = new Vector3f(), impulsVector;
             Vector3f speedVector = rockControl.getLinearVelocity();
@@ -172,7 +174,6 @@ public class RockAppState extends CharacterAppState {
                     }
                 }
             }
-            
             deltaU--;
         }
     }

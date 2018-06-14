@@ -54,7 +54,8 @@ public class GameAppState extends AbstractAppState implements ActionListener {
 
     private static final String MAPPING_MODE = "Change_Mode";
     private static final String MAPPING_ESC = "ESC_Menu";
-
+    
+    private static final int UPS_LIMITATION = 100;
     private static final int INITHP = 10_000;
     private static final int BASICDMG = 100;
 
@@ -80,6 +81,7 @@ public class GameAppState extends AbstractAppState implements ActionListener {
 
     private int currCheckpoint = 0;
     private int currRound = 1;
+    private float deltaU = 0;
 
     private boolean inputEnabled = true;
     private boolean terrainInitialized = false;
@@ -172,93 +174,95 @@ public class GameAppState extends AbstractAppState implements ActionListener {
     @Override
     public void update(float tpf) {
         // Initialisiere Terrain wenn alles bereit ist.
-        if (worldAppState.isInitialized() && !terrainInitialized) {
-            loadLevel();
-            terrainInitialized = true;
-        }
-        if (worldAppState.isInitialized()) {
-            guiAppState.getController().setCurrentPlayerNumber(getCurrentPlayerNumber());
-            guiAppState.getController().setPointsInGameHUDAndTrapPlaceHUD(currentPlayer.getPoints());
-            List<PlayerInfo> pointsRanking = new ArrayList<>(playerInfos);
-            Collections.sort(pointsRanking, Comparator.comparing(PlayerInfo::getPoints));
-            int pointsIndex = pointsRanking.indexOf(currentPlayer);
-//            guiAppState.getController().setPlacePointsInGameHUDAndTrapPlaceHUD(pointsIndex + 1);
-            if (currMode == Mode.DRIVEMODE) {
-                if (characterAppState.isInitialized()) {
-                    if (!started) {
-                        currRound = 1;
-                        currCheckpoint = 0;
-                        started = true;
-                    }
-                    long checkpointNanos = characterAppState.getTimeDriven();
-                    LocalTime currTime = LocalTime.ofNanoOfDay(checkpointNanos);
-                    currentPlayer.setDrivenTime(currTime);
-                    guiAppState.getController().setHPInGameHUD(characterAppState.getHP(),
-                            characterAppState.getMaxHP());
-                    guiAppState.getController().setTimeLevelInGameHUD(currTime);
-                    guiAppState.getController().setRoundInGameHUD(currRound);
-                    List<PlayerInfo> ranking = new ArrayList<>(playerInfos);
-                    Collections.sort(ranking, Comparator.comparing(PlayerInfo::isDied).thenComparing(PlayerInfo::getDrivenTime));
-                    int index = ranking.indexOf(currentPlayer);
-                    guiAppState.getController().setPlaceTimeInGameHUD(index + 1);
+        deltaU += tpf * UPS_LIMITATION;
+        while(deltaU >= 1) {
+            if (worldAppState.isInitialized() && !terrainInitialized) {
+                loadLevel();
+                terrainInitialized = true;
+            }
+            if (worldAppState.isInitialized()) {
+                guiAppState.getController().setCurrentPlayerNumber(getCurrentPlayerNumber());
+                guiAppState.getController().setPointsInGameHUDAndTrapPlaceHUD(currentPlayer.getPoints());
+                List<PlayerInfo> pointsRanking = new ArrayList<>(playerInfos);
+                Collections.sort(pointsRanking, Comparator.comparing(PlayerInfo::getPoints));
+                int pointsIndex = pointsRanking.indexOf(currentPlayer);
+    //            guiAppState.getController().setPlacePointsInGameHUDAndTrapPlaceHUD(pointsIndex + 1);
+                if (currMode == Mode.DRIVEMODE) {
+                    if (characterAppState.isInitialized()) {
+                        if (!started) {
+                            currRound = 1;
+                            currCheckpoint = 0;
+                            started = true;
+                        }
+                        long checkpointNanos = characterAppState.getTimeDriven();
+                        LocalTime currTime = LocalTime.ofNanoOfDay(checkpointNanos);
+                        currentPlayer.setDrivenTime(currTime);
+                        guiAppState.getController().setHPInGameHUD(characterAppState.getHP(),
+                                characterAppState.getMaxHP());
+                        guiAppState.getController().setTimeLevelInGameHUD(currTime);
+                        guiAppState.getController().setRoundInGameHUD(currRound);
+                        List<PlayerInfo> ranking = new ArrayList<>(playerInfos);
+                        Collections.sort(ranking, Comparator.comparing(PlayerInfo::isDied).thenComparing(PlayerInfo::getDrivenTime));
+                        int index = ranking.indexOf(currentPlayer);
+                        guiAppState.getController().setPlaceTimeInGameHUD(index + 1);
 
-                    for (List<Spatial> spatials : placedTraps.values()) {
-                        for (Spatial spatial : spatials) {
-                            if (characterAppState.getGeometry().collideWith(spatial.getWorldBound(), new CollisionResults()) > 0) {
-                                String text = spatial.getUserData(TrapPlaceAppState.DMG_ART_KEY);
-                                DMGArt art = DMGArt.valueOf(text);
-                                characterAppState.causeDmg(BASICDMG, art);
+                        for (List<Spatial> spatials : placedTraps.values()) {
+                            for (Spatial spatial : spatials) {
+                                if (characterAppState.getGeometry().collideWith(spatial.getWorldBound(), new CollisionResults()) > 0) {
+                                    String text = spatial.getUserData(TrapPlaceAppState.DMG_ART_KEY);
+                                    DMGArt art = DMGArt.valueOf(text);
+                                    characterAppState.causeDmg(BASICDMG, art);
+                                }
                             }
                         }
-                    }
 
-                    if (worldAppState.outsideLevel(level.name(), characterAppState.getLocation())) {
-                        if (!characterAppState.isDead()) {
-                            System.out.println("RACETED!"); // TODO: Irgendeinen Text am Screen anzeigen lassen
-                            characterAppState.causeDmg(INITHP, DMGArt.OUTSIDELEVEL);
+                        if (worldAppState.outsideLevel(level.name(), characterAppState.getLocation())) {
+                            if (!characterAppState.isDead()) {
+                                System.out.println("RACETED!"); // TODO: Irgendeinen Text am Screen anzeigen lassen
+                                characterAppState.causeDmg(INITHP, DMGArt.OUTSIDELEVEL);
+                            }
+                            return;
                         }
-                        return;
-                    }
 
-                    String value = worldAppState.insideCheckpointOrStart(characterAppState.getLocation());
-                    if (value != null) {
-                        String[] parts = value.split(";");
-                        String mapName = parts[0];
-                        int checkpoint = Integer.parseInt(parts[1]);
-                        List<BoundingBox> checkpoints = worldAppState.getCheckpoints(mapName);
-                        int checkpointCount = checkpoints.size() + 1;
-                        if (mapName.equals(level.name())) {
-                            int nextCheckpoint = (currCheckpoint + 1) % checkpointCount;
-                            if (checkpoint == nextCheckpoint) {
-                                currCheckpoint = nextCheckpoint;
-                                BoundingBox checkpointbb;
-                                if (currCheckpoint == 0) {
-                                    currRound++;
-                                    System.out.println("*** NEW ROUND: " + currRound);
-                                    if (currRound >= level.getRoundCount()) {
-                                        changeNextPlayerOrMode();
-                                        return;
+                        String value = worldAppState.insideCheckpointOrStart(characterAppState.getLocation());
+                        if (value != null) {
+                            String[] parts = value.split(";");
+                            String mapName = parts[0];
+                            int checkpoint = Integer.parseInt(parts[1]);
+                            List<BoundingBox> checkpoints = worldAppState.getCheckpoints(mapName);
+                            int checkpointCount = checkpoints.size() + 1;
+                            if (mapName.equals(level.name())) {
+                                int nextCheckpoint = (currCheckpoint + 1) % checkpointCount;
+                                if (checkpoint == nextCheckpoint) {
+                                    currCheckpoint = nextCheckpoint;
+                                    BoundingBox checkpointbb;
+                                    if (currCheckpoint == 0) {
+                                        currRound++;
+                                        System.out.println("*** NEW ROUND: " + currRound);
+                                        if (currRound >= level.getRoundCount()) {
+                                            changeNextPlayerOrMode();
+                                            return;
+                                        }
+                                        checkpointbb = worldAppState.getStart(mapName);
+                                    } else {
+                                        checkpointbb = checkpoints.get(currCheckpoint - 1);
                                     }
-                                    checkpointbb = worldAppState.getStart(mapName);
-                                } else {
-                                    checkpointbb = checkpoints.get(currCheckpoint - 1);
+                                    System.out.println("TIME: " + currTime.format(DateTimeFormatter.ISO_TIME));
+
+                                    Vector3f spawnPoint = new Vector3f(checkpointbb.getCenter());
+                                    Vector2f spawnPoint2D = new Vector2f(spawnPoint.x, spawnPoint.z);
+                                    float height = worldAppState.getHeight(spawnPoint2D);
+                                    spawnPoint.setY(height);
+                                    characterAppState.setSpawnPoint(spawnPoint);
+                                    characterAppState.setSpawnRotation(characterAppState.getRotation());
+
                                 }
-                                System.out.println("TIME: " + currTime.format(DateTimeFormatter.ISO_TIME));
-
-                                Vector3f spawnPoint = new Vector3f(checkpointbb.getCenter());
-                                Vector2f spawnPoint2D = new Vector2f(spawnPoint.x, spawnPoint.z);
-                                float height = worldAppState.getHeight(spawnPoint2D);
-                                spawnPoint.setY(height);
-                                characterAppState.setSpawnPoint(spawnPoint);
-                                characterAppState.setSpawnRotation(characterAppState.getRotation());
-
                             }
                         }
                     }
                 }
-            } else {
-
             }
+            deltaU--;
         }
     }
 
@@ -272,6 +276,7 @@ public class GameAppState extends AbstractAppState implements ActionListener {
         if (currPlayerIndex >= playerInfos.size() - 1) {
             // NEXT MODE
             if (currMode == Mode.DRIVEMODE) {
+                calculatePoints();
                 changeMode(Mode.TRAPMODE);
             } else if(currMode == Mode.TRAPMODE) {
                 changeMode(Mode.DRIVEMODE);
@@ -339,10 +344,10 @@ public class GameAppState extends AbstractAppState implements ActionListener {
                 stateManager.detach(characterAppState);
                 switch (currentPlayer.getCharacter()) {
                     case ROCK:
-                        characterAppState = new RockAppState(bulletAppState, this, INITHP, spawnPoint, spawnRotation, worldAppState.getTerrainNode(), currentPlayer);
+                        characterAppState = new RockAppState(bulletAppState, this, INITHP, spawnPoint, spawnRotation, worldAppState.getTerrainNode(), currentPlayer, audioPlayer);
                         break;
                     case CAR:
-                        characterAppState = new CarAppState(bulletAppState, this, INITHP, spawnPoint, spawnRotation, worldAppState.getTerrainNode(), currentPlayer);
+                        characterAppState = new CarAppState(bulletAppState, this, INITHP, spawnPoint, spawnRotation, worldAppState.getTerrainNode(), currentPlayer, audioPlayer);
                         break;
                 }
                 stateManager.attach(characterAppState);

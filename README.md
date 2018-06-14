@@ -51,3 +51,4 @@ Fallen-Platzierungsphase:
 		-> Busch: Verlangsamt den Spieler
 	* Fallen kann man entweder über die Bilder unten auswählen, oder mit den Tasten [1],[2] oder [3].
 	* Fallen kann man im Lösch-Modus wieder entfernen, diese Fallen können auch von anderen Spielern platziert worden sein.
+	* Fallen kann man nicht im Spawn-Bereich setzen (Im Level ist es zwischen den beiden Rampen).
