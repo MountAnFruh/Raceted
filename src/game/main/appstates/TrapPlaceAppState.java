@@ -302,20 +302,25 @@ public class TrapPlaceAppState extends AbstractAppState implements ActionListene
 
                     for (PlayerInfo playerInfo : gameAppState.getPlacedTraps().keySet()) {
                         List<Spatial> spatials = gameAppState.getPlacedTraps().get(playerInfo);
-                        for(Spatial sp : new ArrayList<>(spatials)) {
-            //              sp.collideWith((Geometry)teaGeom,rs);
-            //              bulletAppState.getPhysicsSpace().remove(sp.getControl(RigidBodyControl.class));
-            //              sp.removeFromParent();
-                            if(sp.collideWith(ray, new CollisionResults())>0)
-                            {
-                                bulletAppState.getPhysicsSpace().remove(sp.getControl(RigidBodyControl.class));
-                                teaGeom.move(100, 100, 100);
-                                sp.removeFromParent();
-                                gameAppState.getPlacedTraps().get(playerInfo).remove(sp);
+                        if(spatials.size() > 0) {
+                            float minDistance = Float.MAX_VALUE;
+                            Spatial minSpatial = null;
+                            for(Spatial sp : new ArrayList<>(spatials)) {
+                                CollisionResults collResults = new CollisionResults();
+                                if(sp.collideWith(ray, collResults)>0)
+                                {
+                                    if(collResults.getClosestCollision().getDistance() < minDistance) {
+                                        minDistance = collResults.getClosestCollision().getDistance();
+                                        minSpatial = collResults.getClosestCollision().getGeometry();
+                                    }
+                                }
+                            }
+                            if(minSpatial != null) {
+                                bulletAppState.getPhysicsSpace().remove(minSpatial.getControl(RigidBodyControl.class));
+                                minSpatial.removeFromParent();
+                                gameAppState.getPlacedTraps().get(playerInfo).remove(minSpatial);
                                 trapCount++;
-                            }       
-                            //}  
-                            //----------------
+                            }
                         }
                     }
                 }
@@ -401,22 +406,16 @@ public class TrapPlaceAppState extends AbstractAppState implements ActionListene
             }
             switch (name) {
                 case MAPPING_CHOOSE_TRAP1:
-                    rootNode.detachChild(teaGeom);
-                    teaGeom = Trap1;
-                    rootNode.attachChild(teaGeom);
+                    this.setTrap(1);
                     break;
                 case MAPPING_CHOOSE_TRAP2:
-                    rootNode.detachChild(teaGeom);
-                    teaGeom = Trap2;
-                    rootNode.attachChild(teaGeom);
+                    this.setTrap(2);
                     break;
                 case MAPPING_CHOOSE_TRAP3:
-                    rootNode.detachChild(teaGeom);
-                    teaGeom = Trap3;
-                    rootNode.attachChild(teaGeom);
+                    this.setTrap(3);
                     break;
             }
-            //if (deletemode == false) {
+            if (deletemode == false) {
                 Vector3f origin = cam.getWorldCoordinates(inputManager.getCursorPosition(), 0.0f);
                 Vector3f direction = cam.getWorldCoordinates(inputManager.getCursorPosition(), 0.3f);
                 direction.subtractLocal(origin).normalizeLocal();
@@ -430,7 +429,9 @@ public class TrapPlaceAppState extends AbstractAppState implements ActionListene
                     teaGeom.setLocalTranslation(closest.getContactPoint().add(0, 0, 0));
                     //----------------
                 }
-            //}
+            } else {
+                teaGeom.setLocalTranslation(0, -1000, 0);
+            }
         }
     }
 
