@@ -161,7 +161,6 @@ public abstract class CharacterAppState extends AbstractAppState implements Acti
                 timeExplosionPlayed += tpf;
                 if(timeExplosionPlayed > 2.0f) {
                     audioPlayer.stopSound("explosion");
-                    audioPlayer.stopSound("raceted");
                 }
             }
         }
@@ -268,7 +267,7 @@ public abstract class CharacterAppState extends AbstractAppState implements Acti
             if(audioPlayer != null) {
                 timeExplosionPlayed = 0.0f;
                 audioPlayer.playSound("explosion", "Sounds/Effects/Explosion.ogg", false, 0.2f);
-                audioPlayer.playSound("raceted", "Sounds/Effects/Raceted.ogg", false, 2f);
+                // audioPlayer.playSound("raceted", "Sounds/Effects/Raceted.ogg", false, 2f);
             }
             if(playerInfo != null) {
                 playerInfo.setDied(true);
