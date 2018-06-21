@@ -144,27 +144,23 @@ public class TrapPlaceAppState extends AbstractAppState implements ActionListene
         initCamera();
 
         //Material mat = new Material(assetManager, "Common/MatDefs/Misc/ShowNormals.j3md");
-
-
-
-
         Trap1 = assetManager.loadModel("Models/pylon.obj");
         Material mat = new Material(assetManager, "Common/MatDefs/Misc/Unshaded.j3md");
-        mat.setColor("Color", ColorRGBA.Orange);
+        Texture tex = assetManager.loadTexture("Textures/pylon.png");
+        mat.setTexture("ColorMap", tex);
         Trap1.setMaterial(mat);
         Trap1.setCullHint(Geometry.CullHint.Never);
-        
+
         Trap2 = assetManager.loadModel("Models/stachel3x3.obj");
         mat = new Material(assetManager, "Common/MatDefs/Misc/Unshaded.j3md");
         mat.setColor("Color", ColorRGBA.Gray);
         Trap2.setMaterial(mat);
         Trap2.setCullHint(Geometry.CullHint.Never);
-        
-        
+
         Trap3 = assetManager.loadModel("Models/bushes.obj");
         Trap3.setLocalScale(3.0f);
         mat = new Material(assetManager, "Common/MatDefs/Misc/Unshaded.j3md");
-        Texture tex = assetManager.loadTexture("Textures/gras.png");
+        tex = assetManager.loadTexture("Textures/gras.png");
         mat.setTexture("ColorMap", tex);
         Trap3.setMaterial(mat);
         Trap3.setCullHint(Geometry.CullHint.Never);
@@ -364,8 +360,8 @@ public class TrapPlaceAppState extends AbstractAppState implements ActionListene
                                     settrap.setUserData(DMG_ART_KEY, DMGArt.TRAFFICCONE.name());
 
                                     Material mat = new Material(assetManager, "Common/MatDefs/Misc/Unshaded.j3md");
-                                    Texture tex = assetManager.loadTexture("Textures/gras.png");
-                                    mat.setColor("Color", ColorRGBA.Orange);
+                                    Texture tex = assetManager.loadTexture("Textures/pylon.png");
+                                    mat.setTexture("ColorMap", tex);
                                     settrap.setMaterial(mat);
                                 }
                                 if (teaGeom == Trap2) {
