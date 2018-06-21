@@ -250,7 +250,7 @@ public class TrapPlaceHUDBuilder extends AbstractScreenBuilder {
 
                                         image(new ImageBuilder("falle2") {
                                             {
-                                                filename("Textures/Images/spike.png");
+                                                filename("Textures/Images/spike_icon.png");
                                                 alignCenter();
                                                 valignCenter();
                                                 height("100%");
@@ -261,7 +261,7 @@ public class TrapPlaceHUDBuilder extends AbstractScreenBuilder {
 
                                         image(new ImageBuilder("falle3") {
                                             {
-                                                filename("Textures/Images/bush.png");
+                                                filename("Textures/Images/bush_klein.png");
                                                 alignCenter();
                                                 valignCenter();
                                                 height("100%");

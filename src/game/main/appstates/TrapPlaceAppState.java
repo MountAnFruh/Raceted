@@ -30,6 +30,7 @@ import com.jme3.input.controls.MouseAxisTrigger;
 import com.jme3.input.controls.MouseButtonTrigger;
 import com.jme3.input.controls.Trigger;
 import com.jme3.material.Material;
+import com.jme3.math.ColorRGBA;
 import com.jme3.math.Quaternion;
 import com.jme3.math.Ray;
 import com.jme3.math.Vector2f;
@@ -41,17 +42,19 @@ import com.jme3.scene.Geometry;
 import com.jme3.scene.Node;
 import com.jme3.scene.Spatial;
 import com.jme3.scene.control.CameraControl;
+import com.jme3.texture.Texture;
 import game.gui.GUIAppState;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Random;
 
 /**
  *
  * @author Philipp Auer, Stefan Atzlinger
  */
 public class TrapPlaceAppState extends AbstractAppState implements ActionListener, AnalogListener {
-    
+
     public static final String DMG_ART_KEY = "dmgArt";
 
     // define triggers
@@ -85,7 +88,7 @@ public class TrapPlaceAppState extends AbstractAppState implements ActionListene
     private static final String MAPPING_CHOOSE_TRAP2 = "Place_Trap2";
     private static final String MAPPING_CHOOSE_TRAP3 = "Place_Trap3";
     private static final String MAPPING_DELETE_TRAP = "Delete_Trap";
-    
+
     private static final int MAX_TRAPS = 10;
 
     private final GUIAppState guiAppState;
@@ -140,20 +143,32 @@ public class TrapPlaceAppState extends AbstractAppState implements ActionListene
 
         initCamera();
 
-        //Material mat = new Material(assetManager, "Common/MatDefs/Misc/Unshaded.j3md");
-        Material mat = new Material(assetManager, "Common/MatDefs/Misc/ShowNormals.j3md");
+        //Material mat = new Material(assetManager, "Common/MatDefs/Misc/ShowNormals.j3md");
+
+
+
 
         Trap1 = assetManager.loadModel("Models/pylon.obj");
+        Material mat = new Material(assetManager, "Common/MatDefs/Misc/Unshaded.j3md");
+        mat.setColor("Color", ColorRGBA.Orange);
         Trap1.setMaterial(mat);
         Trap1.setCullHint(Geometry.CullHint.Never);
+        
         Trap2 = assetManager.loadModel("Models/stachel3x3.obj");
+        mat = new Material(assetManager, "Common/MatDefs/Misc/Unshaded.j3md");
+        mat.setColor("Color", ColorRGBA.Gray);
         Trap2.setMaterial(mat);
         Trap2.setCullHint(Geometry.CullHint.Never);
+        
+        
         Trap3 = assetManager.loadModel("Models/bushes.obj");
         Trap3.setLocalScale(3.0f);
+        mat = new Material(assetManager, "Common/MatDefs/Misc/Unshaded.j3md");
+        Texture tex = assetManager.loadTexture("Textures/gras.png");
+        mat.setTexture("ColorMap", tex);
         Trap3.setMaterial(mat);
         Trap3.setCullHint(Geometry.CullHint.Never);
-        
+
         //mat.setColor("Color", new ColorRGBA(0.0f, 0.0f, 0.0f, 1.0f));
         teaGeom = Trap2;
         rootNode.attachChild(teaGeom);
@@ -214,11 +229,11 @@ public class TrapPlaceAppState extends AbstractAppState implements ActionListene
 
     @Override
     public void update(float tpf) {
-        if(guiAppState != null) {
+        if (guiAppState != null) {
             guiAppState.getController().setTrapCountInTrapPlaceHUD(trapCount, MAX_TRAPS);
         }
-        if(trapCount >= MAX_TRAPS) {
-            if(gameAppState != null) {
+        if (trapCount >= MAX_TRAPS) {
+            if (gameAppState != null) {
                 gameAppState.changeNextPlayerOrMode();
             }
         }
@@ -268,7 +283,7 @@ public class TrapPlaceAppState extends AbstractAppState implements ActionListene
 
     @Override
     public void onAction(String name, boolean isPressed, float tpf) {
-        if(this.isEnabled()) {
+        if (this.isEnabled()) {
             if (name.equals(MAPPING_CAMERA_DRAG) || name.equals(MAPPING_CAMERA_DRAG2)) {
                 if (isPressed) {
                     isDragging = true;
@@ -279,7 +294,7 @@ public class TrapPlaceAppState extends AbstractAppState implements ActionListene
                 }
             }
             if (name.equals(MAPPING_DELETE_TRAP)) {
-                if(isPressed) {
+                if (isPressed) {
                     if (deletemode == false) {
                         deletemode = true;
                     } else {
@@ -299,23 +314,21 @@ public class TrapPlaceAppState extends AbstractAppState implements ActionListene
                     //if (results.size() > 0) {
 
                     //teaGeom.setLocalTranslation(closest.getContactPoint().add(0, 0, 0));
-
                     for (PlayerInfo playerInfo : gameAppState.getPlacedTraps().keySet()) {
                         List<Spatial> spatials = gameAppState.getPlacedTraps().get(playerInfo);
-                        if(spatials.size() > 0) {
+                        if (spatials.size() > 0) {
                             float minDistance = Float.MAX_VALUE;
                             Spatial minSpatial = null;
-                            for(Spatial sp : new ArrayList<>(spatials)) {
+                            for (Spatial sp : new ArrayList<>(spatials)) {
                                 CollisionResults collResults = new CollisionResults();
-                                if(sp.collideWith(ray, collResults)>0)
-                                {
-                                    if(collResults.getClosestCollision().getDistance() < minDistance) {
+                                if (sp.collideWith(ray, collResults) > 0) {
+                                    if (collResults.getClosestCollision().getDistance() < minDistance) {
                                         minDistance = collResults.getClosestCollision().getDistance();
                                         minSpatial = collResults.getClosestCollision().getGeometry();
                                     }
                                 }
                             }
-                            if(minSpatial != null) {
+                            if (minSpatial != null) {
                                 bulletAppState.getPhysicsSpace().remove(minSpatial.getControl(RigidBodyControl.class));
                                 minSpatial.removeFromParent();
                                 gameAppState.getPlacedTraps().get(playerInfo).remove(minSpatial);
@@ -337,9 +350,10 @@ public class TrapPlaceAppState extends AbstractAppState implements ActionListene
                         if (results.size() > 0) {
                             CollisionResult result = results.getClosestCollision();
                             BoundingBox start = worldAppState.getStart(gameAppState.getLevel().name());
-                            if(!start.intersects(result.getContactPoint())) {
+                            if (!start.intersects(result.getContactPoint())) {
                                 Spatial settrap = null;
-                                Material mat = new Material(assetManager, "Common/MatDefs/Misc/ShowNormals.j3md");
+
+                                //Material mat = new Material(assetManager, "Common/MatDefs/Misc/ShowNormals.j3md");
                                 //mat.setColor("Color", ColorRGBA.White);
                                 //mat.getAdditionalRenderState().setLineWidth(1);
                                 //mat.setColor("Diffuse", new ColorRGBA(1, 1, 1, 0.5f));
@@ -348,18 +362,33 @@ public class TrapPlaceAppState extends AbstractAppState implements ActionListene
                                 if (teaGeom == Trap1) {
                                     settrap = (Spatial) assetManager.loadModel("Models/pylon.obj");
                                     settrap.setUserData(DMG_ART_KEY, DMGArt.TRAFFICCONE.name());
+
+                                    Material mat = new Material(assetManager, "Common/MatDefs/Misc/Unshaded.j3md");
+                                    Texture tex = assetManager.loadTexture("Textures/gras.png");
+                                    mat.setColor("Color", ColorRGBA.Orange);
+                                    settrap.setMaterial(mat);
                                 }
                                 if (teaGeom == Trap2) {
                                     settrap = (Spatial) assetManager.loadModel("Models/stachel3x3.obj");
                                     settrap.setUserData(DMG_ART_KEY, DMGArt.SPIKE.name());
+
+                                    Material mat = new Material(assetManager, "Common/MatDefs/Misc/Unshaded.j3md");
+                                    Texture tex = assetManager.loadTexture("Textures/gras.png");
+                                    mat.setColor("Color", ColorRGBA.Gray);
+                                    settrap.setMaterial(mat);
                                 }
                                 if (teaGeom == Trap3) {
                                     settrap = (Spatial) assetManager.loadModel("Models/bushes.obj");
                                     settrap.setLocalScale(3.0f);
                                     settrap.setUserData(DMG_ART_KEY, DMGArt.BUSHES.name());
+
+                                    Material mat = new Material(assetManager, "Common/MatDefs/Misc/Unshaded.j3md");
+                                    Texture tex = assetManager.loadTexture("Textures/gras.png");
+                                    mat.setTexture("ColorMap", tex);
+                                    settrap.setMaterial(mat);
                                 }
                                 trapCount++;
-                                settrap.setMaterial(mat);
+                                //settrap.setMaterial(mat);
                                 settrap.setCullHint(Geometry.CullHint.Never);
                                 gameAppState.getPlacedTraps().get(gameAppState.getCurrentPlayer()).add(settrap);
                                 CollisionResult closest = results.getClosestCollision();
@@ -381,7 +410,7 @@ public class TrapPlaceAppState extends AbstractAppState implements ActionListene
 
     @Override
     public void onAnalog(String name, float pressed, float tpf) {
-        if(this.isEnabled()) {
+        if (this.isEnabled()) {
             if (isDragging) {
                 switch (name) {
                     case MAPPING_CAMERA_LEFT:
